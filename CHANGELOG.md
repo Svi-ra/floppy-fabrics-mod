@@ -1,0 +1,129 @@
+# Changelog
+
+All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
+
+## [0.1.0] — 2026-11-06 — MVP
+
+Wind-reactive cloth for the vanilla American Flag pole (with a DGVFlags canvas) and four vanilla wall flags, on
+Build 42.21.0 via ZombieBuddy 2.3.4. Acceptance status: DECISIONS.md "Acceptance status (MVP)".
+
+### Added — Phase 5 (documentation)
+- `README.md`: install, build, ZombieBuddy setup and pitfalls, how it works, adding flags via flags.json, tuning guide,
+  measured performance, known limitations.
+- `tools/flagtool.py`: extract sprites from `.pack` files and measure a wall flag into a ready flags.json entry.
+- `docs/FLAGS_JSON.md` updated for the current schema (`lodGrid`, defaults, multi-file merge).
+
+### Fixed — Phase 5
+- Other mods can now add or override flags by shipping `media/realflags/*.json` (any file name, merged across all
+  active mods in load order). Previously only one `flags.json` path was read, so another mod's file would have
+  replaced ours (D52). New test `FlagMergeTest`.
+
+### Added — Phase 4 (instance manager, overlay, failure path)
+- `cloth-core`: `Cloth(Cloth prototype)` (shared settled pose) and `Cloth.resampleFrom(Cloth)` (LOD switch that keeps
+  the motion); 3 new tests.
+- Adapter: `Prototypes` (one settle per flag type and LOD), far LOD profiles (wall 4×6, pole 6×4, 4 iterations; halved
+  wall render mesh), distance × zoom LOD with hysteresis, `Scheduler` (nearest-64 cap, per-frame stats, 60-frame
+  CPU window, eviction), calm wall flags drawn by vanilla, `simDistance` gate.
+- Debug overlay (`RealFlags_overlay`) via a new `UIManager.render` patch: flags drawn/awake/stepped/far/frozen,
+  CPU ms last/avg/max, wind.
+- Lua: `RealFlags_overlay`, `RealFlags_stress` (ghost copies for the 50-flag measurement), `RealFlags_setCap`,
+  `RealFlags_lodDistance`, `RealFlags_testFailure`.
+- 4 adapter tests (far profiles, shared prototype, LOD switch keeps motion, cap ranks the nearest).
+- `docs/PHASE4_TEST.md` (measurement protocol).
+- `cloth-demo --mode calm` (time-to-rest probe after storms from 12 directions).
+
+### Changed — Phase 4 (after the first in-game measurement)
+- Near LOD defaults: wall 5×8, pole 8×5, 4 iterations, wall render mesh 5×8. Measured in-game, 50 flags at the old
+  near defaults cost ≈1.5 ms; offline the simulation now costs ≈11–12 µs/flag instead of ≈22–24 µs (D49).
+- Pole pose memory 3 → 5 /s, so it always returns to its own limp fold (D50).
+- Canvas and static-quad textures preload on flags.json load: no vanilla-flag flash on first sight (D51).
+
+### Verified in-game — Phase 4 run 2
+- User report: all Phase 4 checks pass with the cheaper near LOD, including 50 flags at full detail under the 1 ms
+  target and no canvas flash on first sight (exact overlay figures not recorded).
+
+### Verified in-game — Phase 4 run 1
+- Far LOD: 50 flags ≈ 0.47 ms (from 30 flags at 0.279 ms). Cap, eviction, shared prototypes, calm→vanilla, and the
+  fail-once → disable → vanilla path all behave as specified.
+
+### Added — Phase 3 (pole + wall flag animated end-to-end)
+- `flags.json` schema v2 (`FlagJson`, documented in `docs/FLAGS_JSON.md`): wall `facing` + measured `cloth`
+  parallelogram + render `mesh`; pole `anchor`, `depthPoint`, `size`, `canvas` {texture, uv}, `staticQuads`; per-flag
+  `exposure`, `timeScale`, `physics` overrides. Bad entries are reported and skipped.
+- Starter data measured from the sprites: 4 wall flags (`walls_decoration_01_16..19`) and the American Flag pole
+  (`street_decoration_01_16`) with the DGVFlags US canvas, pole rebuilt from vanilla art.
+- `Projection` (world ↔ screen, wind convention, wall inverse mapping, grid sampling), `WindProvider`,
+  `FlagInstance` (cloth + per-flag gusts, once-per-frame step, real-time, frozen while paused), `Instances` (weak,
+  lazy), `Canvases` (cached textures, missing mod → vanilla + one WARN).
+- `SpriteMesh` now renders wall flags as the vanilla image bent by the cloth (identical at zero wind) and pole flags
+  as rebuilt pole + simulated canvas.
+- Lua: `RealFlags_forceWind(kph, deg)`, `RealFlags_forceWindOff()`; status shows instances and wind.
+- 11 adapter tests (projection vs IsoUtils, rain-sample wind direction, wall mapping round trip, schema, overrides).
+- `docs/PHASE3_TEST.md`.
+
+### Changed — Phase 3
+- Debug overlay off by default. Wall-flag depth bias default 2e-4 confirmed in-game.
+
+### Verified in-game — Phase 3 (2026-11-06)
+- Pole and wall flags wave and react to wind strength (10/40/70 km/h) and direction (308° → screen-left, 135° →
+  screen-right, matching the rain); wall flags respond only to wind blowing off their wall; zero wind returns to
+  vanilla; pause freezes; indoor flags stay still; picking works. Wind convention (D32) confirmed for both directions.
+
+### Added — Phase 2 (adapter hello-jar)
+- `pz-adapter` module (package `pzmod.realflags`), compile-only against `projectzomboid.jar` 42.21.0 and
+  ZombieBuddy 2.3.4; ships as one jar with cloth-core bundled.
+- Patches: `FBORenderCell.calculateObjectRenderLayer` (flags → per-frame layer), `IsoSprite.performRenderFrame`
+  (draw context), `Texture.render(float×8, Consumer)` (replace the flag's quad).
+- `SpriteMesh`: captures vanilla's depth/seam modifier output and re-emits the flag as a 4×4 grid of sub-quads with
+  bilinearly interpolated attributes (identity → looks like vanilla) plus a pulsing magenta debug overlay.
+- Failure isolation: every hook catches everything; the first error logs once, disables the mod for the session and
+  invalidates reclassified flags so they re-bake as vanilla. Fallback counters per reason.
+- `flags.json` (`media/realflags/`) with the 5 starter sprites; strict `MiniJson` reader with line/column errors.
+- Lua debug globals: `RealFlags_status`, `RealFlags_debug`, `RealFlags_setEnabled`, `RealFlags_wind`, plus A/B
+  toggles `RealFlags_mesh` (sub-quads vs vanilla quad) and `RealFlags_depthBias`.
+- In-game confirmed (2026-11-06): loads clean; pole flag redrawn every frame by our mesh with the debug overlay
+  (2.0 s pulse measured from the user's video); pole halves aligned; Lua API works.
+- Mod template `mod/42/mod.info` (`require=\ZombieBuddy,\DGVFlags`, `javaJarFile=media/java/client/RealFlags.jar`).
+- Gradle tasks: `:pz-adapter:deployMod` (→ `mods/RealFlags`), `:pz-adapter:verifyPatches` (offline ZombieBuddy
+  patch-application probe against the real game classes).
+- 5 adapter unit tests (JSON parsing, shipped flags.json, bad-entry tolerance).
+- `docs/PHASE2_TEST.md`: in-game test checklist.
+
+### Fixed — Phase 2
+- Wall flags z-fought with their wall in the per-frame pass (stipple, seen in-game). Cause: wall overlays use the
+  wall's own depth preset, compared `GL_LEQUAL` against the cached chunk depth. New patch
+  `IsoSprite.startTileDepthShader` applies a toward-viewer depth bias to wall-overlay flags (DECISIONS D30).
+  Vanilla's 5e-5 left edge bands in-game; the default is now 2e-4, tunable via `RealFlags_depthBiasAmount` (D33).
+- Wind direction convention adopted: blows toward `(sin θ, cos θ)`, matching the in-game rain direction (D32).
+- Patch classes moved from `pzmod.realflags.patches` to `pzmod.realflags`: ZombieBuddy only collects patches from the
+  exact `javaPkgName` package (found by the offline probe before any game launch).
+
+### Added — Phase 1 (cloth-core, tests, demo)
+- Gradle 9.5.0 multi-module build (`cloth-core`, `cloth-demo`), Java release 25, `-Werror`; `checkNoPzImports` guard.
+- `cloth-core` (package `pzmod.realflags.cloth`, zero dependencies):
+  - `Cloth`: Verlet + PBD particle grid; structural, shear and bend distance constraints; long-range tethers; pinned
+    particles following a `ClothAnchor`; fixed 1/60 s step with accumulator, substep cap and backlog drop; damping;
+    gravity-settled reference pose; sleep with exact snap to the reference; pose memory fading with wind; health
+    check with reset counter; per-constraint and per-triangle `alive` flags (reserved for tearing); allocation-free stepping.
+  - `WindForce`: spec drag formula per triangle plus skin friction, deterministic gusts and per-triangle turbulence,
+    overshoot cap. `ForceSource` interface for future sources.
+  - `ClothProfile` (validated, builder) and built-in `ClothProfiles.WALL` / `POLE`; `PinLayout`; `AnchorFrame`,
+    `StaticAnchor`; `GustNoise`.
+- 18 JUnit tests: pinned particles never move; zero-wind bit-identical rest; return-home and sleep (wall, and pole
+  from 6 directions); no blow-up at huge/invalid dt; edge stretch bound in storms; monotonic strength (wall, pole,
+  light breeze); direction response (wall half-plane, pole 8 compass directions); determinism with fixed seed; plane
+  clamp; tearing flags; texture coordinates; profile validation; noise bounds.
+- `cloth-demo` headless harness: `png` (scripted gust: calm → breeze → gusts → direction swing → storm → calm, PNG
+  frames, contact sheet, metrics CSV, optional real texture), `ascii`, `sweep` (steady-wind response table), `bench`.
+- Decisions D16–D22 in `DECISIONS.md` (incl. measured performance table).
+
+### Phase 0
+- Phase 0 recon: `RECON.md` (game build 42.21.0, ZombieBuddy 2.3.4, flag sprites and atlas coordinates, render call
+  path and hooks, wind API, threading model) and `DECISIONS.md` (decisions D1–D10, open questions Q1–Q4).
+- Recorded your answers to Q1–Q4 as D11–D15. Added RECON §3b: DGVFlags as the pole-flag canvas source, texture
+  loading path, rod-strip UV, `require=` syntax, and pole/cloth pixel split of `street_decoration_01_16`.
+
+### Changed
+- Project renamed to **RealFlags**. The docs moved from `mods/ClothFlags` to `D:\Real-flags`, and the old folder was
+  removed. The mod folder `mods/RealFlags` will be generated by the build.
+- No code yet.

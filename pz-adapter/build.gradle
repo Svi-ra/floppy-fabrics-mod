@@ -1,0 +1,110 @@
+// pz-adapter: ZombieBuddy patches, renderer, Lua debug API, and packaging of the mod folder.
+// The jar bundles cloth-core's classes; the game jar and ZombieBuddy.jar are compile-only (provided at runtime).
+
+def pzInstallDir = file(project.findProperty('pzInstallDir') ?: 'D:/Program Files/Steam/steamapps/common/ProjectZomboid')
+def zombieBuddyJar = file(project.findProperty('zombieBuddyJar') ?: "${pzInstallDir}/ZombieBuddy.jar")
+def modsDir = file(project.findProperty('modsDir') ?: "${System.getProperty('user.home')}/Zomboid/mods")
+def modId = 'RealFlags'
+
+dependencies {
+    implementation project(':cloth-core')
+    compileOnly files("${pzInstallDir}/projectzomboid.jar")
+    compileOnly files(zombieBuddyJar)
+
+    // tests only touch pure-Java parts; the game jar is needed on the classpath for class linking, not initialisation
+    testImplementation files("${pzInstallDir}/projectzomboid.jar")
+    testImplementation platform('org.junit:junit-bom:6.0.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('compileJava', JavaCompile) {
+    doFirst {
+        if (!file("${pzInstallDir}/projectzomboid.jar").exists()) {
+            throw new GradleException("projectzomboid.jar not found under pzInstallDir=${pzInstallDir} (see gradle.properties)")
+        }
+        if (!zombieBuddyJar.exists()) {
+            throw new GradleException("ZombieBuddy.jar not found at zombieBuddyJar=${zombieBuddyJar} (see gradle.properties)")
+        }
+    }
+    // Game classes are compiled without -parameters/-g; their own code triggers no lint here, but game
+    // jars are not modules, so suppress the "classfile" lint category that complains about their attributes.
+    options.compilerArgs += ['-Xlint:-classfile']
+}
+
+tasks.named('test', Test) {
+    systemProperty 'realflags.modDir', rootProject.file('mod').absolutePath
+}
+
+jar {
+    archiveFileName = "${modId}.jar"
+    // bundle cloth-core so the mod is a single jar (ZombieBuddy loads exactly one jar per mod)
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes('Implementation-Title': modId, 'Implementation-Version': project.version)
+    }
+}
+
+// ---- dev-only: offline patch-application check (never shipped) ----
+sourceSets {
+    verify {
+        java.srcDirs = ['src/verify/java']
+        compileClasspath += sourceSets.main.compileClasspath
+    }
+}
+
+tasks.register('verifyPatches', JavaExec) {
+    description = 'Applies our ZombieBuddy patches to the real game classes in a throwaway JVM and checks the agent log.'
+    group = 'verification'
+    dependsOn tasks.named('jar'), tasks.named('verifyClasses')
+    def jarFile = tasks.named('jar').get().archiveFile.get().asFile
+    def probeDir = layout.buildDirectory.dir('verify-run').get().asFile
+    def logFile = new File(probeDir, 'agent.log')
+    mainClass = 'pzmod.realflags.verify.PatchProbe'
+    // the agent's patches_jar=<path>:<pkg> splits on the first ':' → use a path relative to the working dir
+    workingDir = jarFile.parentFile
+    classpath = files("${pzInstallDir}/projectzomboid.jar", jarFile, sourceSets.verify.output)
+    jvmArgs = [
+            "-javaagent:${zombieBuddyJar}=patches_jar=${jarFile.name}:pzmod.realflags,verbosity=2,policy=allow-all,frontend=console,config_dir=${probeDir.absolutePath.replace('\\', '/').replaceFirst(/^[A-Za-z]:/, '')}",
+            '-Djava.awt.headless=true',
+            '--enable-native-access=ALL-UNNAMED',
+            '-XX:+EnableDynamicAgentLoading',
+    ]
+    doFirst {
+        probeDir.mkdirs()
+        standardOutput = new FileOutputStream(logFile)
+        errorOutput = standardOutput
+    }
+    doLast {
+        def log = logFile.getText('UTF-8')
+        def relevant = log.readLines().findAll { it =~ /(?i)realflags|PatchProbe|error|exception|Applied advice|hasMultipleSignatures/ }
+        println relevant.join('\n')
+        if (!log.contains('[PatchProbe] done')) throw new GradleException("probe did not finish; see ${logFile}")
+        def errors = log.readLines().findAll { it =~ /(?i)\bERROR\b|Exception/ && it =~ /(?i)realflags|Patch_/ }
+        if (!errors.isEmpty()) throw new GradleException("ZombieBuddy reported errors for our patches; see ${logFile}")
+    }
+}
+
+// Assembles the clean mod folder in build/mod/RealFlags (no sources, no build files).
+tasks.register('assembleMod', Sync) {
+    description = 'Builds the mod folder (mod.info, media, jar) under build/mod/RealFlags.'
+    group = 'build'
+    dependsOn tasks.named('jar')
+    into layout.buildDirectory.dir("mod/${modId}")
+    from(rootProject.file('mod')) {
+        exclude '**/.gitkeep'
+    }
+    from(tasks.named('jar')) {
+        into '42/media/java/client'
+    }
+}
+
+// Copies the assembled folder into the game's mods directory. Sync only touches <modsDir>/RealFlags.
+tasks.register('deployMod', Sync) {
+    description = "Copies the mod folder to ${modsDir}/${modId}."
+    group = 'distribution'
+    dependsOn tasks.named('assembleMod')
+    from layout.buildDirectory.dir("mod/${modId}")
+    into new File(modsDir, modId)
+}

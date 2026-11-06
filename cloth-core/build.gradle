@@ -1,0 +1,35 @@
+// cloth-core: pure Java cloth simulation. MUST NOT depend on Project Zomboid or ZombieBuddy.
+// (Enforced by the 'checkNoPzImports' task below.)
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:6.0.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.register('checkNoPzImports') {
+    description = 'Fails if any cloth-core source imports zombie.* or ZombieBuddy classes.'
+    group = 'verification'
+    def srcDirs = sourceSets.main.java.srcDirs
+    inputs.files(srcDirs)
+    doLast {
+        def bad = []
+        srcDirs.each { dir ->
+            if (!dir.exists()) return
+            dir.eachFileRecurse { f ->
+                if (f.name.endsWith('.java')) {
+                    f.eachLine { line, n ->
+                        if (line ==~ /\s*import\s+(static\s+)?(zombie|se\.krka|me\.zed_0xff)\..*/) {
+                            bad << "${f}:${n}: ${line.trim()}"
+                        }
+                    }
+                }
+            }
+        }
+        if (!bad.isEmpty()) {
+            throw new GradleException("cloth-core must not import PZ/ZombieBuddy classes:\n" + bad.join('\n'))
+        }
+    }
+}
+
+tasks.named('check') { dependsOn 'checkNoPzImports' }

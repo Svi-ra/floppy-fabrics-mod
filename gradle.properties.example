@@ -1,0 +1,15 @@
+# Copy this file to gradle.properties (which git ignores) and set the paths for your machine.
+# You can also pass any of these as -P<name>=<value> on the command line.
+
+# A JDK 25 used to run Gradle and compile (the game runs Java 25). Remove this line if JAVA_HOME already points to a
+# JDK 25. Example: IntelliJ's bundled JetBrains Runtime.
+org.gradle.java.home=C:/Program Files/JetBrains/IntelliJ IDEA/jbr
+
+# Project Zomboid install (compile-only: projectzomboid.jar). Built against Build 42.21.0.
+pzInstallDir=C:/Program Files (x86)/Steam/steamapps/common/ProjectZomboid
+# ZombieBuddy API jar (compile-only). Workshop item 3619862853.
+zombieBuddyJar=C:/Program Files (x86)/Steam/steamapps/workshop/content/108600/3619862853/mods/ZombieBuddy/libs/ZombieBuddy.jar
+# Where :pz-adapter:deployMod writes the mod folder (<modsDir>/RealFlags). Usually <user home>/Zomboid/mods.
+modsDir=C:/Users/<you>/Zomboid/mods
+
+org.gradle.caching=true

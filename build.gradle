@@ -1,0 +1,27 @@
+// Root build: shared Java settings for all modules.
+// The game runs on Java 25 (Azul Zulu 25.0.1, see RECON.md §1), so everything targets release 25.
+
+subprojects {
+    apply plugin: 'java'
+
+    group = 'pzmod.realflags'
+    version = '0.1.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.release = 25
+        options.encoding = 'UTF-8'
+        options.compilerArgs += ['-Xlint:all', '-Werror']
+    }
+
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+        testLogging {
+            events = ['passed', 'failed', 'skipped']
+            exceptionFormat = 'full'
+        }
+    }
+}

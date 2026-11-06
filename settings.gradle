@@ -1,0 +1,5 @@
+rootProject.name = 'real-flags'
+
+include 'cloth-core'   // pure-Java cloth physics, no PZ dependency
+include 'cloth-demo'   // dev-only headless harness
+include 'pz-adapter'   // ZombieBuddy patches + mod packaging (needs the game jar, see gradle.properties)

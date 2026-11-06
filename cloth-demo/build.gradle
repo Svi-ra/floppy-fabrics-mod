@@ -1,0 +1,19 @@
+// cloth-demo: dev-only headless harness. Runs cloth-core under a scripted gust and dumps
+// PNG frames / ASCII / CSV so physics can be tuned without launching the game. Never shipped.
+
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation project(':cloth-core')
+}
+
+application {
+    mainClass = 'pzmod.realflags.demo.ClothDemo'
+    applicationDefaultJvmArgs = ['-Djava.awt.headless=true']
+}
+
+tasks.named('run', JavaExec) {
+    workingDir = rootProject.projectDir
+}
