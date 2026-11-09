@@ -39,12 +39,29 @@ public final class ClothProfiles {
             .calmRestoreRate(5f)
             .build();
 
+    /**
+     * Window curtain hanging from its rod (top edge) in front of a window (DECISIONS D68): heavier and floppier than a
+     * flag (low bend stiffness, so it folds), a little more drag (light, loose weave), clamped to the window plane.
+     */
+    public static final ClothProfile CURTAIN = ClothProfile.builder()
+            .name("curtain")
+            .grid(5, 9)
+            .mass(0.3f)
+            .stiffness(1.0f, 0.8f, 0.03f)
+            .damping(0.03f)
+            .dragCoefficient(0.8f)
+            .pinLayout(PinLayout.TOP_EDGE)
+            .iterations(4)
+            .clampToAnchorPlane(true)
+            .build();
+
     /** Looks up a built-in profile by name, or {@code null}. */
     public static ClothProfile byName(String name) {
         if (name == null) return null;
         return switch (name.toLowerCase(java.util.Locale.ROOT)) {
             case "wall" -> WALL;
             case "pole" -> POLE;
+            case "curtain" -> CURTAIN;
             default -> null;
         };
     }

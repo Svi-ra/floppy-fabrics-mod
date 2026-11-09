@@ -54,6 +54,14 @@ final class FlagInstance {
      * flag's wall depth bias on its next draw (Hooks.onStartTileDepthShader). 0 when calm.
      */
     float depthDeficit;
+    private final float[] air = new float[2];
+
+    // ---- light past a lifted closed curtain (CurtainLight, D73) ----
+    /** The room light this curtain adds, or null. */
+    zombie.iso.IsoLightSource light;
+    /** Smoothed light level, the last level pushed to the lighting engine, and the frame it was pushed. */
+    float lightLevel, lightPushed;
+    int lightFrame = Integer.MIN_VALUE / 2;
 
     FlagInstance(FlagDef def, long seed, int lod) {
         this.def = def;
@@ -95,8 +103,14 @@ final class FlagInstance {
     void update(int frameNo, float dt, float exposure) {
         if (frameNo == lastFrame) return;
         lastFrame = frameNo;
+        float bx = WindProvider.x() * exposure, by = WindProvider.y() * exposure;
+        if (def.curtain && (bx != 0f || by != 0f)) { // only what comes through the window (D67)
+            Curtains.throughWindow(def.facing, bx, by, air);
+            bx = air[0];
+            by = air[1];
+        }
         // the air wash is local (a car passing right by), so the wall's shelter (exposure) does not reduce it
-        float wx = WindProvider.x() * exposure + washX, wy = WindProvider.y() * exposure + washY;
+        float wx = bx + washX, wy = by + washY;
         wind.setWind(wx, wy, 0f);
         lastWindSpeed = (float) Math.sqrt(wx * wx + wy * wy);
         Scheduler.noteStep(cloth.step(dt * def.timeScale) > 0);

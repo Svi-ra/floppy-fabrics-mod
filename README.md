@@ -3,7 +3,9 @@
 Vanilla flags react to the wind with a real-time cloth simulation: wall flags billow off their walls, and the American
 Flag pole flies a real flag that turns with the wind and droops when it's calm. Flags also meet the world: players,
 zombies and vehicles push them, passing cars and running people blow them about, they stop at walls and drape over
-furniture, and a wall flag with something tall (over 1.5 m) standing in front of it stays still. It is visual only and
+furniture, and a wall flag with something tall (over 1.5 m) standing in front of it stays still. **Window curtains** move
+too, but only while their window is open or broken: the wind blows them into the room and people brushing past push
+them; behind a closed window they stay exactly vanilla. It is visual only and
 client-side: no new objects, no mod data, no save changes. With no wind, wall flags are pixel-identical to vanilla. Removing the mod
 restores vanilla.
 
@@ -73,7 +75,7 @@ longer matches.
 | `pz-adapter/` | ZombieBuddy patches, renderer, wind, world interactions, instance manager, Lua debug API; 21 tests |
 | `mod/42/` | Mod template: `mod.info`, `media/realflags/flags.json` |
 | `tools/flagtool.py` | Extract sprites from `.pack` files; measure a wall flag for `flags.json` |
-| `docs/` | `FLAGS_JSON.md` (data reference) and the in-game test sheets for phases 2–4 and 6 |
+| `docs/` | `FLAGS_JSON.md` (data reference) and the in-game test sheets for phases 2–4, 6 and 7 |
 | `RECON.md`, `DECISIONS.md`, `CHANGELOG.md` | Engine reconnaissance with evidence, decision log, changelog |
 
 ---
@@ -116,6 +118,15 @@ longer matches.
   nearby are boxes from Build 42's tile geometry (`media/tileGeometry.txt`); shapes the calm flag already touches are
   ignored, so no wind still means vanilla. A wall flag with an object in front of it whose top is above 1.5 m (fridge,
   wardrobe, tall shelf) is *blocked*: not simulated, drawn as vanilla.
+- **Curtains (DECISIONS D63–D70):** every sprite with a `curtainN/S/W/E` tile type (vanilla and modded) is a wall cloth,
+  measured at runtime from its texture's trimmed rectangle — no data file. Two more facings cover curtains on the far
+  (south/east) edge of their square, with the cloth's free side turned toward the room. A curtain is moved to the
+  per-frame layer only while its window is open (×0.6), smashed or an empty frame (×1); planks reduce that (×0.2 at
+  four), a metal sheet closes it; window open/close/smash (and the MP sync) re-classify it. Player-hung sheets are 3D
+  models in B42: while their window is open they are drawn as their 2D sheet sprite so the cloth can bend it. A closed
+  curtain the wind lifts lets daylight into the room through one dim, smoothed, building-local light (≤ 4 updates/s). Wind = outside wind × 0.5 × openness, only if outdoors is beyond the
+  window: wind blowing in billows it, a steady draft keeps it breathing, wind along the wall sways it. Rolled-up sheets
+  and blinds (less than ~0.46 m of cloth) stay vanilla.
 - **Instances:** created lazily from a shared settled prototype; far LOD by distance × zoom (continuous motion across
   switches); the nearest 64 simulate; calm wall flags hand back to vanilla's single quad; evicted after ~10 s unseen.
 
@@ -177,6 +188,10 @@ enabled) makes that flag draw as vanilla.
 | `RealFlags_testFailure()` | Make the next flag draw throw, to see the fail-once → vanilla path (restart afterwards) |
 | `RealFlags_interactions(bool)` | Players, zombies, vehicles and scenery act on flags (default on; off = wind only) |
 | `RealFlags_blockHeight(m)` | Wall flags with an object taller than this in front stay vanilla (default 1.5 m; 0 = never) |
+| `RealFlags_curtains(bool)` | Window curtains move while their window is open or broken (default on; off = all vanilla) |
+| `RealFlags_curtainExposure(x)` | Fraction of the outside wind reaching a curtain through a fully open window (default 0.5) |
+| `RealFlags_curtainLight(bool)` | Daylight flickers into the room past a closed curtain the wind lifts (default on) |
+| `RealFlags_curtainLightGain(x)` | Strength of that light at a fully lifted curtain in full daylight (default 0.12; max 0.5) |
 
 Lua needs the parentheses: `RealFlags_status()`, not `RealFlags_status`.
 
@@ -233,6 +248,11 @@ reach ~2 ms (seen in the first run); the average is the acceptance metric.
   behind it.
 - Depth follows the rest pose: a wall flag billowing far off its wall still sorts as if flat on the wall. (Since 0.2.1,
   cloth pushed *along* its wall takes the depth of the wall it is drawn over, so it is never hidden by its own wall.)
+- Curtains (0.3.0) are verified in-game by user report only; per-step results and CPU cost were not recorded (`docs/PHASE7_TEST.md`). Curtains on player-built (`IsoThumpable`)
+  windows never move. An *open* curtain (two side panels) is simulated as one sheet spanning both panels. A player-hung
+  sheet switches between its 3D model (window closed) and its 2D sprite (window open), so it changes look when the
+  window opens. The curtain light's strength and update rate are untuned. A curtain
+  depth bias (same 2e-4 as wall flags) is applied as a precaution and has not been tuned.
 - Wall flags stored as an *attached sprite* of a wall object (rather than a separate object) are not animated. None were
   found in testing.
 - The 3-tile Knox flags and the white bar banner are not in the starter set (a cloth spanning several objects is

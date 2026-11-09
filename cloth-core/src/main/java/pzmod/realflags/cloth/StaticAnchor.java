@@ -20,6 +20,16 @@ public final class StaticAnchor implements ClothAnchor {
                 axisV[0], axisV[1], axisV[2]));
     }
 
+    /** Like {@link #of(float[], float[], float[])}, optionally with the front side turned around ({@link AnchorFrame#flipNormal}). */
+    public static StaticAnchor of(float[] origin, float[] axisU, float[] axisV, boolean flipNormal) {
+        AnchorFrame f = new AnchorFrame().set(
+                origin[0], origin[1], origin[2],
+                axisU[0], axisU[1], axisU[2],
+                axisV[0], axisV[1], axisV[2]);
+        if (flipNormal) f.flipNormal();
+        return new StaticAnchor(f);
+    }
+
     @Override
     public void frame(float time, AnchorFrame out) {
         out.copyFrom(frame);

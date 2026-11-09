@@ -21,7 +21,9 @@ final class Prototypes {
             float[] axisU = new float[3];
             if (def.kind == FlagDef.Kind.WALL) Projection.wallAxisU(def.facing, axisU);
             else axisU[0] = 1f; // pole flags rotate freely about the pole; the initial fly direction is arbitrary
-            anchor = StaticAnchor.of(new float[]{0f, 0f, 0f}, axisU, new float[]{0f, 0f, -1f});
+            // far-edge curtains (N/W): same screen axes, front side turned toward the room (D64)
+            boolean flip = def.kind == FlagDef.Kind.WALL && def.facing.flipped();
+            anchor = StaticAnchor.of(new float[]{0f, 0f, 0f}, axisU, new float[]{0f, 0f, -1f}, flip);
         }
     }
 

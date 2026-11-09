@@ -40,6 +40,12 @@ public final class FlagRegistry {
             ensureLoaded();
             String name = sprite.getName();
             FlagDef def = name == null ? null : byName.get(name);
+            if (def == null) {
+                // window curtains are generated from the sprite itself (Curtains, DECISIONS D64)
+                Object c = Curtains.defFor(sprite);
+                if (c == Curtains.RETRY) return null; // texture not loaded yet: ask again next time, do not cache a miss
+                def = (FlagDef) c;
+            }
             bySprite.put(sprite, def == null ? MISS : def);
             return def;
         }

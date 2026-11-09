@@ -62,7 +62,7 @@ public final class FlagJson {
             try {
                 b.facing = FlagDef.Facing.valueOf(facing.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException ex) {
-                throw new IllegalArgumentException(b.sprite + ": facing must be S or E, got '" + facing + "'");
+                throw new IllegalArgumentException(b.sprite + ": facing must be S, E, N or W, got '" + facing + "'");
             }
             Map<String, Object> cloth = map(e, "cloth");
             if (cloth == null) throw new IllegalArgumentException(b.sprite + ": wall needs \"cloth\" {x,y,w,h}");

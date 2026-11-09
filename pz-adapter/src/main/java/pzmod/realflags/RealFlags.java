@@ -14,7 +14,7 @@ import zombie.iso.IsoObject;
  * invalidated so the chunk re-bakes it in its vanilla layer. While disabled every hook returns "do vanilla" at once.
  */
 public final class RealFlags {
-    public static final String VERSION = "0.2.1";
+    public static final String VERSION = "0.3.0";
     static final String TAG = "[RealFlags] ";
 
     /** User toggle (Lua: RealFlags_setEnabled). */
@@ -59,6 +59,16 @@ public final class RealFlags {
      */
     static volatile float blockHeight = 1.5f;
 
+    // ---- curtains (Curtains, DECISIONS D63–D70) ----
+    /** Window curtains move while their window is open or broken. Lua: RealFlags_curtains. */
+    static volatile boolean curtains = true;
+    /** Fraction of the outside wind that reaches a curtain through a fully open window. Lua: RealFlags_curtainExposure. */
+    static volatile float curtainExposure = 0.5f;
+    /** Daylight flickers into the room past a closed curtain the wind lifts (D73). Lua: RealFlags_curtainLight. */
+    static volatile boolean curtainLight = true;
+    /** Strength of that light at a fully lifted curtain in full daylight. Lua: RealFlags_curtainLightGain. */
+    static volatile float curtainLightGain = 0.12f;
+
     /** Flag objects we moved to the per-frame layer; weak so unloaded chunks can be collected. IsoObject uses identity equality. */
     private static final Set<IsoObject> reclassified = Collections.newSetFromMap(new WeakHashMap<>());
 
@@ -91,12 +101,23 @@ public final class RealFlags {
         reclassified.add(obj);
     }
 
+    /** Forgets a reclassified object; true if it was in the set (curtain re-bake after its window closed). */
+    static boolean forgetReclassified(IsoObject obj) {
+        return reclassified.remove(obj);
+    }
+
+    /** True if we moved this object to the per-frame layer and have not handed it back yet. */
+    static boolean isReclassified(IsoObject obj) {
+        return !reclassified.isEmpty() && reclassified.contains(obj);
+    }
+
     static int reclassifiedCount() {
         return reclassified.size();
     }
 
     /** Marks every reclassified flag's chunk level dirty so it is re-baked with the vanilla layer. */
     static void invalidateReclassified() {
+        CurtainLight.removeAll(); // the lights belong to curtains that are about to go back to vanilla
         // copy first: invalidation must not run while iterating a weak set
         for (IsoObject o : new ArrayList<>(reclassified)) {
             try {
@@ -118,12 +139,19 @@ public final class RealFlags {
         long depthBiased;
         long created, evicted, lodSwitches;
         long blockedEvents, unblockedEvents, blockedBySpriteEstimate, sceneryBoxes;
+        long curtainLayer, curtainClosedDraws, curtainRebakes, windowEvents, sheetModelsSuppressed;
+        long lightsCreated, lightsRemoved, lightUpdates;
 
         @Override
         public String toString() {
             return "created=" + created + " evicted=" + evicted + " lodSwitches=" + lodSwitches + " prototypes=" + Prototypes.settled
                     + " blocked+=" + blockedEvents + " blocked-=" + unblockedEvents + " blockedByEstimate=" + blockedBySpriteEstimate
-                    + " sceneryBoxes=" + sceneryBoxes + " geometry{sprites=" + Scenery.withGeometry + " none=" + Scenery.withoutGeometry + "}"
+                    + " sceneryBoxes=" + sceneryBoxes
+                    + " curtains{defined=" + Curtains.defined + " layer=" + curtainLayer + " closedDraws=" + curtainClosedDraws
+                    + " rebakes=" + curtainRebakes + " windowEvents=" + windowEvents
+                    + " sheetsAs2D=" + sheetModelsSuppressed + "}"
+                    + " lights{active=" + CurtainLight.active() + " created=" + lightsCreated + " removed=" + lightsRemoved
+                    + " updates=" + lightUpdates + "}" + " geometry{sprites=" + Scenery.withGeometry + " none=" + Scenery.withoutGeometry + "}"
                     + " layerOverrides=" + layerOverrides + " frameContexts=" + frameContexts + " depthBiased=" + depthBiased
                     + " drawsReplaced=" + drawsReplaced
                     + " subQuads=" + subQuads + " fallbacks{flip=" + fallbackFlip + " state=" + fallbackState

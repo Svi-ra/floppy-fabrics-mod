@@ -146,7 +146,7 @@ final class SpriteMesh {
                     // depth: never behind the wall surface the vertex is now drawn over (D61)
                     float lift = WallDepth.liftPx(def.facing, ts, dxs, dys);
                     if (lift > 0f) {
-                        float top = tly + (px - tlx) * (def.facing == FlagDef.Facing.S ? 0.5f : -0.5f) + 0.5f;
+                        float top = tly + (px - tlx) * (def.facing.alongX() ? 0.5f : -0.5f) + 0.5f;
                         float sy = py - lift;
                         if (sy < top) {
                             deficit = Math.max(deficit, WallDepth.depthOfPx(ts, top - sy));

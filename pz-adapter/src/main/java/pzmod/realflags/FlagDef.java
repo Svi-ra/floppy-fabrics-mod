@@ -13,8 +13,25 @@ import pzmod.realflags.cloth.ClothProfile;
 public final class FlagDef {
     public enum Kind { WALL, POLE }
 
-    /** Which way the cloth's front faces; fixes the wall axis the cloth lies along. */
-    public enum Facing { S, E }
+    /**
+     * Which way the cloth's front faces; fixes the wall line the cloth lies on and its free side.
+     * S: on the square's north edge, front +y. E: west edge, front +x. Curtains add the far edges (DECISIONS D64):
+     * N: south edge (y + 1), front −y. W: east edge (x + 1), front −x. N/S share the screen axis (top edge slopes down to
+     * the right), as do E/W.
+     */
+    public enum Facing {
+        S, E, N, W;
+
+        /** True if the cloth runs along world x (north/south edge); false: along y (west/east edge). */
+        public boolean alongX() { return this == S || this == N; }
+
+        /** True for the far-edge facings, whose front side is the opposite of the axis convention (normal flipped). */
+        public boolean flipped() { return this == N || this == W; }
+
+        /** World x/y of the front (free) side's unit normal. */
+        public float normalX() { return this == E ? 1f : (this == W ? -1f : 0f); }
+        public float normalY() { return this == S ? 1f : (this == N ? -1f : 0f); }
+    }
 
     /** Axis-aligned rectangle in 2× frame pixels. */
     public record Rect(float x0, float y0, float x1, float y1) {
@@ -33,6 +50,8 @@ public final class FlagDef {
 
     public final String sprite;
     public final Kind kind;
+    /** A window curtain (generated from the sprite, {@link Curtains}): wall cloth gated by its window's state. */
+    public final boolean curtain;
     public final ClothProfile profile;
     /** Coarse level of detail used at distance / when zoomed out (same physics, fewer particles and iterations). */
     public final ClothProfile profileFar;
@@ -65,7 +84,7 @@ public final class FlagDef {
     public final String source;
 
     private FlagDef(Builder b) {
-        sprite = b.sprite; kind = b.kind; profile = b.profile; profileFar = b.profileFar; exposure = b.exposure; timeScale = b.timeScale;
+        sprite = b.sprite; kind = b.kind; curtain = b.curtain; profile = b.profile; profileFar = b.profileFar; exposure = b.exposure; timeScale = b.timeScale;
         facing = b.facing; clothX = b.clothX; clothY = b.clothY; clothW = b.clothW; clothH = b.clothH;
         meshCols = b.meshCols; meshRows = b.meshRows;
         anchor = b.anchor; depthPoint = b.depthPoint; sizeW = b.sizeW; sizeH = b.sizeH;
@@ -86,12 +105,13 @@ public final class FlagDef {
 
     @Override
     public String toString() {
-        return sprite + "(" + kind + (kind == Kind.WALL ? "," + facing : "") + "," + profile.name + ")";
+        return sprite + "(" + (curtain ? "CURTAIN" : kind) + (kind == Kind.WALL ? "," + facing : "") + "," + profile.name + ")";
     }
 
     static final class Builder {
         String sprite, source, canvasTexture;
         Kind kind = Kind.WALL;
+        boolean curtain;
         ClothProfile profile, profileFar;
         float exposure = 1f, timeScale = 1f;
         Facing facing = Facing.S;
@@ -108,6 +128,7 @@ public final class FlagDef {
             if (profileFar == null) profileFar = profile;
             if (!(exposure >= 0f && exposure <= 4f)) throw new IllegalArgumentException(sprite + ": exposure must be 0..4");
             if (!(timeScale > 0f && timeScale <= 4f)) throw new IllegalArgumentException(sprite + ": timeScale must be in (0,4]");
+            if (curtain && kind != Kind.WALL) throw new IllegalArgumentException(sprite + ": a curtain is a wall cloth");
             if (kind == Kind.WALL) {
                 if (!(clothW > 1f && clothH > 1f)) throw new IllegalArgumentException(sprite + ": wall needs \"cloth\" {x,y,w,h} > 1 px");
                 if (meshCols < 1 || meshRows < 1 || meshCols > 32 || meshRows > 32) throw new IllegalArgumentException(sprite + ": mesh 1..32");
