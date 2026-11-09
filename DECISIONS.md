@@ -391,6 +391,129 @@ parallelogram + facing from the top-edge slope). It reproduces the shipped entri
 works, adding flags (wall step by step, pole), tuning (Lua, per-flag data, offline harness), measured performance and
 known limitations.
 
+## Phase 6 — interaction with the world (2026-11-09)
+
+Request: simulating flags interact with the environment, players and vehicles; a wall flag blocked by an item taller
+than 1.5 cells does not simulate. Evidence below is from build 42.21.0's `projectzomboid.jar`, decompiled with
+Vineflower 1.12 into a scratch directory (not committed), and from `media/tileGeometry.txt`.
+
+**D55 · Colliders live in cloth-core.** New `Colliders`: vertical cylinders and vertical boxes with a horizontal
+orientation, each with a horizontal velocity, flagged *dynamic* (characters, vehicles) or *static* (scenery). Contact is
+position-based: after the constraints a particle inside a body moves to the nearest surface (side, top or bottom), then
+`friction` (0.35) of its motion relative to the body *along* that surface is removed, so a body walking through drags
+the cloth along. Verlet turns the projection into velocity. Order per step: constraints → bodies → wall plane clamp
+(nothing goes through the wall). A sleeping cloth wakes when a dynamic body touches its reference bounding box; static
+bodies never wake it. A cloth in contact never falls asleep (sleep snaps to the reference, which would put it through
+the body). `Cloth.resetToReference()` added. Allocation-free per step; 7 new tests (`ColliderTest`).
+
+**D56 · World placement of the cloth.** The cloth's frame is axis-aligned with the world (Prototypes), so world =
+origin + cloth position. Origin from flags.json pixels: the square's north floor corner is at 2× frame pixel (64, 192)
+(`IsoObject.offsetX/offsetY` = 64/192, `IsoObject.java:257`), and a floor point (dx, dy) draws at
+(64 + 64(dx − dy), 192 + 32(dx + dy)). Wall S: north wall line, dx = (clothX − 64)/64; wall E: west wall line,
+dy = (64 − clothX)/64; height = vertical pixels from that floor point / 32√6. Pole: the shaft stands at the square centre
+— `street_decoration_01_24`'s opaque pixels end at frame row 228 (offset 29 + 200 px, `flagtool.py extract`), the centre
+row is 224. Test: the origin projects back exactly onto each shipped flag's measured pixel. Result: wall flags hang
+from ≈2.0 m down to ≈0.87 m, so a standing character (1.8 m) brushes them.
+
+**D57 · Object heights from Build 42 tile geometry.** B42 ships per-tile solid shapes for depth rendering
+(`media/tileGeometry.txt`, 22 596 tiles; boxes, cylinders, polygons; mods add their own `tileGeometry.txt`).
+Units, traced: values ×10000 (`TileGeometryFile.COORD_MULT`), then **metres with y up** — `walls_exterior_house_01_0`
+is 2.4495 = √6 tall (one level), `appliances_refrigeration_01_0` 1.55. x/z are centred on the square (west wall at
+x = −0.4765, north wall at z = −0.4767). Placement `translation(t).rotateXYZ(r°)` (`TileGeometryFile.java:606`);
+cylinders along local z, ±h/2 (`CylinderUtils.java:20`); lookup `TileGeometryManager.getGeometry(modID, tileset,
+index % 8, index / 8)`, last mod wins. `Scenery` turns each primitive into a square-local AABB, cached per sprite.
+Objects raised on a surface add `renderYOffset·2 / 32√6` m. **Fallback** for sprites without geometry (modded furniture):
+the top of the opaque pixels above the wall's floor line where the picture overlaps the cloth, assuming the object
+stands against that wall; counted as `blockedByEstimate` in the status.
+
+**D58 · Blocked wall flags (the 1.5 rule).** "1.5 cells" read as 1.5 tiles = **1.5 m**, in this project's convention
+(1 tile = 1 m; one level = 2.45 m). A wall flag is *blocked* when an object on its own square has a solid box that
+(a) tops out above 1.5 m, (b) reaches below the cloth's top edge, (c) is within 0.5 m of the flag's wall and (d)
+overlaps the cloth's span along the wall. Walls, windows, doors, other wall decorations (WallOverlay/attached*),
+floors and loose items (`IsoWorldInventoryObject`) never block. A blocked flag is not simulated at all: its cloth is put
+back on the reference and vanilla draws its single quad. Fridges (1.55 m), wardrobes and tall shelves block; counters
+and tables (≈0.9 m) don't — they become scenery the flag can drape over (D59). Re-checked every ~64 frames per flag
+(staggered), so placing or picking up furniture takes effect within about a second. Tunable: `RealFlags_blockHeight(m)`,
+0 = never blocked. Test: `InteractionsTest.fridgeInFrontOfAWallFlagBlocksIt` with the fridge's real geometry.
+
+**D59 · Scenery colliders.** Static AABBs from the tile geometry of objects within the cloth's reach (rectangle
+diagonal from the origin), on the flag's level and the one below. Skipped: the flag itself, other registered flags,
+loose items, anything behind a wall flag's own wall plane, and **any shape the reference pose already touches** — the
+vanilla art already shows the flag there, so zero wind stays pixel-identical to vanilla, and the flag's own wall is
+dropped this way (the plane clamp handles it). At most 14 per flag. Result: a pole flag no longer swings through the
+building beside it; a wall flag billowing over a counter lands on top of it.
+
+**D60 · Bodies and air wash.** Every simulated frame (far-LOD flags every 4th frame):
+- **Players and zombies** from the moving-object lists of the squares in reach: cylinder r = 0.25 m, 1.8 m tall
+  (0.6 m when crawling or sitting on the ground). Dead ones and players inside a vehicle are skipped. Velocity =
+  `getMovementLastFrame()` / real frame seconds (`IsoMovingObject.update`, `IsoMovingObject.java:1123`).
+- **Vehicles** from `IsoChunk.vehicles` of the chunks within reach + 5 tiles (each vehicle is listed in the chunk of its
+  centre, as `IsoGridSquare.getVehicleContainer` does): oriented box from `getPoly()` (world footprint corners), from
+  0.15 m above ground to `script.getExtents().y + 0.4` m (body height plus wheels; approximate). Velocity:
+  `getLinearVelocity()` (physics x/z = world x/y, `BaseVehicle.java:1935`), else `getCurrentSpeedKmHour()` × forward
+  vector for remote vehicles without physics.
+- **Air wash** added to the flag's wind (not reduced by a wall's exposure, it is local air): moving vehicles within
+  3 m of the cloth centre add 0.6·v·(1 − d/3)² plus a sideways bow wave 0.25·|v|·(1 − d/3)² away from the vehicle;
+  characters running faster than 2.5 m/s within 1.2 m add 0.35·v·(1 − d/1.2)². Capped at 20 m/s. So an indoor wall flag
+  (no climate wind) still stirs when someone runs past, and a car speeding past a pole flag makes it snap.
+- Bodies behind a wall flag's wall (other room, outside) are ignored.
+Animals are not included. `RealFlags_interactions(false)` restores the 0.1.0 behaviour (wind only).
+
+### Phase 6 status
+Built, 49 unit tests pass (12 new), `verifyPatches` applies all five patches to 42.21.0, deployed
+(jar SHA-256 `fb6e4380112ebaac8eed9bce291ef173ac8544cce198314e87d2e203cb31088d`). **Not yet run in-game**: no collision, blocking or wash behaviour and no CPU cost has
+been observed in the game. Test sheet: `docs/PHASE6_TEST.md`.
+
+## Phase 6b — in-game feedback on 0.2.0 (2026-11-09)
+
+User report after playing 0.2.0: (1) the flag returns to idle too quickly after an interaction; (2) when a character
+interacts with it, the flag sinks into the wall instead of staying in front; (3) the flag is invisible when the
+character is inside the building — use that as the cue for a thicker wall collider.
+
+**D61 · "Sinks into the wall" was depth, not physics; fixed per vertex. Plus a thick wall.**
+*Cause, traced:* the wall plane clamp kept every particle at w ≥ 0 (tests), but wall-flag vertices kept their rest-pose
+depth (D24/D36). Fragment depth = `mix(zDepthBlendZ, zDepthBlendToZ, d)` with `d` sampled from the depth texture at the
+vertex's depth UV (`media/shaders/tileWithDepth.frag`); per-quad `TextureDraw.z` is not used by that shader.
+`IsoDepthHelper.calculateDepth` makes a point nearer by 0.00144 per tile of x+y and 0.00118 per metre up. Wind moves cloth
+*out* of the wall, which lands on screen over *farther* wall pixels — always visible. A body pushes cloth *along* the
+wall (up, sideways); after ≈0.14 m toward the camera or ≈0.17 m up, the wall pixels under it are nearer than the vertex's
+rest depth + the 2e-4 bias, and the wall hides it. That matches the report and why 0.1.0 wind never showed it.
+*Fix:* `WallDepth` computes, from each vertex's screen offset, the depth of the wall surface it is now drawn over; if that
+is nearer than its rest depth, the vertex samples its depth UV that much higher up the same wall (`SpriteMesh.drawWall`),
+so it gets exactly the wall's depth there and the existing bias keeps it in front. Characters in front still hide it
+correctly. Out-of-wall motion keeps the rest depth (0.1.0 behaviour). The lift stays inside the cloth's own rectangle;
+any part a vertex near the pinned top could not get becomes extra bias for that flag on its next draw
+(`Hooks.onStartTileDepthShader`, capped at 6e-4 per D33). `WallDepthTest` checks the math against the game's formula on
+both wall orientations.
+*Thick wall (the user's cue):* the flag's own wall now has a thickness — from its tile geometry (the box touching the wall
+line: 0.0466 m for house walls; 0.047 m if none) + 0.03 m of cloth. (a) Bodies never push cloth *into* the wall: when the
+nearest exit from a body points into the wall, the cloth leaves sideways along the wall, over the body or under it
+(`Colliders`, wall-aware exits for cylinders and boxes). (b) Cloth that a body has moved along the wall stands off it by
+min(thickness, 0.5 × along-wall displacement), so bunched cloth sits proud of the wall; the rest pose is untouched
+(zero displacement → zero standoff), and wind-only motion is unaffected (applies only after a contact). Bodies behind the
+wall plane (inside the building, for an outside flag) were already ignored (D60) and still are.
+
+**D62 · Gradual settling after an interaction, and no more stuck folds.**
+*Settling:* after a body touches a cloth, (a) pose memory starts at 50% and smoothsteps to full over 3 s instead of
+pulling at once, (b) it may not fall asleep for 4 s, and (c) the final snap waits until every particle is within 4 mm
+(under a pixel) instead of 2 cm. Wind-only behaviour is unchanged. `Cloth.setContactSettling(ramp, floor, settle, snap)`.
+*Why a 50% floor, not 0:* measured with a probe (body walking through at 3 m/s from 12 directions, then calm): starting
+pose memory at 0 left the limp pole flag in another fold in 4 of 12 directions — D50's finding that it needs strong memory
+to find its own fold.
+*Stuck folds (a 0.2.0 bug found by the same probe):* with 0.2.0's settings the **wall** flag stayed 20–29 cm off its
+rest pose for ever in 4 of 12 directions: the push folds it against the wall, and its weak pose memory (0.5/s) cannot
+beat the constraints holding the fold. Now, after 3 s (4 s after a contact) of no wind and no contact, pose memory grows
+×1.5 per second up to ×20, so a fold lets go smoothly instead of never.
+*Measured (probe, 12 directions):* nothing stuck for either flag; at 0.5 s after release the pole is still 0.19 m off
+home (0.2.0: 0.06 m) — a visibly gentler return; worst time to rest: pole 5.9 s (0.2.0: 3.3 s), wall 9.9 s (0.2.0:
+never, in 4 directions). Regression test `ColliderTest.neverStuckAfterWalkThrough`.
+
+### Phase 6b status
+0.2.1 built, 57 unit tests pass (8 new), `verifyPatches` applies all five patches, deployed (jar SHA-256
+`be28a315f3aff84783bcdf2961d17fc44ae8153ca520ed3ff28abb69227dcfb4`). **Verified in-game by user report
+(2026-11-09): "it works"** — the three reported issues are resolved. Per-step results of `docs/PHASE6_TEST.md` and
+CPU figures were not recorded.
+
 ## Acceptance status (MVP)
 | Criterion | Status |
 |---|---|

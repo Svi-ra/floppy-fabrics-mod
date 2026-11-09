@@ -24,6 +24,11 @@ final class Instances {
         return inst;
     }
 
+    /** The instance of a flag object, or null (no creation). */
+    static FlagInstance peek(IsoObject obj) {
+        return map.get(obj);
+    }
+
     static int size() {
         return map.size();
     }

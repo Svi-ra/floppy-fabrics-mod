@@ -15,7 +15,9 @@ import zombie.iso.weather.fx.WeatherFxMask;
  * <h2>Depth and seams (DECISIONS D24)</h2>
  * The vanilla {@code texdModifier} is run once on a scratch {@link TextureDraw} covering the vanilla quad; every emitted
  * quad takes its main/depth/second-texture UVs from that captured quad by bilinear (or affine) interpolation, i.e. exactly
- * what the GPU would interpolate across the single vanilla quad. Depth therefore follows the rest pose.
+ * what the GPU would interpolate across the single vanilla quad. Depth follows the rest pose, except that a wall-flag
+ * vertex moved along its wall (up or toward the camera) samples its depth higher up the wall, so it is never behind
+ * the wall surface it is drawn over ({@link WallDepth}, DECISIONS D61).
  *
  * <h2>Wall flags</h2>
  * The image is the vanilla sprite. A render mesh covers the sprite rectangle; each vertex is displaced by the cloth's
@@ -41,6 +43,7 @@ final class SpriteMesh {
     private static final float[] v1u = new float[MAX_V], v1v = new float[MAX_V], v2u = new float[MAX_V], v2v = new float[MAX_V];
     private static final float[] vs = new float[MAX_V];
     private static final float[] tmp = new float[4];
+    private static final float[] dtmp = new float[4];
     // per-call frame mapping
     private static float frameX, frameY, frameK, nextZ, nextChunkDepth;
 
@@ -123,6 +126,7 @@ final class SpriteMesh {
         float widthM = def.wallWidthMetres(), heightM = def.wallHeightMetres();
         int cols = inst.cloth.cols(), rows = inst.cloth.rows();
         boolean moving = !inst.cloth.isSleeping();
+        float deficit = 0f; // depth the per-vertex lift could not supply (vertex too close to the cloth's top edge)
 
         for (int j = 0; j <= mr; j++) {
             float t = (float) j / mr;
@@ -137,13 +141,27 @@ final class SpriteMesh {
                 if (moving) {
                     Projection.wallScreenToUv(def.facing, tlx, tly, widthM, heightM, ts, px, py, tmp, 0);
                     Projection.sampleGrid2(inst.screen, cols, rows, tmp[0], tmp[1], tmp, 2);
-                    px += tmp[2];
-                    py += tmp[3];
+                    float dxs = tmp[2], dys = tmp[3];
                     shade = sampleGrid1(inst.shade, cols, rows, tmp[0], tmp[1]);
+                    // depth: never behind the wall surface the vertex is now drawn over (D61)
+                    float lift = WallDepth.liftPx(def.facing, ts, dxs, dys);
+                    if (lift > 0f) {
+                        float top = tly + (px - tlx) * (def.facing == FlagDef.Facing.S ? 0.5f : -0.5f) + 0.5f;
+                        float sy = py - lift;
+                        if (sy < top) {
+                            deficit = Math.max(deficit, WallDepth.depthOfPx(ts, top - sy));
+                            sy = top;
+                        }
+                        depthAt(px, sy, dtmp);
+                        v1u[k] = dtmp[0]; v1v[k] = dtmp[1];
+                    }
+                    px += dxs;
+                    py += dys;
                 }
                 vx[k] = px; vy[k] = py; vs[k] = shade;
             }
         }
+        inst.depthDeficit = deficit;
         quad.setMainUv = true;
         for (int j = 0; j < mr; j++) {
             for (int i = 0; i < mc; i++) {

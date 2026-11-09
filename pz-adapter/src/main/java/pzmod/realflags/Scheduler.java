@@ -22,10 +22,11 @@ final class Scheduler {
     private static int frame = Integer.MIN_VALUE;
 
     // counters for the frame in progress
-    private static int cDrawn, cStepped, cAwake, cFar, cFrozen, cVanillaSleep, cGhosts;
+    private static int cDrawn, cStepped, cAwake, cFar, cFrozen, cVanillaSleep, cGhosts, cBlocked, cContact, cBodies;
     private static long cNanos;
     // last completed frame
     static int lastDrawn, lastStepped, lastAwake, lastFar, lastFrozen, lastVanillaSleep, lastGhosts;
+    static int lastBlocked, lastContact, lastBodies;
     static long lastNanos;
     // rolling window
     private static final long[] window = new long[60];
@@ -45,10 +46,11 @@ final class Scheduler {
     private static void endFrame() {
         lastDrawn = cDrawn; lastStepped = cStepped; lastAwake = cAwake; lastFar = cFar;
         lastFrozen = cFrozen; lastVanillaSleep = cVanillaSleep; lastGhosts = cGhosts; lastNanos = cNanos;
+        lastBlocked = cBlocked; lastContact = cContact; lastBodies = cBodies;
         window[windowPos] = cNanos;
         windowPos = (windowPos + 1) % window.length;
         if (windowFill < window.length) windowFill++;
-        cDrawn = cStepped = cAwake = cFar = cFrozen = cVanillaSleep = cGhosts = 0;
+        cDrawn = cStepped = cAwake = cFar = cFrozen = cVanillaSleep = cGhosts = cBlocked = cContact = cBodies = 0;
         cNanos = 0L;
     }
 
@@ -97,6 +99,9 @@ final class Scheduler {
     static void noteAwake() { cAwake++; }
     static void noteFrozen() { cFrozen++; }
     static void noteVanillaSleep() { cVanillaSleep++; }
+    static void noteBlocked() { cBlocked++; }
+    static void noteContact() { cContact++; }
+    static void noteBodies(int n) { cBodies += n; }
     static void addNanos(long ns) { cNanos += ns; }
 
     /** Mean of our CPU time per frame over the rolling window, milliseconds. */

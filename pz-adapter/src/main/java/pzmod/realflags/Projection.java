@@ -30,6 +30,39 @@ public final class Projection {
         out[off + 1] = (dx + dy) * 16f * tileScale - dz * 16f * SQRT6 * tileScale;
     }
 
+    /** Metres per level of height (PZ walls are 8 ft): one level = 96·tileScale px = √6 m. */
+    public static final float LEVEL_M = SQRT6;
+
+    /**
+     * World position (metres; x/y in tiles, z = level·√6) of the cloth's simulation origin for a flag object on square
+     * (sx, sy, sz). The cloth's own frame is axis-aligned with the world (Prototypes: wall u = wall axis, pole u = +x;
+     * v = down), so world = origin + cloth position.
+     * <ul>
+     *   <li>Frame convention: the square's north floor corner is at 2× frame pixel (64, 192)
+     *       ({@code IsoObject.offsetX/offsetY} = 64/192, IsoObject.java:257, build 42.21.0). A floor point (dx, dy) from
+     *       that corner draws at (64 + 64·(dx − dy), 192 + 32·(dx + dy)).</li>
+     *   <li>Wall S (cloth on the north wall, y = sy): top-left at frame x = clothX → dx = (clothX − 64)/64.</li>
+     *   <li>Wall E (cloth on the west wall, x = sx; u runs north = screen right): dy = (64 − clothX)/64.</li>
+     *   <li>Pole: the shaft stands at the square centre (the lower tile {@code street_decoration_01_24}'s shaft ends at
+     *       frame row 228 ≈ the centre row 224, measured with tools/flagtool.py); the anchor is on the axis.</li>
+     * </ul>
+     * The height above the floor is the vertical pixel distance from that floor point to the frame point.
+     */
+    public static void clothOrigin(FlagDef def, int sx, int sy, int sz, float[] out) {
+        float dx, dy, py;
+        if (def.kind == FlagDef.Kind.POLE) {
+            dx = 0.5f; dy = 0.5f; py = def.anchor.y();
+        } else if (def.facing == FlagDef.Facing.S) {
+            dx = (def.clothX - 64f) / PX_PER_M_X_2X; dy = 0f; py = def.clothY;
+        } else {
+            dx = 0f; dy = (64f - def.clothX) / PX_PER_M_X_2X; py = def.clothY;
+        }
+        float floorY = 192f + 32f * (dx + dy);
+        out[0] = sx + dx;
+        out[1] = sy + dy;
+        out[2] = sz * LEVEL_M + (floorY - py) / PX_PER_M_Z_2X;
+    }
+
     /** World "blows toward" unit vector for a ClimateManager wind angle in degrees (DECISIONS D32): (sin θ, cos θ). */
     public static void windToward(float angleDegrees, float[] out) {
         double t = Math.toRadians(angleDegrees);

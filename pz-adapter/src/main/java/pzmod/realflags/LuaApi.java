@@ -23,6 +23,8 @@ import zombie.iso.weather.ClimateManager;
  *   RealFlags_setCap(n)           -> max flags simulated per frame (default 64; nearest win)
  *   RealFlags_lodDistance(tiles)  -> coarse LOD beyond this distance × zoom-out (default 12)
  *   RealFlags_testFailure()       -> dev: next flag draw throws → logs once, disables for the session, flags go vanilla
+ *   RealFlags_interactions(bool)  -> players, zombies, vehicles and scenery push flags; vehicles/runners move air (default on)
+ *   RealFlags_blockHeight(m)      -> wall flags with an object taller than this in front stay vanilla (default 1.5; 0 = off)
  * </pre>
  * Note: Lua needs the parentheses — {@code RealFlags_status} alone is a syntax error in the console.
  */
@@ -40,13 +42,32 @@ public final class LuaApi {
                         WindProvider.forced ? "(forced)" : "")
                 + String.format(java.util.Locale.ROOT,
                         " | frame: drawn=%d ghosts=%d awake=%d stepped=%d far=%d frozen=%d calmVanilla=%d cpu=%.3fms avg60=%.3fms max60=%.3fms"
-                                + " cap=%d lodDist=%.0f stress=%d",
+                                + " cap=%d lodDist=%.0f stress=%d | interactions=%s blockHeight=%.2fm blocked=%d inContact=%d bodies=%d",
                         Scheduler.lastDrawn, Scheduler.lastGhosts, Scheduler.lastAwake, Scheduler.lastStepped, Scheduler.lastFar,
                         Scheduler.lastFrozen, Scheduler.lastVanillaSleep, Scheduler.lastNanos / 1e6, Scheduler.avgMs(),
-                        Scheduler.maxMs(), RealFlags.maxActive, RealFlags.lodDistance, RealFlags.stress)
+                        Scheduler.maxMs(), RealFlags.maxActive, RealFlags.lodDistance, RealFlags.stress,
+                        RealFlags.interactions, RealFlags.blockHeight, Scheduler.lastBlocked, Scheduler.lastContact,
+                        Scheduler.lastBodies)
                 + " | " + RealFlags.stats;
         RealFlags.log(s);
         return s;
+    }
+
+    /** Players, zombies, vehicles and scenery interact with flags (on by default). Off = wind only, as in 0.1.0. */
+    @LuaMethod(name = "RealFlags_interactions", global = true)
+    public static String interactions(boolean on) {
+        RealFlags.interactions = on;
+        return status();
+    }
+
+    /**
+     * Height (metres = tiles; one level = 2.45 m) above which an object standing in front of a wall flag blocks it.
+     * Blocked flags are not simulated. Clamped to [0, 10]; 0 = never blocked. Takes effect within about a second.
+     */
+    @LuaMethod(name = "RealFlags_blockHeight", global = true)
+    public static String blockHeight(double metres) {
+        RealFlags.blockHeight = (float) Math.max(0.0, Math.min(10.0, metres));
+        return status();
     }
 
     /** Dev: make the next flag draw throw, to verify fail-once → disabled for the session → vanilla flags. */

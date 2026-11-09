@@ -14,7 +14,7 @@ import zombie.iso.IsoObject;
  * invalidated so the chunk re-bakes it in its vanilla layer. While disabled every hook returns "do vanilla" at once.
  */
 public final class RealFlags {
-    public static final String VERSION = "0.1.0";
+    public static final String VERSION = "0.2.1";
     static final String TAG = "[RealFlags] ";
 
     /** User toggle (Lua: RealFlags_setEnabled). */
@@ -49,6 +49,15 @@ public final class RealFlags {
     static volatile boolean overlay = false;
     /** Dev: the next flag draw throws, to exercise the fail-once → disable → vanilla path. Lua: RealFlags_testFailure. */
     static volatile boolean injectFailure;
+
+    // ---- interactions with the world (Interactions, DECISIONS D55–D60) ----
+    /** Players, zombies, vehicles and scenery push the cloth; vehicles and runners move air. Lua: RealFlags_interactions. */
+    static volatile boolean interactions = true;
+    /**
+     * A wall flag with an object in front of it whose top is higher than this (metres = tiles; one level = √6 m) is
+     * blocked: not simulated, drawn as vanilla. 0 = never blocked. Lua: RealFlags_blockHeight.
+     */
+    static volatile float blockHeight = 1.5f;
 
     /** Flag objects we moved to the per-frame layer; weak so unloaded chunks can be collected. IsoObject uses identity equality. */
     private static final Set<IsoObject> reclassified = Collections.newSetFromMap(new WeakHashMap<>());
@@ -108,10 +117,13 @@ public final class RealFlags {
         long frameContexts;
         long depthBiased;
         long created, evicted, lodSwitches;
+        long blockedEvents, unblockedEvents, blockedBySpriteEstimate, sceneryBoxes;
 
         @Override
         public String toString() {
             return "created=" + created + " evicted=" + evicted + " lodSwitches=" + lodSwitches + " prototypes=" + Prototypes.settled
+                    + " blocked+=" + blockedEvents + " blocked-=" + unblockedEvents + " blockedByEstimate=" + blockedBySpriteEstimate
+                    + " sceneryBoxes=" + sceneryBoxes + " geometry{sprites=" + Scenery.withGeometry + " none=" + Scenery.withoutGeometry + "}"
                     + " layerOverrides=" + layerOverrides + " frameContexts=" + frameContexts + " depthBiased=" + depthBiased
                     + " drawsReplaced=" + drawsReplaced
                     + " subQuads=" + subQuads + " fallbacks{flip=" + fallbackFlip + " state=" + fallbackState

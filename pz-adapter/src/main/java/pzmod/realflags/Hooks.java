@@ -56,6 +56,8 @@ public final class Hooks {
      * bias by this gives the z2 offset (IsoSprite.java:1050, build 42.21.0).
      */
     static final float DEPTH_PER_Z2 = 0.0028867084f;
+    /** Cap on the extra per-flag bias for moved wall flags (≈ 0.2 of a level; D33: too much draws over things in front). */
+    static final float MAX_EXTRA_BIAS = 6.0e-4f;
     private static IsoSprite lastBiasedSprite;
     private static float lastBiasedZ2;
 
@@ -70,7 +72,11 @@ public final class Hooks {
             if (!sprite.getProperties().has(IsoFlagType.WallOverlay)) return z2;
             // idempotent if the advice were ever applied twice to the same call: never bias our own output again
             if (sprite == lastBiasedSprite && z2 == lastBiasedZ2) return z2;
-            float biased = z2 + RealFlags.depthBiasAmount / DEPTH_PER_Z2;
+            float bias = RealFlags.depthBiasAmount;
+            // a moved flag whose top vertices could not lift their depth sample far enough (D61): bias the rest
+            FlagInstance inst = obj != null ? Instances.peek(obj) : null;
+            if (inst != null && inst.depthDeficit > 0f) bias += Math.min(MAX_EXTRA_BIAS, inst.depthDeficit);
+            float biased = z2 + bias / DEPTH_PER_Z2;
             lastBiasedSprite = sprite;
             lastBiasedZ2 = biased;
             RealFlags.stats.depthBiased++;
@@ -143,13 +149,13 @@ public final class Hooks {
                 TextureDraw.nextZ = nz;
                 TextureDraw.nextChunkDepth = ncd;
                 SpriteMesh.setOffset(((k % 8) - 3.5f) * 120f, ((k / 8) - 3f) * 110f);
-                simulateAndDraw(gi, frame, dt, exposure, distance, lodMetric, true, tex, x, y, w, h, r, g, b, a, modifier);
+                simulateAndDraw(gi, null, frame, dt, exposure, distance, lodMetric, true, tex, x, y, w, h, r, g, b, a, modifier);
             }
             SpriteMesh.setOffset(0f, 0f);
             TextureDraw.nextZ = nz;
             TextureDraw.nextChunkDepth = ncd;
 
-            boolean drew = simulateAndDraw(inst, frame, dt, exposure, distance, lodMetric, false, tex, x, y, w, h, r, g, b, a, modifier);
+            boolean drew = simulateAndDraw(inst, obj, frame, dt, exposure, distance, lodMetric, false, tex, x, y, w, h, r, g, b, a, modifier);
             if (!drew) { // vanilla draws its own quad and needs the depth statics it set
                 TextureDraw.nextZ = nz;
                 TextureDraw.nextChunkDepth = ncd;
@@ -164,19 +170,36 @@ public final class Hooks {
     }
 
     /**
-     * LOD (with a ±1 tile hysteresis band), cap/distance gate, step, sleep shortcut, project, draw.
+     * LOD (with a ±1 tile hysteresis band), cap/distance gate, world interactions, step, sleep shortcut, project, draw.
+     * @param obj the flag object (null for stress ghosts, which have no place in the world)
      * @return true if we drew; false = let vanilla draw its quad (only for the real flag, never for ghosts)
      */
-    private static boolean simulateAndDraw(FlagInstance inst, int frame, float dt, float exposure, float distance,
-                                           float lodMetric, boolean ghost, Texture tex, float x, float y, float w,
-                                           float h, float r, float g, float b, float a, Consumer<TextureDraw> modifier) {
+    private static boolean simulateAndDraw(FlagInstance inst, IsoObject obj, int frame, float dt, float exposure,
+                                           float distance, float lodMetric, boolean ghost, Texture tex, float x, float y,
+                                           float w, float h, float r, float g, float b, float a,
+                                           Consumer<TextureDraw> modifier) {
         float lodDist = RealFlags.lodDistance;
         if (inst.lod == Prototypes.NEAR && lodMetric > lodDist + 1f) inst.switchLod(Prototypes.FAR);
         else if (inst.lod == Prototypes.FAR && lodMetric < lodDist - 1f) inst.switchLod(Prototypes.NEAR);
         Scheduler.noteDrawn(inst, distance, ghost);
 
         if (inst.allowed && distance <= RealFlags.simDistance) {
+            if (obj != null) {
+                if (RealFlags.interactions) {
+                    if (Interactions.prepare(obj, inst, frame, dt)) {
+                        // a tall object stands in front of this wall flag: no room to move, so no simulation at all
+                        // (a sleeping cloth is exactly on its reference already)
+                        if (!inst.cloth.isSleeping()) inst.cloth.resetToReference();
+                        inst.depthDeficit = 0f;
+                        Scheduler.noteBlocked();
+                        return false;
+                    }
+                } else if (inst.placed) {
+                    Interactions.disable(inst);
+                }
+            }
             inst.update(frame, dt, exposure);
+            if (inst.cloth.lastContacts() > 0) Scheduler.noteContact();
         } else {
             Scheduler.noteFrozen();
         }
@@ -184,6 +207,7 @@ public final class Hooks {
         if (!asleep) Scheduler.noteAwake();
         // a calm wall flag sits exactly on its reference = the vanilla picture: let vanilla draw its single quad (cheapest)
         if (!ghost && asleep && inst.def.kind == FlagDef.Kind.WALL && !RealFlags.debugOverlay) {
+            inst.depthDeficit = 0f;
             Scheduler.noteVanillaSleep();
             return false;
         }

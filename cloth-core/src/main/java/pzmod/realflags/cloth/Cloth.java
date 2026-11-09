@@ -63,6 +63,39 @@ public final class Cloth {
     private ForceSource[] sources = new ForceSource[2];
     private int sourceCount;
 
+    /** Solid bodies (characters, vehicles, scenery) in simulation space; null = none. Owned and filled by the caller. */
+    private Colliders colliders;
+    /** Cloth half-thickness kept from collider surfaces, metres. */
+    private static final float CONTACT_MARGIN = 0.03f;
+    /** Bounding box of the reference pose (x0, y0, z0, x1, y1, z1); a sleeping cloth is exactly on it. */
+    private final float[] refBounds = new float[6];
+    private int lastContacts;
+
+    // ---- settling after an interaction (a body touched the cloth) ----
+    /** Seconds since a body last touched the cloth; MAX_VALUE = not since it last slept. */
+    private float sinceContact = Float.MAX_VALUE;
+    /** After contact, the pose memory fades in over this many seconds (smoothstep) instead of pulling at once. */
+    private float contactRestoreRamp = 3f;
+    /**
+     * Pose-memory strength right after a contact (fraction of full). Not 0: a limp cloth released with no memory at all
+     * drifts into another fold that full memory then cannot pull it out of (D50, D62).
+     */
+    private float contactRestoreFloor = 0.5f;
+    /** After contact, the cloth may not fall asleep for this many seconds (it keeps swinging and settling). */
+    private float contactSettleSeconds = 4f;
+    /** After contact, the final snap onto the reference waits until every particle is this close (m): no visible pop. */
+    private float contactSnapDistance = 0.004f;
+
+    // ---- thick wall (clampToAnchorPlane cloths) ----
+    /**
+     * Wall thickness in front of the anchor plane, metres. Cloth that a body has moved along the wall is kept off the
+     * plane by up to this much (in proportion to how far it moved, so the rest pose is untouched), and bodies never push
+     * cloth into the wall. 0 = a plain plane (as before 0.2.1).
+     */
+    private float wallStandoff;
+    /** Standoff per metre of along-wall displacement, until {@link #wallStandoff} is reached. */
+    private static final float STANDOFF_SLOPE = 0.5f;
+
     /** Velocity damping used only while computing the reference pose. */
     private static final float SETTLE_DAMPING = 0.08f;
     private boolean settling;
@@ -96,6 +129,7 @@ public final class Cloth {
         System.arraycopy(prototype.ref, 0, ref, 0, ref.length);
         System.arraycopy(prototype.ref, 0, pos, 0, pos.length);
         System.arraycopy(prototype.ref, 0, prev, 0, prev.length);
+        System.arraycopy(prototype.refBounds, 0, refBounds, 0, refBounds.length);
         sleeping = true;
     }
 
@@ -239,6 +273,18 @@ public final class Cloth {
         if (doSettle) settle();
     }
 
+    private void computeRefBounds() {
+        float x0 = Float.MAX_VALUE, y0 = Float.MAX_VALUE, z0 = Float.MAX_VALUE;
+        float x1 = -Float.MAX_VALUE, y1 = -Float.MAX_VALUE, z1 = -Float.MAX_VALUE;
+        for (int k = 0; k < n; k++) {
+            int o = 3 * k;
+            x0 = Math.min(x0, ref[o]); y0 = Math.min(y0, ref[o + 1]); z0 = Math.min(z0, ref[o + 2]);
+            x1 = Math.max(x1, ref[o]); y1 = Math.max(y1, ref[o + 1]); z1 = Math.max(z1, ref[o + 2]);
+        }
+        refBounds[0] = x0; refBounds[1] = y0; refBounds[2] = z0;
+        refBounds[3] = x1; refBounds[4] = y1; refBounds[5] = z1;
+    }
+
     /**
      * Continues from another cloth of the same size and anchor but a different grid (level-of-detail switch): positions
      * and previous positions (so velocity too) are bilinearly resampled at this cloth's particle (u, v). Pinned particles
@@ -257,6 +303,12 @@ public final class Cloth {
         time = src.time;
         accumulator = 0f;
         calmTime = 0f;
+        sinceContact = src.sinceContact;
+        contactRestoreRamp = src.contactRestoreRamp;
+        contactRestoreFloor = src.contactRestoreFloor;
+        contactSettleSeconds = src.contactSettleSeconds;
+        contactSnapDistance = src.contactSnapDistance;
+        wallStandoff = src.wallStandoff;
         sleeping = src.sleeping;
         if (sleeping) { // a sleeping source is exactly on its reference → so are we
             System.arraycopy(ref, 0, pos, 0, pos.length);
@@ -309,6 +361,7 @@ public final class Cloth {
         settling = false;
         System.arraycopy(pos, 0, ref, 0, pos.length);
         System.arraycopy(pos, 0, prev, 0, pos.length);
+        computeRefBounds();
         time = 0f;
         accumulator = 0f;
         stepsSimulated = 0;
@@ -323,6 +376,64 @@ public final class Cloth {
         if (source == null) throw new IllegalArgumentException("source");
         if (sourceCount == sources.length) sources = Arrays.copyOf(sources, sources.length * 2);
         sources[sourceCount++] = source;
+    }
+
+    /**
+     * Solid bodies this cloth collides with (null = none). The set is read on every step and may be refilled between
+     * steps by the caller; dynamic bodies touching the rest pose wake a sleeping cloth.
+     */
+    public void setColliders(Colliders c) {
+        colliders = c;
+    }
+
+    public Colliders colliders() { return colliders; }
+
+    /** Particle contacts with colliders in the most recent step (0 when asleep). */
+    public int lastContacts() { return lastContacts; }
+
+    /** Bounding box of the reference pose: x0, y0, z0, x1, y1, z1. Live array — read only. */
+    public float[] referenceBounds() { return refBounds; }
+
+    /** Puts the cloth back exactly on its reference pose, motionless and asleep (e.g. when it becomes blocked). */
+    public void resetToReference() {
+        System.arraycopy(ref, 0, pos, 0, pos.length);
+        System.arraycopy(ref, 0, prev, 0, prev.length);
+        accumulator = 0f;
+        calmTime = 0f;
+        lastContacts = 0;
+        sinceContact = Float.MAX_VALUE;
+        sleeping = true;
+    }
+
+    /**
+     * How the cloth settles after a body touched it.
+     * @param restoreRampSeconds pose memory fades in over this long after the last contact (0 = at once)
+     * @param restoreFloor       pose-memory strength right after the contact, fraction 0..1 of full
+     * @param settleSeconds      no sleep for this long after the last contact
+     * @param snapDistance       final snap only when every particle is this close to the reference, metres
+     */
+    public void setContactSettling(float restoreRampSeconds, float restoreFloor, float settleSeconds, float snapDistance) {
+        contactRestoreRamp = Math.max(0f, restoreRampSeconds);
+        contactRestoreFloor = Math.max(0f, Math.min(1f, restoreFloor));
+        contactSettleSeconds = Math.max(0f, settleSeconds);
+        contactSnapDistance = Math.max(0f, snapDistance);
+    }
+
+    /** Wall thickness kept between moved cloth and the anchor plane, metres (only for clampToAnchorPlane cloths). */
+    public void setWallStandoff(float metres) {
+        wallStandoff = Float.isFinite(metres) ? Math.max(0f, Math.min(0.3f, metres)) : 0f;
+    }
+
+    public float wallStandoff() { return wallStandoff; }
+
+    /** Seconds since a body last touched the cloth (MAX_VALUE if none since it last slept). */
+    public float secondsSinceContact() { return sinceContact; }
+
+    private boolean bodiesTouchRestPose() {
+        Colliders c = colliders;
+        if (c == null || c.count() == 0) return false;
+        float[] b = refBounds;
+        return c.dynamicTouches(b[0], b[1], b[2], b[3], b[4], b[5], CONTACT_MARGIN);
     }
 
     private float maxActivity() {
@@ -345,8 +456,9 @@ public final class Cloth {
         if (frameDt > profile.maxFrameDt) frameDt = profile.maxFrameDt;
         float activity = maxActivity();
         if (sleeping) {
-            if (activity < profile.sleepWindSpeed && !anchor.isMoving()) return 0;
+            if (activity < profile.sleepWindSpeed && !anchor.isMoving() && !bodiesTouchRestPose()) return 0;
             sleeping = false;
+            quietTime = 0f;
             calmTime = 0f;
             accumulator = 0f;
         }
@@ -419,7 +531,7 @@ public final class Cloth {
         boolean calm = activity < profile.sleepWindSpeed;
         float fade = 1f - activity / profile.restoreFadeSpeed;
         if (withForces && fade > 0f && profile.calmRestoreRate > 0f) {
-            float r = Math.min(1f, profile.calmRestoreRate * fade * h);
+            float r = Math.min(1f, profile.calmRestoreRate * fade * stallBoost() * h) * contactRamp();
             for (int k = 0; k < n; k++) {
                 if (invMass[k] == 0f) continue;
                 int o = 3 * k;
@@ -430,13 +542,27 @@ public final class Cloth {
         }
 
         solveConstraints();
+        // bodies after the constraints (they win over stretch), then the wall plane (nothing goes through the wall)
+        int contacts = 0;
+        if (withForces && colliders != null) {
+            if (profile.clampToAnchorPlane) {
+                contacts = colliders.resolve(pos, prev, invMass, n, h, CONTACT_MARGIN, frame.nx, frame.ny, frame.nz);
+            } else {
+                contacts = colliders.resolve(pos, prev, invMass, n, h, CONTACT_MARGIN);
+            }
+        }
+        lastContacts = contacts;
+        if (contacts > 0) sinceContact = 0f;
+        else if (sinceContact != Float.MAX_VALUE) sinceContact += h;
+        if (withForces) quietTime = (calm && contacts == 0) ? quietTime + h : 0f;
         if (profile.clampToAnchorPlane) clampToPlane();
         checkHealth();
 
         time += h;
         stepsSimulated++;
 
-        if (withForces) updateSleep(calm, maxSpeedSq / (h * h), h);
+        // never fall asleep (= snap to the reference) through a body that is touching the cloth
+        if (withForces) updateSleep(calm && contacts == 0, maxSpeedSq / (h * h), h);
     }
 
     private void solveConstraints() {
@@ -481,15 +607,55 @@ public final class Cloth {
         }
     }
 
+    /**
+     * Keeps the cloth in front of its wall. Plain plane: w ≥ 0. With a {@link #wallStandoff} and a recent contact, cloth
+     * that has been moved along the wall stays off it by min(standoff, 0.5 · along-wall displacement): the wall has
+     * thickness, and bunched cloth stands proud of it. The rest pose (displacement 0) is unaffected.
+     */
     private void clampToPlane() {
+        float nx = frame.nx, ny = frame.ny, nz = frame.nz;
+        boolean thick = wallStandoff > 0f && sinceContact != Float.MAX_VALUE;
         for (int k = 0; k < n; k++) {
             if (invMass[k] == 0f) continue;
             int o = 3 * k;
-            float w = (pos[o] - frame.ox) * frame.nx + (pos[o + 1] - frame.oy) * frame.ny + (pos[o + 2] - frame.oz) * frame.nz;
-            if (w < 0f) {
-                pos[o] -= w * frame.nx; pos[o + 1] -= w * frame.ny; pos[o + 2] -= w * frame.nz;
+            float w = (pos[o] - frame.ox) * nx + (pos[o + 1] - frame.oy) * ny + (pos[o + 2] - frame.oz) * nz;
+            float minW = 0f;
+            if (thick) {
+                float dx = pos[o] - ref[o], dy = pos[o + 1] - ref[o + 1], dz = pos[o + 2] - ref[o + 2];
+                float dn = dx * nx + dy * ny + dz * nz;
+                dx -= dn * nx; dy -= dn * ny; dz -= dn * nz;
+                float along = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+                minW = Math.min(along * STANDOFF_SLOPE, wallStandoff);
+            }
+            if (w < minW) {
+                float s = minW - w;
+                pos[o] += s * nx; pos[o + 1] += s * ny; pos[o + 2] += s * nz;
             }
         }
+    }
+
+    /**
+     * Pose-memory multiplier for a cloth that is calm and motionless but not home: it can be held in a fold by its own
+     * constraints (seen after body pushes: a wall flag stuck 20–29 cm off its rest pose for ever, D62). After
+     * {@link #STALL_GRACE} s of that, memory grows by ×{@link #STALL_GROWTH} per second (up to ×{@link #STALL_MAX}), so the
+     * fold lets go smoothly instead of never. A cloth on its way home normally sleeps before the grace period ends.
+     */
+    private float stallBoost() {
+        float grace = sinceContact != Float.MAX_VALUE ? Math.max(STALL_GRACE, contactSettleSeconds) : STALL_GRACE;
+        float over = quietTime - grace;
+        if (over <= 0f) return 1f;
+        return Math.min(STALL_MAX, 1f + STALL_GROWTH * over);
+    }
+
+    private static final float STALL_GRACE = 3f, STALL_GROWTH = 1.5f, STALL_MAX = 20f;
+    /** Seconds with no wind above the sleep threshold and no contact (reset by either, and on sleep). */
+    private float quietTime;
+
+    /** Pose-memory strength after a contact: the floor right after it, smoothstep to 1 over {@link #contactRestoreRamp}. */
+    private float contactRamp() {
+        if (sinceContact == Float.MAX_VALUE || contactRestoreRamp <= 0f || sinceContact >= contactRestoreRamp) return 1f;
+        float t = sinceContact / contactRestoreRamp;
+        return contactRestoreFloor + (1f - contactRestoreFloor) * t * t * (3f - 2f * t);
     }
 
     /** Last line of defence: on NaN or runaway, reset to the reference pose and count it. */
@@ -516,7 +682,10 @@ public final class Cloth {
             return;
         }
         if (calmTime < profile.sleepSeconds) return;
-        float snap2 = profile.snapDistance * profile.snapDistance;
+        boolean touched = sinceContact != Float.MAX_VALUE;
+        if (touched && sinceContact < contactSettleSeconds) return; // let it swing and settle after an interaction
+        float snap = touched ? Math.min(profile.snapDistance, contactSnapDistance) : profile.snapDistance;
+        float snap2 = snap * snap;
         for (int k = 0; k < n; k++) {
             int o = 3 * k;
             float dx = pos[o] - ref[o], dy = pos[o + 1] - ref[o + 1], dz = pos[o + 2] - ref[o + 2];
@@ -524,7 +693,9 @@ public final class Cloth {
         }
         System.arraycopy(ref, 0, pos, 0, pos.length);
         System.arraycopy(ref, 0, prev, 0, prev.length);
+        sinceContact = Float.MAX_VALUE;
         sleeping = true;
+        quietTime = 0f;
     }
 
     // ------------------------------------------------------------------ read access (no copies; do not mutate)
