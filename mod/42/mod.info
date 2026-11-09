@@ -1,9 +1,9 @@
 name=Real Flags
 id=RealFlags
 author=Svi-ra
-modversion=0.1.0
+modversion=0.2.1
 versionMin=42.21
-description=Vanilla flags react to the wind with a real-time cloth simulation. Visual only and client-side: no new objects, no save data, removing the mod restores vanilla. Needs ZombieBuddy (Java mods) and Any Wall Flags 3D by DGV (flag canvas textures).
+description=Vanilla flags react to the wind with a real-time cloth simulation, and to the world: players, zombies and vehicles push them, passing cars blow them about, and they drape over furniture and stop at walls. Visual only and client-side: no new objects, no save data, removing the mod restores vanilla. Needs ZombieBuddy (Java mods) and Any Wall Flags 3D by DGV (flag canvas textures).
 require=\ZombieBuddy,\DGVFlags
 javaJarFile=media/java/client/RealFlags.jar
 javaPkgName=pzmod.realflags

@@ -3,6 +3,7 @@ package pzmod.realflags;
 import java.util.Arrays;
 import pzmod.realflags.cloth.AnchorFrame;
 import pzmod.realflags.cloth.Cloth;
+import pzmod.realflags.cloth.Colliders;
 import pzmod.realflags.cloth.WindForce;
 
 /**
@@ -15,7 +16,7 @@ import pzmod.realflags.cloth.WindForce;
  */
 final class FlagInstance {
     final FlagDef def;
-    private final long seed;
+    final long seed;
 
     Cloth cloth;
     WindForce wind;
@@ -36,6 +37,24 @@ final class FlagInstance {
     /** Stress-test copies (dev only, RealFlags_stress). */
     FlagInstance[] ghosts;
 
+    // ---- interactions with the world (Interactions) ----
+    /** Bodies and scenery the cloth collides with, in cloth-local coordinates (survives LOD switches). */
+    final Colliders colliders = new Colliders(Interactions.CAPACITY);
+    /** World position of the cloth origin (metres), valid once {@link #placed}. */
+    boolean placed;
+    float ox, oy, oz;
+    /** Frame at which scenery and the blocked state are re-checked. */
+    int nextRefresh = Integer.MIN_VALUE;
+    /** Wall flag with a tall object in front of it: not simulated, drawn as vanilla. */
+    boolean blocked;
+    /** Air moved by nearby vehicles and running characters this frame, m/s (added to the climate wind). */
+    float washX, washY;
+    /**
+     * Depth (units) the per-vertex lift could not supply last frame (vertices near the pinned top edge); added to this
+     * flag's wall depth bias on its next draw (Hooks.onStartTileDepthShader). 0 when calm.
+     */
+    float depthDeficit;
+
     FlagInstance(FlagDef def, long seed, int lod) {
         this.def = def;
         this.seed = seed;
@@ -45,6 +64,7 @@ final class FlagInstance {
 
     private void setCloth(Cloth c) {
         cloth = c;
+        c.setColliders(colliders);
         wind = new WindForce(seed); // stateless noise: a new source with the same seed continues the same gusts
         c.addForceSource(wind);
         int n = c.particleCount();
@@ -75,7 +95,8 @@ final class FlagInstance {
     void update(int frameNo, float dt, float exposure) {
         if (frameNo == lastFrame) return;
         lastFrame = frameNo;
-        float wx = WindProvider.x() * exposure, wy = WindProvider.y() * exposure;
+        // the air wash is local (a car passing right by), so the wall's shelter (exposure) does not reduce it
+        float wx = WindProvider.x() * exposure + washX, wy = WindProvider.y() * exposure + washY;
         wind.setWind(wx, wy, 0f);
         lastWindSpeed = (float) Math.sqrt(wx * wx + wy * wy);
         Scheduler.noteStep(cloth.step(dt * def.timeScale) > 0);

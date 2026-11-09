@@ -2,6 +2,49 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
 
+## [0.2.1] — unreleased — fixes from the first in-game test of 0.2.0
+
+Decisions D61–D62. Verified in-game by user report (2026-11-09); per-step results and CPU figures not recorded.
+
+### Fixed
+- **Wall flags sank into the wall when a character pushed them.** The physics kept the cloth in front of the wall; the
+  renderer gave moved vertices their rest-pose depth, so cloth pushed up or sideways along the wall ended up "behind"
+  the wall pixels it was drawn over. Moved vertices now take the depth of the wall surface under them (D61).
+- **Wall flags could stay folded for ever** after a body walked through them (4 of 12 directions in a probe). Pose
+  memory now strengthens gradually while a calm cloth is not home, so folds let go (D62).
+
+### Changed
+- **Gentler return to rest after an interaction:** pose memory fades in over 3 s (from 50%), no sleep for 4 s after the
+  last contact, and the final snap waits until the cloth is within 4 mm of its rest pose (D62).
+- **Thick wall:** the flag's wall has a real thickness (from its tile geometry, + cloth thickness). Bodies never push
+  cloth into the wall — it slides out sideways, over or under them — and cloth pushed along the wall stands slightly
+  off it (D61).
+
+## [0.2.0] — unreleased — flags meet the world
+
+Decisions D55–D60. The first in-game test found three issues (flag sank into the wall when pushed, returned to rest
+too quickly, wall too thin); fixed in 0.2.1.
+
+### Added
+- **Players and zombies** push flags they walk into and drag them along (cylinder bodies; low when crawling or sitting).
+- **Vehicles** push flags they drive into (oriented box from the vehicle's footprint) and blow them about as they pass
+  (air wash and bow wave added to the flag's wind; works indoors too, where there is no climate wind).
+- **Running** characters stir nearby flags.
+- **Scenery**: flags collide with the solid shapes of nearby walls, furniture and fences, read from Build 42's tile
+  geometry (`media/tileGeometry.txt`, plus mods' own). A pole flag stops at the building beside it; a wall flag drapes
+  over a counter. Shapes the flag's rest pose already touches are ignored, so calm flags still look exactly vanilla.
+- **Blocked wall flags**: a wall flag with an object in front of it taller than 1.5 m (1.5 tiles) — a fridge, wardrobe,
+  tall shelf — is not simulated and stays the vanilla picture. Re-checked about once a second.
+- `cloth-core`: `Colliders` (static/dynamic bodies, projection + friction), `Cloth.setColliders`,
+  `Cloth.resetToReference`, `Cloth.referenceBounds`; 7 tests.
+- Adapter: `Interactions`, `Scenery`, `Projection.clothOrigin`; 5 tests (placement against the measured pixels, real
+  geometry bounds, the blocking rule with the real fridge geometry).
+- Lua: `RealFlags_interactions(bool)`, `RealFlags_blockHeight(m)`. Status and overlay show blocked flags, flags in
+  contact, nearby bodies, scenery boxes and geometry cache counts.
+
+### Changed
+- `mod.info` description mentions the interactions; version 0.2.0.
+
 ## [0.1.0] — 2026-11-06 — MVP
 
 Wind-reactive cloth for the vanilla American Flag pole (with a DGVFlags canvas) and four vanilla wall flags, on
