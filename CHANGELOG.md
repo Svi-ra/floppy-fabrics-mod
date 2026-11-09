@@ -2,6 +2,34 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
 
+## [0.3.0] — unreleased — window curtains
+
+Decisions D63–D76. Verified in-game by user report (2026-11-09); per-step results and CPU figures of `docs/PHASE7_TEST.md` not recorded.
+
+### Added
+- **Curtains move while their window is open or broken.** Every curtain tile (vanilla `fixtures_windows_curtains_01/02`
+  and modded ones, detected by their `curtainN/S/W/E` tile type) is simulated as a wall cloth hanging from its rod, with
+  no data file: its shape is measured from the sprite. Wind from outside comes in through the window (×0.6 for an opened
+  sash, ×1 smashed or an empty frame, reduced by barricades); people, zombies and vehicles push it like a flag. Behind a
+  closed window a curtain stays in vanilla's cached layer at zero cost; if the window closes while it moves, it settles
+  first. Rolled-up sheets and blinds stay vanilla.
+- Patches on `IsoWindow.ToggleWindow`, `smashWindow(boolean, boolean)` and `syncIsoObjectReceive` re-classify a
+  window's curtains when it opens, closes or breaks.
+- **Sheets hung by the player move too** (D72; fixed in D76 — the first build never switched them off the 3D model,
+  because curtain tiles are already in vanilla's per-frame layer). They are 3D models in Build 42, which nothing can bend; while their
+  window is open or broken they are drawn as their 2D sheet sprite instead (new advice on `IsoObject.getSpriteModel`),
+  and become the 3D model again once the window is closed and they have settled.
+- **Daylight flickers in past a closed curtain** the wind lifts off an open window (D73): one dim, building-local light
+  per curtain, following how far the cloth billows × outside daylight. Smoothed, slew-limited and updated at most
+  4×/s, so it ramps rather than flickers; nothing at night or when the curtain hangs still.
+- **Metal-sheet barricades seal the window** (D74): the curtain behaves as behind a closed window. Planks let less air
+  through per plank (×0.2 at four), metal bars do not slow the air.
+- Lua: `RealFlags_curtains(bool)`, `RealFlags_curtainExposure(x)`, `RealFlags_curtainLight(bool)`,
+  `RealFlags_curtainLightGain(x)`; curtain, sheet and light counters in `RealFlags_status()`.
+- `cloth-core`: `ClothProfiles.CURTAIN`, `AnchorFrame.flipNormal`, `StaticAnchor.of(…, flipNormal)`.
+- Wall facings `N`/`W` (cloth on the square's south/east edge, facing into it). 9 tests (`CurtainsTest`,
+  `CurtainLightTest`).
+
 ## [0.2.1] — unreleased — fixes from the first in-game test of 0.2.0
 
 Decisions D61–D62. Verified in-game by user report (2026-11-09); per-step results and CPU figures not recorded.

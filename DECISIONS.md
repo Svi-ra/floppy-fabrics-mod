@@ -514,6 +514,132 @@ never, in 4 directions). Regression test `ColliderTest.neverStuckAfterWalkThroug
 (2026-11-09): "it works"** — the three reported issues are resolved. Per-step results of `docs/PHASE6_TEST.md` and
 CPU figures were not recorded.
 
+## Phase 7 — curtains (2026-11-09)
+
+Request: physics for every curtain inside buildings, simulated only while its window is **open or broken**.
+Evidence from build 42.21.0's decompiled source (pz-mcp-server `pz_read_java`, Vineflower) and the game's `media/`.
+
+**D63 · What a curtain is (traced).** `IsoCurtain extends IsoObject`; its orientation is the tile type
+`curtainN/S/W/E` (`IsoObject.getType()`, set from the tile property of the same name). Vanilla tiles:
+`fixtures_windows_curtains_01_*` and `_02_*` (144 tiles; `newtiledefinitions.tiles.txt`), each row of 8 = closed
+W/E/N/S then open (+4). `IsoWindow.HasCurtains()` (IsoWindow.java:152) defines where they hang:
+`curtainN`/`curtainW` on the window's own square, `curtainS`/`curtainE` on its opposite square. So, from the curtain:
+N → window on (x, y) north; W → (x, y) west; S → (x, y+1) north; E → (x+1, y) west. Curtains are plain sprites
+(`IsoCurtain.render` → `super.render`); only `fixtures_windows_curtains_01_16` has a 3D sprite model
+(`spriteModels.txt`, `SheetDoorClosed`), used only on doors (`curtainOffset` comes from a door sprite) — doors have no
+window, so it is never simulated. Curtains have their own depth textures (`tileDepthTextureAssignments.txt`), not the
+wall preset.
+
+**D64 · A curtain is a wall cloth with two more facings; its geometry is measured at runtime.** Same renderer as wall
+flags (vanilla image + displacement field, D36), so a calm curtain is pixel-identical to vanilla. New facings
+`N` (curtainS, on the south edge, room to the north) and `W` (curtainE, east edge, room to the west): same screen axis
+as S/E, origin on the far edge, **normal flipped** (`AnchorFrame.flipNormal`) so the plane clamp keeps the cloth on the
+room side. No data file: the cloth parallelogram comes from the sprite's trimmed rectangle (`Texture` offset/size in the
+2× frame): pinned top-left = trim top-left (+½·width down for W/E-axis curtains, whose top edge rises to the right),
+height = trim height − ½·width. Measured vanilla trims fit: e.g. `_01_2` (curtainN) trim x 59–122 on the north wall
+line 64–128. Curtains under 36 px (≈0.46 m) of cloth stay vanilla — rolled-up sheets (`_01_20..23`) and rolled
+blinds (`_02_4..7`) are bundles, not hanging cloth. Mods' curtains work the same way (detected by tile type).
+
+**D65 · Only open or broken windows (the request).** Window state, per curtain: `IsoWindow` on the square above →
+destroyed (smashed or glass removed) = 1.0, open = 0.6 (a sash is a half opening), closed = 0; barricaded × 0.35;
+an empty `IsoWindowFrame` (no window object) = 1.0; nothing found = 0 (e.g. sheets on doors). Player-built
+`IsoThumpable` windows are not handled (limitation). A curtain whose window is closed is not reclassified: it stays
+in vanilla's cached chunk layer at zero cost. If the window closes while it is moving it keeps settling (no wind, no
+bodies) until asleep, then vanilla draws it again — no snap.
+
+**D66 · Re-classification on window changes.** Windows are always in vanilla's per-frame layer, so vanilla never
+invalidates the chunk when a window opens. Three new advices call `IsoObject.invalidateRenderChunkLevel(256)`
+(`DIRTY_OBJECT_MODIFY`, what `IsoCurtain.ToggleDoor` itself uses) on `window.HasCurtains()`:
+`IsoWindow.ToggleWindow(IsoGameCharacter)` exit, `IsoWindow.smashWindow(boolean, boolean)` exit (the 0/1-arg
+overloads delegate to it), `IsoWindow.syncIsoObjectReceive(ByteBufferReader)` exit (state from the server in MP).
+Opening/closing the curtain itself already invalidates (`IsoCurtain.ToggleDoor`, `invalidateRenderChunkLevel(256L)`).
+
+**D67 · Wind through the window.** Only if the square on the other side of the window `isOutside()`. With the
+climate wind w scaled by `curtainExposure` (0.5) × openness: inflow = w·n (n = the room side); the cloth is driven by
+n·(max(inflow, 0) + 0.15·|w|) + 0.3·(w − (w·n)n): wind into the room billows it, a leeward window still breathes
+(the 0.15 draft), wind along the wall sways it. Wind out of the room presses it to the window plane (clamp), as in
+reality. Bodies and air wash act as for flags (D60), but only while the window is open/broken.
+
+**D68 · Curtain profile.** `ClothProfiles.CURTAIN`: 5×9 grid, 0.3 kg, stiffness (1, 0.8, 0.03) — softer bend than a
+flag so it folds — damping 0.03, Cd 0.8, top edge pinned (the rod), clamp to the window plane; far LOD 4×6. Never
+"blocked" by furniture (the 1.5 m rule is for flags hung *on* walls; furniture under a window is normal), but furniture
+is scenery it drapes over.
+
+**D69 · Depth.** Curtains get the same toward-viewer bias as wall-overlay flags in the per-frame pass (D30/D33), as a
+precaution: they are drawn with `GL_LEQUAL` against the cached wall depth at the window line. Not yet observed in-game.
+
+**D70 · Controls.** `RealFlags_curtains(bool)` (default on; off re-bakes curtains as vanilla),
+`RealFlags_curtainExposure(x)` (default 0.5); status shows `curtains{defined layer closedDraws rebakes windowEvents}`.
+
+**D71 · The pz-mcp-server decompile is not build 42.21.0 (found while building).** Its source
+(`D:\ZomboidDecompiler\…\source`) has `IsoGridSquare.getWindow(boolean)`, `IsoWindow.getNorth()` and a 1-argument
+`syncIsoObjectReceive`; the installed jar has `getWindow(GridSquareEdge)`, `isNorth()` and
+`syncIsoObjectReceive(ByteBufferReader, UdpConnection)` (javac errors, then reflection on the jar). Every curtain-related
+body was therefore re-read from the **installed jar**, decompiled with Vineflower 1.12 into a scratch directory:
+`IsoWindow.HasCurtains`, `ToggleWindow`, `syncIsoObjectReceive` (no render-chunk invalidation in either), `IsoCurtain.render`,
+and `IsoGridSquare.getEdgeElement` — `getWindow(SOUTH/EAST)` returns the north/west window of the square to the
+south/east, which is exactly a curtainS/curtainE's window. Treat that MCP source as a lead, not evidence, for this build.
+
+## Phase 7b — player sheets, light through curtains, metal barricades (2026-11-09)
+
+Request: (1) sheets hung by the player do not move; (2) a moving closed curtain at an open window should make the room's
+light fluctuate subtly, without excessive flicker; (3) a window barricaded with metal sheets is a closed window.
+Evidence: the installed 42.21.0 jar, decompiled with Vineflower 1.12 into the scratchpad (D71).
+
+**D72 · Sheets are 3D models; while their window is open they are drawn as their 2D sprite.** `IsoWindow.addSheet` places
+`fixtures_windows_curtains_01_16..23` (open = rolled 20..23, closed = hanging 16..19). All eight have a sprite model in
+`media/spriteModels.txt` (`Base.SheetDoorClosed` / `SheetDoorOpen`), and window tiles carry a `CurtainOffset` in
+`tileGeometry.txt` (`TileGeometryFile` → `IsoSprite.setCurtainOffset`; 286 tiles incl. `fixtures_windows_01`).
+`IsoCurtain.render` draws the model when `curtainOffset != null && getSpriteModel() != null`, and `IsoObject.render` →
+`renderModel` returns before the sprite path, so `Texture.render` (our hook) is never reached: that is why sheets never
+moved. Deforming the model is out of reach; instead a new exit advice on `IsoObject.getSpriteModel()` returns null for a
+curtain **we have moved to the per-frame layer** (window open/broken or still settling), so the vanilla sprite path draws
+its 2D sheet sprite and our cloth mesh bends it. Behind a closed window it is the vanilla 3D model again. Cost of the
+advice for every other object: one null check and one `instanceof`. Visible consequence: when the window opens the sheet
+switches from the 3D model to the 2D sheet art (and back after it settles once the window is closed). A rolled-up sheet
+(open state) is too short to hang (D64) and stays the model.
+
+**D73 · Light through a moving closed curtain = one dim lamppost light per curtain, changed at most 4×/s.** Vanilla
+gives a *closed* curtain a fixed light transmission (default 0.33, `LightFilterIntensity`) uploaded per chunk in
+`LightingJNI.updateChunk`; changing that per frame would mean re-uploading chunks. The vanilla precedent for a light that
+varies is `IsoTelevision`: one `IsoLightSource` added with `IsoCell.addLamppost`, recoloured later with
+`IsoGridSquare.recalcLightTime = -1` and `GameTime.lightSourceUpdate = 100`; `LightingJNI.checkLights` pushes the new
+colour (`setLightColor`, ×2) when `r/g/b` differ from what it sent. Lampposts are not saved (`IsoCell` only clears them).
+Our light: on the curtain's own square (the room side for all four facings), radius 3, local to the building, warm
+daylight tint. Strength = gain (0.12) × outside sky light (`GameTime.getSkyLightLevel`) × smoothstep(gap), gap = mean
+outward lift of the cloth / 0.35 m. Only for a **closed** curtain (an open one already lets the light in) at a live,
+outdoor window and with the cloth awake. Anti-flicker: exponential smoothing (τ = 0.35 s), quantised to 1/48, pushed at
+most every 15 frames and only when the quantised value changes; faded out to 0 then removed when the cloth rests,
+the window closes, the curtain is no longer drawn (sweep every frame from the UI hook), or the mod/curtains are turned
+off. Lua: `RealFlags_curtainLight(bool)`, `RealFlags_curtainLightGain(x)`.
+
+**D74 · Barricades.** `IsoBarricade` (jar): `isMetal()` = metal sheet (`getLightTransmission` 0), `isMetalBar()` = bars
+(transmission 1), `getNumPlanks()` 0–4. A window's barricades on either side (`getBarricadeOnSameSquare/OppositeSquare`)
+multiply its openness: metal sheet → 0 (**fully closed**, as requested), bars → 1, planks → 1 − 0.2·n. Replaces D65's
+flat ×0.35. Adding/removing a barricade adds/removes an object, which re-renders its chunk; the draw-time gate (D65)
+catches anything that is missed: the curtain settles and is re-baked.
+
+**D75 · Bookkeeping.** A curtain that is classified as not animating is dropped from the reclassified set at once (so the
+model suppression of D72 ends exactly when vanilla's layer is used again).
+
+**D76 · Correction (in-game report 2026-11-09: player sheets still did not move). Curtains are already per-frame in
+vanilla.** Every tile of `fixtures_windows_curtains_01` has `Translucent = true` in `tileGeometry.txt`;
+`TileGeometryFile` turns that into `sprite.depthFlags |= 2` (jar, decompiled), and `calculateObjectRenderLayer` sends
+such objects to `Translucent`/`TranslucentSE`, never `MinusFloor`. So our layer hook never sees a curtain:
+- Ordinary curtains worked anyway, because the draw-time gate (D65) decides — that is what the user saw working.
+- D72's model switch was keyed on "objects we reclassified", a set no curtain ever entered, so a sheet always drew its 3D
+  model. **Fix:** `onGetSpriteModel` decides itself — curtain definition + window open/broken, or cloth still settling
+  (`curtainAnimates`) — cached once per frame per sheet, only on the render thread (set from the render hooks). First
+  use logs `first sheet drawn as its 2D sprite`.
+- D65's "a curtain behind a closed window stays in the cached layer at zero cost" is wrong for vanilla curtains: they
+  were always drawn every frame by vanilla; ours adds one window lookup per draw and returns to vanilla's quad. The
+  re-bake/invalidation code stays for modded curtains without `Translucent` (harmless otherwise).
+
+### Phase 7 status
+0.3.0 built, 66 unit tests pass (9 new), `verifyPatches` applies all nine advices (three on `IsoWindow`, one on
+`IsoObject.getSpriteModel`) to 42.21.0, deployed. In-game (user, 2026-11-09): curtains, light and barricades work as expected; player sheets did not move →
+D76 fix, jar SHA-256 `7b1616d6db63482b26aabe5fb4090a7507bb864f99a1ef3294f9d053be093f59`. **D76 verified in-game by user report (2026-11-09): player sheets now move.** Per-step results and CPU figures of `docs/PHASE7_TEST.md` were not recorded.
+
 ## Acceptance status (MVP)
 | Criterion | Status |
 |---|---|

@@ -77,7 +77,8 @@ final class Interactions {
         if (frame >= inst.nextRefresh || frame < inst.nextRefresh - 4 * REFRESH_FRAMES) {
             inst.nextRefresh = frame + REFRESH_FRAMES + (int) (inst.seed & 15);
             boolean wasBlocked = inst.blocked;
-            inst.blocked = inst.def.kind == FlagDef.Kind.WALL && RealFlags.blockHeight > 0f && isBlocked(obj, inst.def);
+            // curtains are never blocked: furniture under a window is normal; it is scenery to drape over (D68)
+            inst.blocked = inst.def.kind == FlagDef.Kind.WALL && !inst.def.curtain && !inst.def.facing.flipped() && RealFlags.blockHeight > 0f && isBlocked(obj, inst.def);
             if (inst.blocked != wasBlocked) {
                 if (inst.blocked) RealFlags.stats.blockedEvents++;
                 else RealFlags.stats.unblockedEvents++;
@@ -108,6 +109,8 @@ final class Interactions {
      */
     static float wallStandoff(IsoGridSquare sq, FlagDef def) {
         float thickness = DEFAULT_WALL_THICKNESS;
+        // curtains hang in a window opening, not on a wall face; far-edge cloths have no wall object on their own square
+        if (def.curtain || def.facing.flipped()) return thickness + CLOTH_THICKNESS;
         IsoObject wall = sq.getWall(def.facing == FlagDef.Facing.S); // S-facing flags hang on the north wall
         if (wall != null) {
             float t = wallThicknessOnFlagSide(Scenery.boxes(wall.getSprite()), def.facing);
@@ -282,10 +285,15 @@ final class Interactions {
         RealFlags.stats.sceneryBoxes += added;
     }
 
-    /** Wall flags: things behind their own wall plane (other room, outside) never touch the cloth. */
-    private static boolean behindWall(FlagDef def, float lx, float ly) {
+    /** Wall cloths: things behind their own wall plane (other room, outside) never touch the cloth. */
+    static boolean behindWall(FlagDef def, float lx, float ly) {
         if (def.kind != FlagDef.Kind.WALL) return false;
-        return def.facing == FlagDef.Facing.S ? ly < 0f : lx < 0f;
+        return switch (def.facing) {
+            case S -> ly < 0f;
+            case E -> lx < 0f;
+            case N -> ly > 0f; // far-edge curtains: the room is on the −y / −x side of their wall line
+            case W -> lx > 0f;
+        };
     }
 
     // ------------------------------------------------------------------ bodies

@@ -21,7 +21,7 @@ class WallDepthTest {
         for (FlagDef.Facing f : FlagDef.Facing.values()) {
             for (float[] m : moves) {
                 float along = m[0], dz = m[1];
-                float dx = f == FlagDef.Facing.S ? along : 0f, dy = f == FlagDef.Facing.S ? 0f : along;
+                float dx = f.alongX() ? along : 0f, dy = f.alongX() ? 0f : along;
                 Projection.worldToScreen(dx, dy, dz, ts, o, 0);
                 float expected = isoDepth(2f + dx, 3f + dy, 1f + dz) - isoDepth(2f, 3f, 1f);
                 assertEquals(expected, WallDepth.wallDepthChange(f, ts, o[0], o[1]), 1e-7f, f + " move " + along + "," + dz);

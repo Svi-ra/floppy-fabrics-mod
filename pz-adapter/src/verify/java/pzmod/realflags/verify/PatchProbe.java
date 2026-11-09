@@ -16,6 +16,8 @@ public final class PatchProbe {
                 "zombie.iso.sprite.IsoSprite",
                 "zombie.core.textures.Texture",
                 "zombie.ui.UIManager",
+                "zombie.iso.objects.IsoWindow",
+                "zombie.iso.IsoObject",
         };
         ClassLoader cl = ClassLoader.getSystemClassLoader();
         for (String t : targets) {

@@ -43,6 +43,7 @@ public final class Projection {
      *       that corner draws at (64 + 64·(dx − dy), 192 + 32·(dx + dy)).</li>
      *   <li>Wall S (cloth on the north wall, y = sy): top-left at frame x = clothX → dx = (clothX − 64)/64.</li>
      *   <li>Wall E (cloth on the west wall, x = sx; u runs north = screen right): dy = (64 − clothX)/64.</li>
+     *   <li>Curtain N (south edge, y = sy + 1): dx = clothX/64. Curtain W (east edge, x = sx + 1): dy = (128 − clothX)/64.</li>
      *   <li>Pole: the shaft stands at the square centre (the lower tile {@code street_decoration_01_24}'s shaft ends at
      *       frame row 228 ≈ the centre row 224, measured with tools/flagtool.py); the anchor is on the axis.</li>
      * </ul>
@@ -52,10 +53,15 @@ public final class Projection {
         float dx, dy, py;
         if (def.kind == FlagDef.Kind.POLE) {
             dx = 0.5f; dy = 0.5f; py = def.anchor.y();
-        } else if (def.facing == FlagDef.Facing.S) {
-            dx = (def.clothX - 64f) / PX_PER_M_X_2X; dy = 0f; py = def.clothY;
         } else {
-            dx = 0f; dy = (64f - def.clothX) / PX_PER_M_X_2X; py = def.clothY;
+            switch (def.facing) {
+                case S -> { dx = (def.clothX - 64f) / PX_PER_M_X_2X; dy = 0f; }
+                case E -> { dx = 0f; dy = (64f - def.clothX) / PX_PER_M_X_2X; }
+                // far edges (curtains, D64): screen x = 64 + 64·(dx − dy) on the line y = 1 / x = 1
+                case N -> { dx = def.clothX / PX_PER_M_X_2X; dy = 1f; }
+                default -> { dx = 1f; dy = (128f - def.clothX) / PX_PER_M_X_2X; }
+            }
+            py = def.clothY;
         }
         float floorY = 192f + 32f * (dx + dy);
         out[0] = sx + dx;
@@ -70,9 +76,9 @@ public final class Projection {
         out[1] = (float) Math.cos(t);
     }
 
-    /** Unit vector of the wall axis the cloth's u runs along, in world space. S-facing: +x; E-facing: −y. */
+    /** Unit vector of the wall axis the cloth's u runs along, in world space. S/N-facing: +x; E/W-facing: −y. */
     public static void wallAxisU(FlagDef.Facing facing, float[] out) {
-        if (facing == FlagDef.Facing.S) { out[0] = 1f; out[1] = 0f; } else { out[0] = 0f; out[1] = -1f; }
+        if (facing.alongX()) { out[0] = 1f; out[1] = 0f; } else { out[0] = 0f; out[1] = -1f; }
         out[2] = 0f;
     }
 
@@ -84,7 +90,7 @@ public final class Projection {
     public static void wallScreenToUv(FlagDef.Facing facing, float tlx, float tly, float widthM, float heightM,
                                       int tileScale, float px, float py, float[] out, int off) {
         float uxs, uys; // screen per metre along u
-        if (facing == FlagDef.Facing.S) { uxs = 32f * tileScale; uys = 16f * tileScale; }
+        if (facing.alongX()) { uxs = 32f * tileScale; uys = 16f * tileScale; }
         else { uxs = 32f * tileScale; uys = -16f * tileScale; }
         float vys = 16f * SQRT6 * tileScale;
         float um = (px - tlx) / uxs;

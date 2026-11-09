@@ -26,11 +26,14 @@ in mod load order, files sorted by name; for the same sprite a later file wins. 
 The vanilla sprite stays the image; the cloth bends it. At zero wind it is pixel-identical to vanilla.
 | Key | Type | Meaning |
 |---|---|---|
-| `facing` | `"S"` / `"E"` | Which way the flag faces: S lies along the north wall (top edge slopes **down** to the right), E along the west wall (top edge slopes **up** to the right) |
+| `facing` | `"S"` / `"E"` / `"N"` / `"W"` | Which way the flag faces: S lies along the north wall (top edge slopes **down** to the right), E along the west wall (top edge slopes **up** to the right). N/W lie on the square's south/east edge facing into the square (used for curtains) |
 | `cloth` | `{x, y, w, h}` px | Top-left corner of the pinned top edge, horizontal span `w`, vertical height `h` (measured at the left edge) |
 | `mesh` | [cols, rows] | Render mesh over the sprite rectangle; default [5, 8] (halved at far LOD) |
 
 Wall flags only move on an **outside** square (vanilla's `exterior` flag).
+
+Window curtains need no entry: any sprite with a `curtainN/S/W/E` tile type is measured automatically (DECISIONS D64).
+A `flags.json` entry for a curtain sprite turns it into an ordinary wall flag instead.
 
 How to measure `cloth`: `python tools/flagtool.py extract <Tiles2x.pack> out <sprite>` then
 `python tools/flagtool.py measure out/<sprite>.png` prints a ready entry. By hand: in the 2× frame, the left-most

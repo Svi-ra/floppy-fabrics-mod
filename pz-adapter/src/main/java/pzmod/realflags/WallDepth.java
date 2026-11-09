@@ -38,7 +38,7 @@ final class WallDepth {
     static float wallDepthChange(FlagDef.Facing facing, int tileScale, float dxs, float dys) {
         float ts = tileScale;
         float along, dz;
-        if (facing == FlagDef.Facing.S) {
+        if (facing.alongX()) {
             along = dxs / (32f * ts);                     // Δx
             dz = (16f * ts * along - dys) / (16f * Projection.SQRT6 * ts);
         } else {

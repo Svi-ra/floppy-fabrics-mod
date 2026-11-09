@@ -25,6 +25,10 @@ import zombie.iso.weather.ClimateManager;
  *   RealFlags_testFailure()       -> dev: next flag draw throws → logs once, disables for the session, flags go vanilla
  *   RealFlags_interactions(bool)  -> players, zombies, vehicles and scenery push flags; vehicles/runners move air (default on)
  *   RealFlags_blockHeight(m)      -> wall flags with an object taller than this in front stay vanilla (default 1.5; 0 = off)
+ *   RealFlags_curtains(bool)      -> window curtains move while their window is open or broken (default on)
+ *   RealFlags_curtainExposure(x)  -> fraction of the outside wind reaching a curtain through a fully open window (default 0.5)
+ *   RealFlags_curtainLight(bool)  -> daylight flickers in past a closed curtain the wind lifts (default on)
+ *   RealFlags_curtainLightGain(x) -> strength of that light at a fully lifted curtain (default 0.12)
  * </pre>
  * Note: Lua needs the parentheses — {@code RealFlags_status} alone is a syntax error in the console.
  */
@@ -36,6 +40,8 @@ public final class LuaApi {
         String s = "RealFlags " + RealFlags.VERSION + " enabled=" + RealFlags.enabled + " failed=" + RealFlags.failed
                 + " debugOverlay=" + RealFlags.debugOverlay + " mesh=" + RealFlags.useMesh + " depthBias=" + RealFlags.depthBias + "@" + RealFlags.depthBiasAmount
                 + " flagsDefined=" + FlagRegistry.size()
+                + " curtains=" + RealFlags.curtains + "@" + RealFlags.curtainExposure
+                + " curtainLight=" + RealFlags.curtainLight + "@" + RealFlags.curtainLightGain
                 + " reclassified=" + RealFlags.reclassifiedCount() + " instances=" + Instances.size()
                 + " probe=" + RenderStateProbe.available()
                 + String.format(java.util.Locale.ROOT, " wind=%.1fm/s@%.0f%s", WindProvider.speed(), WindProvider.angleDeg(),
@@ -67,6 +73,40 @@ public final class LuaApi {
     @LuaMethod(name = "RealFlags_blockHeight", global = true)
     public static String blockHeight(double metres) {
         RealFlags.blockHeight = (float) Math.max(0.0, Math.min(10.0, metres));
+        return status();
+    }
+
+    /**
+     * Window curtains move while their window is open or broken (default on). Off re-bakes every reclassified object in
+     * its vanilla layer at once; flags are picked up again as their chunks re-render.
+     */
+    @LuaMethod(name = "RealFlags_curtains", global = true)
+    public static String curtains(boolean on) {
+        boolean was = RealFlags.curtains;
+        RealFlags.curtains = on;
+        if (was != on) RealFlags.invalidateReclassified();
+        return status();
+    }
+
+    /** Daylight flickers into the room past a closed curtain the wind lifts off an open window (default on). */
+    @LuaMethod(name = "RealFlags_curtainLight", global = true)
+    public static String curtainLight(boolean on) {
+        RealFlags.curtainLight = on;
+        if (!on) CurtainLight.removeAll();
+        return status();
+    }
+
+    /** Strength of that light (lamppost level before the engine's ×2) at a fully lifted curtain; clamped to [0, 0.5]. */
+    @LuaMethod(name = "RealFlags_curtainLightGain", global = true)
+    public static String curtainLightGain(double x) {
+        RealFlags.curtainLightGain = (float) Math.max(0.0, Math.min(0.5, x));
+        return status();
+    }
+
+    /** Fraction of the outside wind that reaches a curtain through a fully open window; clamped to [0, 4]. */
+    @LuaMethod(name = "RealFlags_curtainExposure", global = true)
+    public static String curtainExposure(double x) {
+        RealFlags.curtainExposure = (float) Math.max(0.0, Math.min(4.0, x));
         return status();
     }
 

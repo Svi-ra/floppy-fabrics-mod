@@ -37,6 +37,15 @@ public final class AnchorFrame {
         return this;
     }
 
+    /**
+     * Turns the front side around without changing the in-plane axes: for a cloth whose texture axes run as usual on
+     * screen but whose free side faces the other way (a curtain on the far edge of its square, room behind it).
+     */
+    public AnchorFrame flipNormal() {
+        nx = -nx; ny = -ny; nz = -nz;
+        return this;
+    }
+
     public AnchorFrame copyFrom(AnchorFrame o) {
         ox = o.ox; oy = o.oy; oz = o.oz;
         ux = o.ux; uy = o.uy; uz = o.uz;
