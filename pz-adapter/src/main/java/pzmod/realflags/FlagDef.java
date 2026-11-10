@@ -1,7 +1,9 @@
 package pzmod.realflags;
 
 import java.util.List;
+import pzmod.realflags.cloth.Canopy;
 import pzmod.realflags.cloth.ClothProfile;
+import pzmod.realflags.cloth.StringLine;
 
 /**
  * One entry of flags.json (schema v2, see docs/FLAGS_JSON.md).
@@ -11,7 +13,13 @@ import pzmod.realflags.cloth.ClothProfile;
  * Plain data, immutable after construction; no PZ types, so it is unit-testable.
  */
 public final class FlagDef {
-    public enum Kind { WALL, POLE }
+    /**
+     * WALL: cloth hanging from a straight top edge (flags, banners, curtains, drapes). POLE: canvas on a flag pole.
+     * LINE: a string between two points with pennants or bulbs ({@link StringLine}). CANOPY: fabric stretched over a
+     * frame with an optional valance ({@link Canopy}). LINE and CANOPY are "decorations": their own simulations and
+     * renderer path ({@link Decorations}), never a {@code Cloth}.
+     */
+    public enum Kind { WALL, POLE, LINE, CANOPY }
 
     /**
      * Which way the cloth's front faces; fixes the wall line the cloth lies on and its free side.
@@ -71,6 +79,32 @@ public final class FlagDef {
      * "blocked" (DECISIONS D77).
      */
     public final float inset;
+    /**
+     * Wall cloth lying over a piece of furniture and hanging down one of its faces (an altar cloth, DECISIONS D82): the
+     * face is the wall behind it (plane clamp kept), it is never "blocked", and only the cloth's own columns of the sprite
+     * move (the furniture beside it stays still).
+     */
+    public final boolean drape;
+
+    // LINE (relative to the object's square: x east, y south from its north corner, z up from its floor; metres)
+    /** String end points A and B; sag of the middle below the chord; the string kind. */
+    public final float lineAx, lineAy, lineAz, lineBx, lineBy, lineBz, lineSag;
+    public final StringLine.Profile lineProfile;
+
+    // CANOPY (2x frame pixels unless noted)
+    /**
+     * Fabric outline per column, flattened {x, top, pivot, bottom}, x ascending: the panel spans top..pivot, the valance
+     * pivot..bottom (pivot = bottom: no valance in that column).
+     */
+    public final float[] canopyColumns;
+    /** Outward panel normal (world, unit). */
+    public final float canopyNx, canopyNy, canopyNz;
+    /** The valance's outward horizontal direction at the middle of the hem, and how far it turns along it (degrees). */
+    public final float canopyOutX, canopyOutY, canopySpread;
+    /** Panel width along the hem and depth, metres; valance height (m) and flap count. */
+    public final float canopyWidth, canopyDepth, canopyValance;
+    public final int canopyFlaps;
+    public final Canopy.Profile canopyProfile;
     /** Render mesh over the sprite rectangle (cells). */
     public final int meshCols, meshRows;
 
@@ -95,6 +129,13 @@ public final class FlagDef {
         facing = b.facing; clothX = b.clothX; clothY = b.clothY; clothW = b.clothW; clothH = b.clothH; inset = b.inset;
         meshCols = b.meshCols; meshRows = b.meshRows;
         anchor = b.anchor; depthPoint = b.depthPoint; sizeW = b.sizeW; sizeH = b.sizeH;
+        drape = b.drape;
+        lineAx = b.lineAx; lineAy = b.lineAy; lineAz = b.lineAz; lineBx = b.lineBx; lineBy = b.lineBy; lineBz = b.lineBz;
+        lineSag = b.lineSag; lineProfile = b.lineProfile;
+        canopyColumns = b.canopyColumns; canopyNx = b.canopyNx; canopyNy = b.canopyNy; canopyNz = b.canopyNz;
+        canopyOutX = b.canopyOutX; canopyOutY = b.canopyOutY; canopySpread = b.canopySpread;
+        canopyWidth = b.canopyWidth; canopyDepth = b.canopyDepth; canopyValance = b.canopyValance;
+        canopyFlaps = b.canopyFlaps; canopyProfile = b.canopyProfile;
         canvasTexture = b.canvasTexture; canvasU0 = b.canvasU0; canvasV0 = b.canvasV0; canvasU1 = b.canvasU1; canvasV1 = b.canvasV1;
         staticQuads = List.copyOf(b.staticQuads);
         source = b.source;
@@ -102,7 +143,12 @@ public final class FlagDef {
 
     /** True for a wall cloth hanging free inside its square ({@link #inset} &gt; 0): no wall behind it. */
     public boolean freeHanging() {
-        return kind == Kind.WALL && inset > 0f;
+        return kind == Kind.WALL && inset > 0f && !drape;
+    }
+
+    /** LINE or CANOPY: simulated and drawn by {@link Decorations}, not by a {@code Cloth}. */
+    public boolean isDecoration() {
+        return kind == Kind.LINE || kind == Kind.CANOPY;
     }
 
     /** Wall cloth width in metres (horizontal pixel span along the wall axis: 32·tileScale px per metre at 2×). */
@@ -117,7 +163,8 @@ public final class FlagDef {
 
     @Override
     public String toString() {
-        return sprite + "(" + (curtain ? "CURTAIN" : kind) + (kind == Kind.WALL ? "," + facing : "") + "," + profile.name + ")";
+        String prof = profile != null ? profile.name : kind == Kind.LINE ? lineProfile.name : canopyProfile.name;
+        return sprite + "(" + (curtain ? "CURTAIN" : drape ? "DRAPE" : kind) + (kind == Kind.WALL ? "," + facing : "") + "," + prof + ")";
     }
 
     static final class Builder {
@@ -128,6 +175,13 @@ public final class FlagDef {
         float exposure = 1f, timeScale = 1f;
         Facing facing = Facing.S;
         float clothX, clothY, clothW, clothH, inset;
+        boolean drape;
+        float lineAx, lineAy, lineAz, lineBx, lineBy, lineBz, lineSag;
+        StringLine.Profile lineProfile;
+        float[] canopyColumns;
+        float canopyNx, canopyNy, canopyNz = 1f, canopyOutX, canopyOutY = 1f, canopySpread, canopyWidth, canopyDepth, canopyValance;
+        int canopyFlaps;
+        Canopy.Profile canopyProfile;
         int meshCols = 5, meshRows = 8;
         Point anchor, depthPoint;
         float sizeW, sizeH;
@@ -136,16 +190,50 @@ public final class FlagDef {
 
         FlagDef build() {
             if (sprite == null || sprite.isBlank()) throw new IllegalArgumentException("missing \"sprite\"");
-            if (profile == null) throw new IllegalArgumentException(sprite + ": no profile");
+            boolean deco = kind == Kind.LINE || kind == Kind.CANOPY;
+            if (profile == null && !deco) throw new IllegalArgumentException(sprite + ": no profile");
             if (profileFar == null) profileFar = profile;
             if (!(exposure >= 0f && exposure <= 4f)) throw new IllegalArgumentException(sprite + ": exposure must be 0..4");
             if (!(timeScale > 0f && timeScale <= 4f)) throw new IllegalArgumentException(sprite + ": timeScale must be in (0,4]");
             if (curtain && kind != Kind.WALL) throw new IllegalArgumentException(sprite + ": a curtain is a wall cloth");
+            if (kind == Kind.LINE) {
+                if (lineProfile == null) throw new IllegalArgumentException(sprite + ": line needs a \"type\" (bunting, bulbs, fairy)");
+                float dx = lineBx - lineAx, dy = lineBy - lineAy, dz = lineBz - lineAz;
+                float span = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+                if (!(span > 0.05f && span < 20f)) throw new IllegalArgumentException(sprite + ": line ends must be 0.05..20 m apart");
+                if (!(lineSag >= 0f && lineSag < span)) throw new IllegalArgumentException(sprite + ": line sag must be in [0, span)");
+                if (meshCols < 1 || meshRows < 1 || meshCols > 32 || meshRows > 32) throw new IllegalArgumentException(sprite + ": mesh 1..32");
+                return new FlagDef(this);
+            }
+            if (kind == Kind.CANOPY) {
+                if (canopyProfile == null) throw new IllegalArgumentException(sprite + ": canopy needs a \"type\" (awning)");
+                if (canopyColumns == null || canopyColumns.length < 8 || canopyColumns.length % 4 != 0)
+                    throw new IllegalArgumentException(sprite + ": canopy needs at least 2 \"columns\" [x, top, pivot, bottom]");
+                for (int c = 0; c < canopyColumns.length; c += 4) {
+                    float x = canopyColumns[c], top = canopyColumns[c + 1], piv = canopyColumns[c + 2], bot = canopyColumns[c + 3];
+                    if (!(top <= piv && piv <= bot)) throw new IllegalArgumentException(sprite + ": canopy column at x=" + x + " needs top <= pivot <= bottom");
+                    if (c > 0 && !(x > canopyColumns[c - 4])) throw new IllegalArgumentException(sprite + ": canopy columns must have increasing x");
+                }
+                float nl = (float) Math.sqrt(canopyNx * canopyNx + canopyNy * canopyNy + canopyNz * canopyNz);
+                if (!(nl > 1e-3f)) throw new IllegalArgumentException(sprite + ": canopy normal must not be zero");
+                canopyNx /= nl; canopyNy /= nl; canopyNz /= nl;
+                float ol = (float) Math.sqrt(canopyOutX * canopyOutX + canopyOutY * canopyOutY);
+                if (!(ol > 1e-3f)) throw new IllegalArgumentException(sprite + ": canopy outward direction must not be zero");
+                canopyOutX /= ol; canopyOutY /= ol;
+                if (!(canopyWidth > 0.1f && canopyWidth < 10f && canopyDepth > 0.1f && canopyDepth < 10f))
+                    throw new IllegalArgumentException(sprite + ": canopy size [w, d] must be 0.1..10 m");
+                if (canopyFlaps < 0 || canopyFlaps > 64) throw new IllegalArgumentException(sprite + ": canopy flaps 0..64");
+                if (canopyFlaps > 0 && !(canopyValance > 0.02f && canopyValance < 2f)) throw new IllegalArgumentException(sprite + ": valance height 0.02..2 m");
+                if (!(Math.abs(canopySpread) <= 270f)) throw new IllegalArgumentException(sprite + ": canopy spread -270..270 degrees");
+                if (meshCols < 1 || meshRows < 1 || meshCols > 32 || meshRows > 32) throw new IllegalArgumentException(sprite + ": mesh 1..32");
+                return new FlagDef(this);
+            }
             if (kind == Kind.WALL) {
                 if (!(clothW > 1f && clothH > 1f)) throw new IllegalArgumentException(sprite + ": wall needs \"cloth\" {x,y,w,h} > 1 px");
                 if (meshCols < 1 || meshRows < 1 || meshCols > 32 || meshRows > 32) throw new IllegalArgumentException(sprite + ": mesh 1..32");
                 if (!(inset >= 0f && inset < 1f)) throw new IllegalArgumentException(sprite + ": inset must be in [0, 1) metres");
                 if (curtain && inset != 0f) throw new IllegalArgumentException(sprite + ": a window curtain hangs on its window line (inset 0)");
+                if (drape && curtain) throw new IllegalArgumentException(sprite + ": a curtain is not a drape");
             } else {
                 if (anchor == null) throw new IllegalArgumentException(sprite + ": pole needs \"anchor\"");
                 if (!(sizeW > 0.05f && sizeH > 0.05f && sizeW < 10f && sizeH < 10f)) throw new IllegalArgumentException(sprite + ": pole \"size\" [w,h] metres");

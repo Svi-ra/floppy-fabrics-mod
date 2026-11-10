@@ -29,6 +29,7 @@ import zombie.iso.weather.ClimateManager;
  *   RealFlags_curtainExposure(x)  -> fraction of the outside wind reaching a curtain through a fully open window (default 0.5)
  *   RealFlags_curtainLight(bool)  -> daylight flickers in past a closed curtain the wind lifts (default on)
  *   RealFlags_curtainLightGain(x) -> strength of that light at a fully lifted curtain (default 0.12)
+ *   RealFlags_decorations(bool)   -> bunting, string lights and canopies move (default on)
  * </pre>
  * Note: Lua needs the parentheses — {@code RealFlags_status} alone is a syntax error in the console.
  */
@@ -42,6 +43,9 @@ public final class LuaApi {
                 + " flagsDefined=" + FlagRegistry.size()
                 + " curtains=" + RealFlags.curtains + "@" + RealFlags.curtainExposure
                 + " curtainLight=" + RealFlags.curtainLight + "@" + RealFlags.curtainLightGain
+                + " decorations=" + RealFlags.decorations
+                + String.format(java.util.Locale.ROOT, "{drawn=%d awake=%d stepped=%d bodies=%d}", Decorations.lastDrawn,
+                        Decorations.lastAwake, Decorations.lastStepped, Decorations.lastBodies)
                 + " reclassified=" + RealFlags.reclassifiedCount() + " instances=" + Instances.size()
                 + " probe=" + RenderStateProbe.available()
                 + String.format(java.util.Locale.ROOT, " wind=%.1fm/s@%.0f%s", WindProvider.speed(), WindProvider.angleDeg(),
@@ -57,6 +61,14 @@ public final class LuaApi {
                 + " | " + RealFlags.stats;
         RealFlags.log(s);
         return s;
+    }
+
+    /** Strings (bunting, string lights) and canopies move (default on). Off: drawn as vanilla. */
+    @LuaMethod(name = "RealFlags_decorations", global = true)
+    public static String decorations(boolean on) {
+        RealFlags.decorations = on;
+        if (!on) Decorations.clear();
+        return status();
     }
 
     /** Players, zombies, vehicles and scenery interact with flags (on by default). Off = wind only, as in 0.1.0. */

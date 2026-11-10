@@ -153,6 +153,21 @@ public final class Hooks {
                 RealFlags.injectFailure = false;
                 throw new IllegalStateException("injected test failure (RealFlags_testFailure)");
             }
+            if (def.isDecoration()) { // strings and canopies: their own simulations (D80, D81)
+                long t0 = System.nanoTime();
+                int frame = IsoWorld.instance.getFrameNo();
+                Scheduler.begin(frame);
+                WindProvider.update(frame);
+                float nz = TextureDraw.nextZ, ncd = TextureDraw.nextChunkDepth;
+                boolean drew = Decorations.draw(def, obj, frame, Decorations.frameDt(), distanceToCamera(obj), tex,
+                        x, y, w, h, r, g, b, a, modifier);
+                if (!drew) { // vanilla draws its own quad and needs the depth statics it set
+                    TextureDraw.nextZ = nz;
+                    TextureDraw.nextChunkDepth = ncd;
+                }
+                Scheduler.addNanos(System.nanoTime() - t0);
+                return drew;
+            }
             float open = 1f; // window openness for curtains (D65); flags are always "open"
             if (def.curtain) {
                 if (!RealFlags.curtains || !(obj instanceof IsoCurtain)) return false;
@@ -263,7 +278,7 @@ public final class Hooks {
     }
 
     /** Planar distance from the camera character in tiles, plus 2 tiles per level of height difference. */
-    private static float distanceToCamera(IsoObject obj) {
+    static float distanceToCamera(IsoObject obj) {
         IsoGridSquare sq = obj.getSquare();
         if (sq == null) return 0f;
         float dx = sq.getX() + 0.5f - IsoCamera.frameState.camCharacterX;

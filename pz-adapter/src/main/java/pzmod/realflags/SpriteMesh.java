@@ -54,14 +54,35 @@ final class SpriteMesh {
      */
     static boolean draw(FlagDef def, FlagInstance inst, Texture tex, float x, float y, float w, float h,
                         float r, float g, float b, float a, Consumer<TextureDraw> modifier) {
+        int ready = begin(tex, x, y, w, h, r, g, b, a, modifier);
+        if (ready != READY) return ready == SKIP_DRAWN;
+
+        boolean drew;
+        if (def.kind == FlagDef.Kind.WALL) {
+            drew = drawWall(def, inst, tex, r, g, b, a);
+        } else {
+            drew = drawPole(def, inst, tex, r, g, b, a);
+        }
+        return finish(drew);
+    }
+
+    /** {@link #begin} results: let vanilla draw / nothing to draw (alpha 0, as vanilla) / set up, go ahead. */
+    private static final int FALLBACK = 0, SKIP_DRAWN = 1, READY = 2;
+
+    /**
+     * Checks that we can replace this draw, maps the 2x frame onto the screen and captures vanilla's quad (UVs, depth
+     * and second texture) by running its modifier once on a scratch {@link TextureDraw}.
+     */
+    private static int begin(Texture tex, float x, float y, float w, float h, float r, float g, float b, float a,
+                             Consumer<TextureDraw> modifier) {
         RealFlags.Stats st = RealFlags.stats;
-        if (tex == null) { st.fallbackPath++; return false; }
-        if (!tex.isReady()) { st.fallbackNotReady++; return false; }
-        if (a == 0f) return true; // vanilla draws nothing either (GenericSpriteRenderState.render: a != 0)
-        if (tex.flip) { st.fallbackFlip++; return false; }
-        if (!PerformanceSettings.fboRenderChunk || WeatherFxMask.isRenderingMask()) { st.fallbackPath++; return false; }
-        if (!RenderStateProbe.isPlain()) { st.fallbackState++; return false; }
-        if (tex.getWidth() <= 0 || tex.getWidthOrig() <= 0) { st.fallbackPath++; return false; }
+        if (tex == null) { st.fallbackPath++; return FALLBACK; }
+        if (!tex.isReady()) { st.fallbackNotReady++; return FALLBACK; }
+        if (a == 0f) return SKIP_DRAWN; // vanilla draws nothing either (GenericSpriteRenderState.render: a != 0)
+        if (tex.flip) { st.fallbackFlip++; return FALLBACK; }
+        if (!PerformanceSettings.fboRenderChunk || WeatherFxMask.isRenderingMask()) { st.fallbackPath++; return FALLBACK; }
+        if (!RenderStateProbe.isPlain()) { st.fallbackState++; return FALLBACK; }
+        if (tex.getWidth() <= 0 || tex.getWidthOrig() <= 0) { st.fallbackPath++; return FALLBACK; }
 
         // vanilla quad (Texture.render adds the trim offset)
         float x0 = x + tex.offsetX, y0 = y + tex.offsetY, x1 = x0 + w, y1 = y0 + h;
@@ -80,22 +101,74 @@ final class SpriteMesh {
         TextureDraw.nextChunkDepth = nextChunkDepth;
         if (scratch.col0 != col || scratch.col1 != col || scratch.col2 != col || scratch.col3 != col) {
             st.fallbackColors++;
-            return false;
+            return FALLBACK;
         }
         capture();
+        return READY;
+    }
 
-        boolean drew;
-        if (def.kind == FlagDef.Kind.WALL) {
-            drew = drawWall(def, inst, tex, r, g, b, a);
-        } else {
-            drew = drawPole(def, inst, tex, r, g, b, a);
-        }
+    private static boolean finish(boolean drew) {
         if (drew && RealFlags.debugOverlay) drawOverlay();
         TextureDraw.nextZ = 0f;
         TextureDraw.nextChunkDepth = 0f;
-        if (drew) st.drawsReplaced++;
+        if (drew) RealFlags.stats.drawsReplaced++;
         return drew;
     }
+
+    // ------------------------------------------------------------------ displacement field (decorations)
+
+    /**
+     * A displacement of the vanilla picture, in 2x frame pixels: {@link #sample} writes (dx, dy, shade) for the frame
+     * point (fx, fy). Zero everywhere (shade 1) must reproduce the vanilla picture exactly.
+     */
+    interface Field {
+        void sample(float fx, float fy, float[] out);
+    }
+
+    /**
+     * Draws the sprite as an mc x mr mesh over vanilla's quad, each vertex moved by {@code field} (decorations: strings,
+     * canopies). Texture, depth and second-texture coordinates are vanilla's at the vertex's rest position, as for wall
+     * flags.
+     */
+    static boolean drawField(Field field, int mc, int mr, Texture tex, float x, float y, float w, float h,
+                             float r, float g, float b, float a, Consumer<TextureDraw> modifier) {
+        if ((mc + 1) * (mr + 1) > MAX_V || mc < 1 || mr < 1) return false;
+        int ready = begin(tex, x, y, w, h, r, g, b, a, modifier);
+        if (ready != READY) return ready == SKIP_DRAWN;
+        float inv = 1f / frameK;
+        for (int j = 0; j <= mr; j++) {
+            float t = (float) j / mr;
+            for (int i = 0; i <= mc; i++) {
+                float s = (float) i / mc;
+                int k = j * (mc + 1) + i;
+                float px = bilerp(cx, s, t), py = bilerp(cy, s, t);
+                vu[k] = bilerp(cu, s, t); vv[k] = bilerp(cv, s, t);
+                v1u[k] = bilerp(c1u, s, t); v1v[k] = bilerp(c1v, s, t);
+                v2u[k] = bilerp(c2u, s, t); v2v[k] = bilerp(c2v, s, t);
+                field.sample((px - frameX) * inv, (py - frameY) * inv, fieldOut);
+                vx[k] = px + fieldOut[0] * frameK;
+                vy[k] = py + fieldOut[1] * frameK;
+                vs[k] = fieldOut[2];
+            }
+        }
+        quad.setMainUv = true;
+        for (int j = 0; j < mr; j++) {
+            for (int i = 0; i < mc; i++) {
+                int k0 = j * (mc + 1) + i, k1 = k0 + 1, k3 = k0 + (mc + 1), k2 = k3 + 1;
+                quad.corner(0, vu[k0], vv[k0], v1u[k0], v1v[k0], v2u[k0], v2v[k0]);
+                quad.corner(1, vu[k1], vv[k1], v1u[k1], v1v[k1], v2u[k1], v2v[k1]);
+                quad.corner(2, vu[k2], vv[k2], v1u[k2], v1v[k2], v2u[k2], v2v[k2]);
+                quad.corner(3, vu[k3], vv[k3], v1u[k3], v1v[k3], v2u[k3], v2v[k3]);
+                emit(tex, vx[k0], vy[k0], vx[k1], vy[k1], vx[k2], vy[k2], vx[k3], vy[k3],
+                        vs[k0], vs[k1], vs[k2], vs[k3], r, g, b, a);
+            }
+        }
+        return finish(true);
+    }
+
+    private static final float[] fieldOut = new float[3];
+    /** Wall mesh column positions (fraction of the quad width); drapes insert the cloth's own edges (D82). */
+    private static final float[] colS = new float[34];
 
     private static void capture() {
         cx[0] = scratch.x0; cx[1] = scratch.x1; cx[2] = scratch.x2; cx[3] = scratch.x3;
@@ -127,18 +200,28 @@ final class SpriteMesh {
         int cols = inst.cloth.cols(), rows = inst.cloth.rows();
         boolean moving = !inst.cloth.isSleeping();
         float deficit = 0f; // depth the per-vertex lift could not supply (vertex too close to the cloth's top edge)
+        // a drape lies over furniture drawn in the same sprite: only its own columns move (D82)
+        boolean confine = def.drape;
+        float clothL = tlx, clothR = tlx + def.clothW * frameK;
+        if (confine) {
+            mc = drapeColumns(mc, clothL, clothR);
+            if (mc < 0 || (mc + 1) * (mr + 1) > MAX_V) return false;
+        } else {
+            for (int i = 0; i <= mc; i++) colS[i] = (float) i / mc;
+        }
 
         for (int j = 0; j <= mr; j++) {
             float t = (float) j / mr;
             for (int i = 0; i <= mc; i++) {
-                float s = (float) i / mc;
+                float s = colS[i];
                 int k = j * (mc + 1) + i;
                 float px = bilerp(cx, s, t), py = bilerp(cy, s, t);
+                boolean still = confine && (px <= clothL + 0.01f || px >= clothR - 0.01f);
                 vu[k] = bilerp(cu, s, t); vv[k] = bilerp(cv, s, t);
                 v1u[k] = bilerp(c1u, s, t); v1v[k] = bilerp(c1v, s, t);
                 v2u[k] = bilerp(c2u, s, t); v2v[k] = bilerp(c2v, s, t);
                 float shade = 1f;
-                if (moving) {
+                if (moving && !still) {
                     Projection.wallScreenToUv(def.facing, tlx, tly, widthM, heightM, ts, px, py, tmp, 0);
                     Projection.sampleGrid2(inst.screen, cols, rows, tmp[0], tmp[1], tmp, 2);
                     float dxs = tmp[2], dys = tmp[3];
@@ -175,6 +258,26 @@ final class SpriteMesh {
             }
         }
         return true;
+    }
+
+    /**
+     * Drape columns: the quad's left edge, the cloth's left edge, {@code inner} equal steps across the cloth, its right
+     * edge, the quad's right edge (edges outside the quad are dropped). Fills {@link #colS}; returns the cell count.
+     */
+    private static int drapeColumns(int inner, float clothL, float clothR) {
+        float q0 = cx[0], q1 = cx[1], qw = q1 - q0;
+        if (!(qw > 0f)) return -1;
+        int n = 0;
+        colS[n++] = 0f;
+        float l = (clothL - q0) / qw, r = (clothR - q0) / qw;
+        if (!(r > l)) return -1;
+        inner = Math.max(1, Math.min(inner, colS.length - 4));
+        for (int i = 0; i <= inner; i++) {
+            float s = l + (r - l) * i / inner;
+            if (s > colS[n - 1] + 1e-4f && s < 1f - 1e-4f) colS[n++] = s;
+        }
+        colS[n++] = 1f;
+        return n - 1;
     }
 
     // ------------------------------------------------------------------ pole

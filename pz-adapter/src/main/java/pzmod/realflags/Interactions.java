@@ -45,13 +45,13 @@ final class Interactions {
     /** Depth of the space in front of a wall flag that an object must reach into to block it, metres. */
     static final float BLOCK_DEPTH = 0.5f;
     /** Character body: radius and standing / low (crawling, sitting) height, metres. */
-    private static final float BODY_RADIUS = 0.25f, BODY_HEIGHT = 1.8f, BODY_LOW = 0.6f;
+    static final float BODY_RADIUS = 0.25f, BODY_HEIGHT = 1.8f, BODY_LOW = 0.6f;
     /** Vehicle body: clearance above the ground and allowance on top of the script's body height, metres. */
-    private static final float VEHICLE_CLEARANCE = 0.15f, VEHICLE_ROOF_EXTRA = 0.4f;
+    static final float VEHICLE_CLEARANCE = 0.15f, VEHICLE_ROOF_EXTRA = 0.4f;
     /** Air wash: range and strength (fraction of the body's speed). */
-    private static final float VEHICLE_WASH_RANGE = 3f, VEHICLE_WASH = 0.6f, VEHICLE_BOW = 0.25f;
-    private static final float RUN_WASH_RANGE = 1.2f, RUN_WASH = 0.35f, RUN_SPEED = 2.5f;
-    private static final float MAX_BODY_SPEED = 25f, MAX_WASH = 20f;
+    static final float VEHICLE_WASH_RANGE = 3f, VEHICLE_WASH = 0.6f, VEHICLE_BOW = 0.25f;
+    static final float RUN_WASH_RANGE = 1.2f, RUN_WASH = 0.35f, RUN_SPEED = 2.5f;
+    static final float MAX_BODY_SPEED = 25f, MAX_WASH = 20f;
 
     private static final float[] tmp3 = new float[3];
     private static final Vector3f vtmp = new Vector3f();
@@ -79,7 +79,7 @@ final class Interactions {
             boolean wasBlocked = inst.blocked;
             // curtains are never blocked: furniture under a window is normal; it is scenery to drape over (D68)
             // free-hanging cloths neither: there is no wall for furniture to stand against, only scenery around (D77)
-            inst.blocked = inst.def.kind == FlagDef.Kind.WALL && !inst.def.curtain && !inst.def.facing.flipped() && !inst.def.freeHanging()
+            inst.blocked = inst.def.kind == FlagDef.Kind.WALL && !inst.def.curtain && !inst.def.facing.flipped() && !inst.def.freeHanging() && !inst.def.drape
                     && RealFlags.blockHeight > 0f && isBlocked(obj, inst.def);
             if (inst.blocked != wasBlocked) {
                 if (inst.blocked) RealFlags.stats.blockedEvents++;
@@ -111,6 +111,7 @@ final class Interactions {
      */
     static float wallStandoff(IsoGridSquare sq, FlagDef def) {
         if (def.freeHanging()) return 0f; // no wall (and no plane clamp, D77)
+        if (def.drape) return CLOTH_THICKNESS; // the furniture's face is the plane itself (D82)
         float thickness = DEFAULT_WALL_THICKNESS;
         // curtains hang in a window opening, not on a wall face; far-edge cloths have no wall object on their own square
         if (def.curtain || def.facing.flipped()) return thickness + CLOTH_THICKNESS;

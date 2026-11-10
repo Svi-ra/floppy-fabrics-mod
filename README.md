@@ -8,7 +8,10 @@ too, but only while their window is open or broken: the wind blows them into the
 them; behind a closed window they stay exactly vanilla. **Fabric decorations** (0.4.0) move as well: church banners, the
 Fort Knox flags, the white bar banner, hospital privacy curtains and theatre stage curtains. Indoors there is no wind, so
 they only sway when someone walks into them; hospital and theatre curtains hang free across the middle of their square
-and can be pushed from either side. It is visual only and
+and can be pushed from either side. **Strings, awnings and drapes** (0.5.0) have simulations of their own: bunting
+sways and its pennants swing about the string, string lights swing on their sockets (the glow of lit bulbs follows
+them), awnings and market canopies breathe in the wind while their valance flutters, and the altar cloths move when
+someone brushes past. It is visual only and
 client-side: no new objects, no mod data, no save changes. With no wind, wall flags are pixel-identical to vanilla. Removing the mod
 restores vanilla.
 
@@ -130,6 +133,20 @@ longer matches.
   curtain the wind lifts lets daylight into the room through one dim, smoothed, building-local light (≤ 4 updates/s). Wind = outside wind × 0.5 × openness, only if outdoors is beyond the
   window: wind blowing in billows it, a steady draft keeps it breathing, wind along the wall sways it. Rolled-up sheets
   and blinds (less than ~0.46 m of cloth) stay vanilla.
+- **Strings (DECISIONS D80):** a dedicated simulation (`StringLine`), not a cloth sheet: a chain pinned at both ends
+  that sags into its catenary, with a pendant particle under every node — a pennant held in the plane across the
+  string (it can only swing *about* the string) with flat-plate drag, or a bulb on a socket with sphere drag. A string
+  spans two tiles; both tiles name the same end points and share one simulation. Lit lights draw an `_on_` overlay
+  sprite, bent with the same motion (D84).
+- **Canopies (D81):** a dedicated simulation (`Canopy`): the panel is held by its frame on every side, so it does not
+  hang — it breathes, as the two lowest membrane modes with large-deflection stiffening, driven by wind pressure, lift
+  over the top and gust fluctuation; the valance is a row of hinged flaps along the hem. The picture is described per
+  column (panel and valance band), measured from the sprite by `tools/decotool.py`.
+- **Gusts (D83):** strings and canopies share one gust field that travels downwind with the wind, so neighbouring
+  decorations (and both tiles of one string) are hit by the same gust a moment apart. Vehicles and runners move air
+  around them as for flags; vehicles can push strings.
+- **Drapes (D82):** the altar cloths are wall cloths hanging down the altar's face (clamped to it); only the cloth's own
+  columns of the sprite move.
 - **Instances:** created lazily from a shared settled prototype; far LOD by distance × zoom (continuous motion across
   switches); the nearest 64 simulate; calm wall flags hand back to vanilla's single quad; evicted after ~10 s unseen.
 
@@ -169,6 +186,12 @@ A curtain on a ceiling rail (hospital privacy curtain, stage curtain) has no wal
 in metres (0.5 = across the middle). It is then not clamped to a wall, can be pushed from both sides and is never
 "blocked". Use `"profile": "curtain"` for a softer, folding cloth.
 
+### A string, a canopy, a drape
+These are generated from the sprites by `tools/decotool.py` (see its header and `docs/FLAGS_JSON.md`): a `line` entry
+names the string's two end points relative to its tile, its sag and its type (`bunting`, `bulbs`, `fairy`); a `canopy`
+entry gives the fabric outline per column (panel top, valance top, hem), the panel normal, the hem's outward direction
+and how far it turns along a round hem; a `drape` is a wall cloth over furniture.
+
 ### A pole flag
 See the `street_decoration_01_16` entry in `mod/42/media/realflags/flags.json`: `anchor` (top of the hoist on the pole
 axis), `depthPoint` (a point on the shaft), `size` [fly, hoist] in metres, a `canvas` texture + `uv` (exclude rods or
@@ -201,6 +224,7 @@ enabled) makes that flag draw as vanilla.
 | `RealFlags_curtainExposure(x)` | Fraction of the outside wind reaching a curtain through a fully open window (default 0.5) |
 | `RealFlags_curtainLight(bool)` | Daylight flickers into the room past a closed curtain the wind lifts (default on) |
 | `RealFlags_curtainLightGain(x)` | Strength of that light at a fully lifted curtain in full daylight (default 0.12; max 0.5) |
+| `RealFlags_decorations(bool)` | Strings (bunting, string lights) and canopies move (default on); off draws them as vanilla |
 
 Lua needs the parentheses: `RealFlags_status()`, not `RealFlags_status`.
 
@@ -266,8 +290,13 @@ reach ~2 ms (seen in the first run); the average is the acceptance metric.
   found in testing.
 - The Fort Knox flags are drawn over 3 tiles, and each tile is its own cloth: when one part is pushed, a gap can open
   at the seam to the next part until it settles (a cloth spanning several objects is future work).
-- Bunting (pennant strings), awnings and the church altar cloth are fabric but are not animated: they are neither a cloth
-  hanging from a straight top edge nor a pole flag, the two shapes the simulation supports.
+- Strings, canopies and drapes (0.5.0) are verified by unit tests only, not yet in-game; their physical constants
+  (fabric densities, drag, valance stiffness) are estimates and untuned. Canopy geometry is approximate: the panel
+  normal, the hem's outward direction and the 2.0 m hem height used to place flaps in the gust field come from the
+  canopy's family and facing, not from a 3D model. On quarter-round canopies only the low end of the hem flutters; the
+  back views of plain canopies show no valance and only breathe. Bodies push strings (in practice only tall vehicles
+  reach them); canopies only feel the air that vehicles and runners move. The string lights' light source does not
+  move with the bulbs.
 - Fabric decorations (0.4.0) are verified by unit tests only, not yet in-game. The depth bias for wall cloths that are
   attached to a wall without being `WallOverlay` tiles (church banners) is a precaution and untuned.
 - Wall flags' painted top edges are draped curves; under strong wind the art's top edge can look slightly tilted.

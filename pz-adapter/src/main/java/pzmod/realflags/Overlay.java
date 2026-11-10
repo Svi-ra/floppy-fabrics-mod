@@ -10,7 +10,7 @@ import zombie.ui.UIFont;
  * The text is rebuilt 4× per second to keep allocation out of every frame; drawing it reuses the strings.
  */
 final class Overlay {
-    private static final String[] lines = new String[5];
+    private static final String[] lines = new String[6];
     private static long lastBuild;
 
     private Overlay() {}
@@ -44,5 +44,8 @@ final class Overlay {
         lines[4] = String.format(Locale.ROOT, "interactions %s   blocked %d (> %.2f m)   in contact %d   bodies near flags %d",
                 RealFlags.interactions ? "on" : "off", Scheduler.lastBlocked, RealFlags.blockHeight, Scheduler.lastContact,
                 Scheduler.lastBodies);
+        lines[5] = String.format(Locale.ROOT, "decorations %s   drawn %d  awake %d  stepped %d  bodies %d   strings %d  canopies %d",
+                RealFlags.decorations ? "on" : "off", Decorations.lastDrawn, Decorations.lastAwake, Decorations.lastStepped,
+                Decorations.lastBodies, Decorations.lineCount(), Decorations.canopyCount());
     }
 }

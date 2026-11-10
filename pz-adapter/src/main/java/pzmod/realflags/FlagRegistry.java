@@ -27,6 +27,8 @@ public final class FlagRegistry {
     private static final Object MISS = new Object();
 
     private static final Map<String, FlagDef> byName = new HashMap<>();
+    /** "_on_" overlay sprite name → the definition of its base sprite (not counted as definitions). */
+    private static final Map<String, FlagDef> onAliases = new HashMap<>();
     private static final IdentityHashMap<IsoSprite, Object> bySprite = new IdentityHashMap<>();
     private static boolean loaded;
 
@@ -40,6 +42,7 @@ public final class FlagRegistry {
             ensureLoaded();
             String name = sprite.getName();
             FlagDef def = name == null ? null : byName.get(name);
+            if (def == null && name != null) def = onAliases.get(name);
             if (def == null) {
                 // window curtains are generated from the sprite itself (Curtains, DECISIONS D64)
                 Object c = Curtains.defFor(sprite);
@@ -123,6 +126,12 @@ public final class FlagRegistry {
             FlagDef prev = byName.put(def.sprite, def);
             if (prev != null) RealFlags.log(source + ": " + def.sprite + " overrides entry from " + prev.source);
         }
+        // a lit light draws its "<tileset>_on_<index>" sprite on top (IsoObject.renderAnimatedAttachments, D84): the same
+        // definition bends it, through the same object's instance, so the glow follows the bulbs
+        for (FlagDef def : parsed.flags()) {
+            String on = onSpriteName(def.sprite);
+            if (on != null && !byName.containsKey(on)) onAliases.put(on, def);
+        }
         bySprite.clear();
         return parsed.flags().size();
     }
@@ -140,6 +149,20 @@ public final class FlagRegistry {
         }
     }
 
+    /** "tileset_12" → "tileset_on_12" (vanilla's lit-overlay naming, IsoWorld.java), or null. */
+    static String onSpriteName(String sprite) {
+        int u = sprite.lastIndexOf('_');
+        if (u <= 0 || u == sprite.length() - 1) return null;
+        for (int i = u + 1; i < sprite.length(); i++) if (!Character.isDigit(sprite.charAt(i))) return null;
+        return sprite.substring(0, u) + "_on" + sprite.substring(u);
+    }
+
+    /** The definition an "_on_" overlay sprite is drawn with (tests). */
+    static FlagDef byOnAlias(String sprite) {
+        ensureLoaded();
+        return onAliases.get(sprite);
+    }
+
     /** Looks a definition up by sprite name (tests, diagnostics). */
     static FlagDef byName(String sprite) {
         ensureLoaded();
@@ -149,6 +172,7 @@ public final class FlagRegistry {
     /** Test hook: forget everything. */
     static synchronized void resetForTests() {
         byName.clear();
+        onAliases.clear();
         bySprite.clear();
         loaded = true;
     }

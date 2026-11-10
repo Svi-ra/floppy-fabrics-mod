@@ -14,7 +14,7 @@ import zombie.iso.IsoObject;
  * invalidated so the chunk re-bakes it in its vanilla layer. While disabled every hook returns "do vanilla" at once.
  */
 public final class RealFlags {
-    public static final String VERSION = "0.3.0";
+    public static final String VERSION = "0.5.0";
     static final String TAG = "[RealFlags] ";
 
     /** User toggle (Lua: RealFlags_setEnabled). */
@@ -68,6 +68,8 @@ public final class RealFlags {
     static volatile boolean curtainLight = true;
     /** Strength of that light at a fully lifted curtain in full daylight. Lua: RealFlags_curtainLightGain. */
     static volatile float curtainLightGain = 0.12f;
+    /** Strings (bunting, string lights) and canopies move (D80, D81). Lua: RealFlags_decorations. */
+    static volatile boolean decorations = true;
 
     /** Flag objects we moved to the per-frame layer; weak so unloaded chunks can be collected. IsoObject uses identity equality. */
     private static final Set<IsoObject> reclassified = Collections.newSetFromMap(new WeakHashMap<>());
@@ -141,6 +143,7 @@ public final class RealFlags {
         long blockedEvents, unblockedEvents, blockedBySpriteEstimate, sceneryBoxes;
         long curtainLayer, curtainClosedDraws, curtainRebakes, windowEvents, sheetModelsSuppressed;
         long lightsCreated, lightsRemoved, lightUpdates;
+        long decoCreated, decoEvicted;
 
         @Override
         public String toString() {
@@ -153,6 +156,8 @@ public final class RealFlags {
                     + " lights{active=" + CurtainLight.active() + " created=" + lightsCreated + " removed=" + lightsRemoved
                     + " updates=" + lightUpdates + "}" + " geometry{sprites=" + Scenery.withGeometry + " none=" + Scenery.withoutGeometry + "}"
                     + " layerOverrides=" + layerOverrides + " frameContexts=" + frameContexts + " depthBiased=" + depthBiased
+                    + " decorations{lines=" + Decorations.lineCount() + " canopies=" + Decorations.canopyCount()
+                    + " created=" + decoCreated + " evicted=" + decoEvicted + "}"
                     + " drawsReplaced=" + drawsReplaced
                     + " subQuads=" + subQuads + " fallbacks{flip=" + fallbackFlip + " state=" + fallbackState
                     + " notReady=" + fallbackNotReady + " colors=" + fallbackColors + " path=" + fallbackPath

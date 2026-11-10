@@ -2,6 +2,31 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
 
+## [0.5.0] — unreleased — strings, canopies and drapes
+
+Decisions D80–D85. Unit-tested (92 tests) and patch-verified offline; not yet tested in-game.
+
+### Added
+- **Strings** (`cloth-core` `StringLine`, D80): bunting (`walls_decoration_01_64..67, 72..75, 80..83`,
+  `location_restaurant_bar_smutz_32..35`) and string lights (`walls_decoration_01_76..79, 88..91, 96..99`). A chain
+  pinned at both ends, sagging into its catenary, with a pennant (swings only about the string, flat-plate drag) or a
+  bulb (free pendulum, sphere drag) under every node. Each vanilla string spans two tiles; both share one simulation.
+- **Lit string lights** bend their `_on_` overlay sprite with the same motion, so the glow follows the bulbs (D84).
+- **Canopies** (`cloth-core` `Canopy`, D81): all 84 awnings and market canopies of `walls_decoration_01` and the
+  restaurant atlases. The panel breathes (two membrane modes with large-deflection stiffening, driven by wind pressure,
+  lift over the top and gust fluctuation); the valance is a row of hinged flaps along the hem, tapered to still at its
+  corners; the frame's bars and legs stay still.
+- **Drapes** (D82): the altar cloths `location_community_church_small_01_40..43` hang down the altar's face and move
+  when bodies brush them; only the cloth's columns of the sprite move.
+- **Shared, advected gust field** (`GustField`, D83) for strings and canopies; vehicles and runners move air around
+  them; vehicles push strings (`BodyScan`).
+- `tools/decotool.py` generates `media/realflags/decorations.json` (116 entries) from `Tiles2x.pack`.
+- `flags.json`: kinds `line`, `canopy`, `drape`. Lua `RealFlags_decorations(bool)`; status and overlay counters.
+- 23 tests (`StringLineTest`, `CanopyTest`, `DecorationsTest`).
+
+### Changed
+- `SpriteMesh`: a generic displacement-field mesh for decorations; the flag and curtain paths are unchanged.
+
 ## [0.4.0] — unreleased — fabric decorations
 
 Decisions D77–D79. Unit-tested and patch-verified offline; not yet tested in-game.

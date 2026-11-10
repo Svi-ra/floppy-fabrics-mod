@@ -684,7 +684,7 @@ not observed in-game.
   objects yet). Top edges measured by a median fit of slope ±0.5 (their cut corners fool `flagtool.py measure`).
 - `location_restaurant_bar_smutz_23`: the white banner (`WallOverlay`, Tiles2x only), measured with `flagtool.py`.
 - D77's hospital and theatre curtains.
-Not added, with reasons:
+Not added in 0.4.0 (all added by 0.5.0 with simulations of their own, D80–D82), with reasons:
 - Bunting (`walls_decoration_01_64..67, 72..75, 80..83`, `location_restaurant_bar_smutz_32..35`): pennants on a sagging
   string; no straight pinned top edge, and the string line is not a wall line. Needs its own kind.
 - Awnings (`walls_decoration_01_68..71, 84..87, 92..95, 100..103, 108..167`, `location_restaurant_pileocrepe_01_4..5`,
@@ -699,6 +699,84 @@ Not added, with reasons:
 0.4.0: 69 unit tests pass (3 new: inset parsing, free-hanging placement, wall-hung placement; the origin round-trip test
 now covers all 35 wall entries), `verifyPatches` applies all advices to 42.21.0, deployed to `mods/RealFlags` (jar SHA-256
 `fcb3ac5709da7fc04bea8846cd538ccb632ab7bb97ce9acf592addd6fc14ec0f`). **Not yet tested in-game.**
+
+## Phase 9 — strings, canopies and drapes (2026-11-10)
+
+Request: cloth physics for every fabric object D79 left out — bunting, awnings and canopies, the altar cloth — plus the
+outdoor string lights, with dedicated simulations where the flag cloth does not fit, without regressions. Evidence:
+`newtiledefinitions.tiles.txt` (CustomName/Facing/SpriteGridPos/lights properties), every sprite extracted from
+`Tiles2x.pack`, pz-mcp-server (`pz_search_java` for `HasLightOnSprite`) and, because that decompile is an older build
+(D71), the installed 42.21.0 jar decompiled with Vineflower (`IsoObject`, `IsoSprite`, `FBORenderCell`).
+
+**D80 · Strings are not cloth sheets: `StringLine`.** Tile properties: `CustomName = Bunting` (`walls_decoration_01_64..67,
+72..75, 80..83`; `location_restaurant_bar_smutz_32..35` has the same pictures, `CustomName = CustomName`) and
+`CustomName = Lights` (`walls_decoration_01_76..79` Rainbow, `88..91` Small, `96..99` Large; `exterior`,
+`HasLightOnSprite`, `lightswitch`). `lighting_outdoor_01_48..51` (also "Lights") are flood lights and
+`lighting_indoor_01_56..58` metal lamps: not strings. Each string is two tiles (`SpriteGridPos` (0,0)+(1,0) facing S,
+(0,0)+(0,1) facing E). Fitting the top of the opaque pixels of both tiles on the edge line with a parabola: every
+string spans the full 2 m edge at ≈ 2.35–2.47 m (the top of a 2.449 m wall) with a sag of 0.20–0.24 m; pennants hang
+≈ 0.22 m. A pennant sewn along its top cannot be a hanging rectangle pinned on a straight edge (D79), so: a 12-segment
+Verlet chain pinned at both ends (inextensible PBD segments, 16 iterations: 6 let it stretch 25 % at 30 m/s), one
+pendant particle per interior node at the hang length — pennants held in the plane perpendicular to the local tangent
+(they swing about the string, never along it) with flat-plate drag ½ρ·Cd·A·(v·n)|v·n| on the pennant's normal, bulbs
+free pendulums with sphere drag — thin-cylinder drag on the string, 1/120 s step, settle → reference, calm restore,
+sleep exactly on the reference. Both tiles of a string list its whole geometry relative to themselves; the instance is
+keyed by the absolute end points (cm), so they share one simulation and the seam between them cannot open. A pixel is
+placed along the string by its frame x; below the string's rest line it blends toward the pendant there (a rigid swing
+up to 1.5 × the hang length).
+
+**D81 · Canopies are not hanging cloths either: `Canopy`.** 84 sprites (`CustomName = Canopy`: `walls_decoration_01_68..71,
+84..87, 92..95, 100..103, 108..167`, `location_restaurant_bar_smutz_12..15`, `_pie_01_4..5`, `_pileocrepe_01_4..5`).
+Alpha masks group them into 31 shapes in color variants. Fabric stretched over a frame is held on every edge, so the
+eye reads two things: the panel breathing and the valance fluttering. Panel: the two lowest membrane modes
+sin(πs)sin(πt), sin(2πs)sin(πt) as oscillators with damping and a cubic large-deflection stiffening κa³; driven by
+½ρ(Cn(w·n)|w·n| + Cl|w∥|² + Cg|w|²η); κ set so 15 m/s straight at the panel gives 6 cm (cap 10 cm). A linear membrane
+cannot be both slow (visible) and stiff (cm-scale deflection) — f₁ = 2.2 Hz needs T ≈ 4 N/m, which would sag ≈ 2 m —
+the cubic term is what real fabric does. At the cap the stiffened frequency is < 300 rad/s, so ω·h < 2 at the 1/240 s
+step (tested). Valance: K = 8 uncoupled hinged strips, θ'' = −(3g/2L + k)sinθ − 2ζωθ' + (3ρCd/4ρ_sL)·cosθ·v|v| with the
+projected-height cosθ; k = 60 s⁻² (coated canvas) keeps a 3 m/s breeze near 24°; tapered to zero at the hem's ends
+(sewn to the frame corners). Picture: per 4-px column, panel top → valance top (pivot) → hem, from the alpha mask after
+a 5×5 opening (removes the frame's 2–3 px bars and legs). The valance band (14–18 px ≈ 0.2 m) runs along the hem only:
+for straight canopies where the smoothed outline follows the hem's iso slope (+0.5 along x, −0.5 along y; a line fit
+over ±12 px, because scallops and 4-px steps defeat a local gradient), for round ones the low part of the outline
+(within 28 px of its lowest point). Its top is a smooth line above the scallop tips. Back views of plain canopies
+(`92/93/108/109/124/125/136/137/140/141`, curved `95/111/127/139/143`) show no valance: panel only. Panel normal and hem
+direction come from the family and the tile's `Facing` (tilt 30–35° toward it; round hems turn by 90° or 180°).
+Generated by `tools/decotool.py` into `media/realflags/decorations.json`; overlays checked by eye for every shape.
+
+**D82 · Altar cloth = a drape (a wall cloth over furniture).** `location_community_church_small_01_40..43` (Altar,
+Decorated, `Surface = 34`) are one sprite each for wood and cloth. The hanging part *is* a cloth on a straight edge, so
+it reuses the wall cloth, with a new `drape` flag: the altar's face is the plane the cloth may not pass (clamp kept,
+unlike a free-hanging inset cloth), never blocked, standoff = the cloth's half thickness, and the wall mesh inserts
+columns at the cloth's left and right edges and moves nothing outside them (the altar beside it stays still).
+Faces: 40/41 east (top edge rising to the right), 42/43 south. Inset from an altar top at Surface 34 px (1x) ≈ 0.87 m:
+40/43 at 0.52/0.54 m, 41/42 on the tile edge (the computation gives −0.06, clamped to 0).
+
+**D83 · One gust field for all decorations; their bodies and air.** `GustField`: gusts advected downwind,
+g(t − (r·ŵ)/U) (frozen turbulence), fixed seed, sampled at each particle/flap's world position with a shared real-time
+clock — so two tiles of a string, or a row of market stalls, are hit by one gust front a moment apart (tested: same
+point and clock ⇒ identical motion; g(t, x) = g(t + Δx/U, x + Δx·ŵ)). `BodyScan` reuses the flags' constants for
+characters, vehicles and air wash around an arbitrary box (the flags' `Interactions` code is untouched): strings get
+body colliders (in practice only tall vehicles reach 2.2 m), canopies only the air vehicles and runners move.
+
+**D84 · Lit string lights draw an `_on_` overlay; it is bent with the same motion.** Jar: `IsoWorld` sets
+`HasLightOnSprite` when a `<tileset>_on_<index>` sprite exists; `IsoObject.hasAnimatedAttachments` creates that overlay
+and `renderAnimatedAttachments` draws it via `IsoSprite.render → renderCurrentAnim → performRenderFrame(…, obj, …)` in
+`FBORenderCell.renderAnimatedAttachments`, which sets `renderTranslucentOnly = true`. So our existing performRenderFrame
+and Texture.render advice see it, with the light object: `FlagRegistry` maps every `<tileset>_on_<n>` name to the base
+sprite's definition (not counted as a definition), the same instance is found and (already stepped this frame) only
+drawn again. The light source itself stays put.
+
+**D85 · Architecture.** `FlagDef.Kind` gains LINE and CANOPY ("decorations"); `Hooks.onTextureRender` hands them to
+`Decorations` before any flag/curtain code, inside the same failure isolation. They have their own instances
+(`LineInstance` keyed by geometry, `CanopyInstance` by object, both evicted when unseen), their own LOD (half mesh beyond
+the flags' LOD distance × zoom), sleep → vanilla quad, and `SpriteMesh.drawField` — a displacement-field mesh sharing
+`SpriteMesh`'s capture/emit (refactored into `begin`/`finish`, behaviour unchanged for flags). No new advice; all
+previous ones still apply (`verifyPatches`).
+
+### Phase 9 status
+0.5.0: 92 unit tests pass (23 new), `verifyPatches` applies all advices, deployed to `mods/RealFlags` (jar SHA-256
+`67c0c5a45c72888548b2ef210261fa6414e980bc3d9413c47e9b1b3ae87acb32`). **Not yet tested in-game.**
 
 ## Acceptance status (MVP)
 | Criterion | Status |

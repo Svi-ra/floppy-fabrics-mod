@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import pzmod.realflags.cloth.Canopy;
 import pzmod.realflags.cloth.ClothProfile;
 import pzmod.realflags.cloth.ClothProfiles;
 import pzmod.realflags.cloth.PinLayout;
+import pzmod.realflags.cloth.StringLine;
 
 /**
  * flags.json (schema v1 and v2) → {@link FlagDef}. Pure Java, no PZ types (unit-tested). Field reference:
@@ -44,11 +46,18 @@ public final class FlagJson {
         b.source = source;
         b.sprite = str(e, "sprite", null);
         String kind = str(e, "kind", "wall");
-        try {
-            b.kind = FlagDef.Kind.valueOf(kind.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException((b.sprite != null ? b.sprite : "?") + ": unknown kind '" + kind + "'");
+        if ("drape".equalsIgnoreCase(kind)) { // a wall cloth over furniture (D82)
+            b.kind = FlagDef.Kind.WALL;
+            b.drape = true;
+        } else {
+            try {
+                b.kind = FlagDef.Kind.valueOf(kind.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException((b.sprite != null ? b.sprite : "?") + ": unknown kind '" + kind + "'");
+            }
         }
+        if (b.kind == FlagDef.Kind.LINE) return line(b, e);
+        if (b.kind == FlagDef.Kind.CANOPY) return canopy(b, e);
         String profileName = str(e, "profile", b.kind == FlagDef.Kind.POLE ? "pole" : "wall");
         ClothProfile base = ClothProfiles.byName(profileName);
         if (base == null) throw new IllegalArgumentException(b.sprite + ": unknown profile '" + profileName + "'");
@@ -73,7 +82,7 @@ public final class FlagJson {
             float[] mesh = nums(e, "mesh", 2);
             if (mesh != null) { b.meshCols = (int) mesh[0]; b.meshRows = (int) mesh[1]; }
             b.inset = num(e, "inset", 0f);
-            if (b.inset > 0f) { // free-hanging: no wall plane to keep the cloth in front of (D77)
+            if (b.inset > 0f && !b.drape) { // free-hanging: no wall plane to keep the cloth in front of (D77)
                 b.profile = b.profile.toBuilder().clampToAnchorPlane(false).build();
                 b.profileFar = b.profileFar.toBuilder().clampToAnchorPlane(false).build();
             }
@@ -91,6 +100,79 @@ public final class FlagJson {
             if (uv != null) { b.canvasU0 = uv[0]; b.canvasV0 = uv[1]; b.canvasU1 = uv[2]; b.canvasV1 = uv[3]; }
             b.staticQuads = staticQuads(e, b.sprite);
         }
+        return b.build();
+    }
+
+    /**
+     * A string with pennants or bulbs (D80):
+     * {@code "line": {"a": [x,y,z], "b": [x,y,z], "sag": m, "type": "bunting"|"bulbs"|"fairy", "hang": m}}; a and b are
+     * relative to the object's square (x east, y south from its north corner, z up from its floor). Every tile drawing a
+     * part of one string lists the same string (its own offset applied), so they share one simulation.
+     */
+    private static FlagDef line(FlagDef.Builder b, Map<String, Object> e) {
+        Map<String, Object> l = map(e, "line");
+        if (l == null) throw new IllegalArgumentException(b.sprite + ": line needs \"line\" {a, b, sag, type}");
+        float[] a = nums(l, "a", 3), bb = nums(l, "b", 3);
+        if (a == null || bb == null) throw new IllegalArgumentException(b.sprite + ": line needs \"a\" and \"b\" [x, y, z]");
+        b.lineAx = a[0]; b.lineAy = a[1]; b.lineAz = a[2];
+        b.lineBx = bb[0]; b.lineBy = bb[1]; b.lineBz = bb[2];
+        b.lineSag = num(l, "sag", 0f);
+        String type = str(l, "type", "bunting");
+        StringLine.Profile prof = StringLine.byName(type);
+        if (prof == null) throw new IllegalArgumentException(b.sprite + ": unknown line type '" + type + "'");
+        if (l.containsKey("hang")) {
+            float hang = num(l, "hang", prof.pendantLength);
+            if (!(hang > 0.005f && hang < 2f)) throw new IllegalArgumentException(b.sprite + ": line hang must be 0.005..2 m");
+            prof = prof.withPendantLength(hang);
+        }
+        b.lineProfile = prof;
+        b.exposure = num(e, "exposure", 0.6f);
+        b.timeScale = num(e, "timeScale", 1f);
+        b.meshCols = 16; b.meshRows = 10;
+        float[] mesh = nums(e, "mesh", 2);
+        if (mesh != null) { b.meshCols = (int) mesh[0]; b.meshRows = (int) mesh[1]; }
+        return b.build();
+    }
+
+    /**
+     * Fabric over a frame (D81): {@code "canopy": {"columns": [[x, top, pivot, bottom], ...], "normal": [x,y,z],
+     * "out": [x,y], "spread": deg, "size": [w, d], "flaps": n, "valance": m, "type": "awning"}}.
+     */
+    @SuppressWarnings("unchecked")
+    private static FlagDef canopy(FlagDef.Builder b, Map<String, Object> e) {
+        Map<String, Object> c = map(e, "canopy");
+        if (c == null) throw new IllegalArgumentException(b.sprite + ": canopy needs \"canopy\" {columns, normal, out, size}");
+        Object cols = c.get("columns");
+        if (!(cols instanceof List<?> list)) throw new IllegalArgumentException(b.sprite + ": canopy \"columns\" must be an array");
+        float[] flat = new float[4 * list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            Object col = list.get(i);
+            if (!(col instanceof List<?> q) || q.size() != 4) throw new IllegalArgumentException(b.sprite + ": canopy column " + i + " must be [x, top, pivot, bottom]");
+            for (int k = 0; k < 4; k++) {
+                if (!(q.get(k) instanceof Double d) || !Double.isFinite(d)) throw new IllegalArgumentException(b.sprite + ": canopy column " + i + " must contain numbers");
+                flat[4 * i + k] = d.floatValue();
+            }
+        }
+        b.canopyColumns = flat;
+        float[] n = nums(c, "normal", 3);
+        if (n != null) { b.canopyNx = n[0]; b.canopyNy = n[1]; b.canopyNz = n[2]; }
+        float[] out = nums(c, "out", 2);
+        if (out != null) { b.canopyOutX = out[0]; b.canopyOutY = out[1]; }
+        b.canopySpread = num(c, "spread", 0f);
+        float[] size = nums(c, "size", 2);
+        if (size == null) throw new IllegalArgumentException(b.sprite + ": canopy needs \"size\" [width, depth] metres");
+        b.canopyWidth = size[0]; b.canopyDepth = size[1];
+        b.canopyFlaps = (int) num(c, "flaps", 8f);
+        b.canopyValance = num(c, "valance", 0.2f);
+        String type = str(c, "type", "awning");
+        Canopy.Profile prof = Canopy.byName(type);
+        if (prof == null) throw new IllegalArgumentException(b.sprite + ": unknown canopy type '" + type + "'");
+        b.canopyProfile = prof;
+        b.exposure = num(e, "exposure", 0.7f);
+        b.timeScale = num(e, "timeScale", 1f);
+        b.meshCols = 12; b.meshRows = 22;
+        float[] mesh = nums(e, "mesh", 2);
+        if (mesh != null) { b.meshCols = (int) mesh[0]; b.meshRows = (int) mesh[1]; }
         return b.build();
     }
 

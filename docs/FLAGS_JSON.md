@@ -16,7 +16,7 @@ in mod load order, files sorted by name; for the same sprite a later file wins. 
 | Key | Type | Default | Meaning |
 |---|---|---|---|
 | `sprite` | string | — (required) | Sprite name, e.g. `walls_decoration_01_16` |
-| `kind` | `"wall"` / `"pole"` | `"wall"` | Wall-mounted drape, or flag on a pole |
+| `kind` | `"wall"` / `"pole"` / `"drape"` / `"line"` / `"canopy"` | `"wall"` | Wall-mounted cloth, flag on a pole, cloth over furniture, string with pennants or bulbs, fabric over a frame |
 | `profile` | `"wall"` / `"pole"` | = kind | Built-in physics profile (`ClothProfiles`) |
 | `physics` | object | — | Overrides: `grid` [cols, rows] (defaults wall 5×8, pole 8×5), `mass` kg, `drag` (Cd), `friction` (Cf), `damping`, `stiffness` [stretch, shear, bend], `iterations` (default 4), `pin` (`top`, `left`, `right`, `top_corners`, `left_corners`), `restore` (pose memory 1/s; pole default 5), `lodGrid` [cols, rows] for the far LOD (defaults wall 4×6, pole 6×4) |
 | `exposure` | number 0–4 | wall 0.35, pole 1 | Fraction of the climate wind the flag feels |
@@ -58,6 +58,36 @@ If the canvas texture is missing (mod not enabled) the flag draws as vanilla and
 
 For a cloth under a rail or rod drawn in the same sprite, measure the cloth below the rail: pixels above the pinned top
 edge are never moved, so the rail stays still.
+
+## Drapes (`"kind": "drape"`)
+A wall cloth lying over a piece of furniture and hanging down one of its faces (the altar cloths). Same fields as a wall
+flag; `inset` places the face inside the square. The face is the plane the cloth cannot pass (unlike a free-hanging
+cloth), it is never blocked, and only the sprite's columns between the cloth's left and right edges move — the furniture
+drawn beside it stays still.
+
+## Strings (`"kind": "line"`)
+| Key | Type | Meaning |
+|---|---|---|
+| `line.a`, `line.b` | [x, y, z] m | End points relative to the object's square (x east, y south from its north corner, z up from its floor). Every tile drawing part of one string lists the same string with its own offset; equal absolute end points (to the centimetre) share one simulation |
+| `line.sag` | m | How far the middle hangs below the straight line a–b |
+| `line.type` | `"bunting"` / `"bulbs"` / `"fairy"` | Pennants (swing about the string, plate drag), festoon bulbs on sockets, tiny bulbs on the wire |
+| `line.hang` | m | Pendant hang length (pennant height; socket + bulb) |
+| `exposure` | 0–4 | Default 0.6 (outside squares only) |
+| `mesh` | [cols, rows] | Default [16, 10] |
+
+## Canopies (`"kind": "canopy"`)
+| Key | Type | Meaning |
+|---|---|---|
+| `canopy.columns` | [[x, top, pivot, bottom], ...] | Fabric outline per column, x ascending (2x px). Panel = top..pivot (held by the frame on every edge), valance = pivot..bottom (pivot = bottom: no valance there) |
+| `canopy.normal` | [x, y, z] | Panel outward normal (world) |
+| `canopy.out` | [x, y] | The hem's outward horizontal direction at its middle |
+| `canopy.spread` | degrees | How far that direction turns from one end of the hem to the other (round canopies) |
+| `canopy.size` | [w, d] m | Panel width along the hem and depth |
+| `canopy.flaps` | int | Valance flap nodes (0 = no valance) |
+| `canopy.valance` | m | Valance height |
+| `canopy.type` | `"awning"` | Physical profile (`Canopy.AWNING`) |
+| `exposure` | 0–4 | Default 0.7 |
+| `mesh` | [cols, rows] | Default [12, 22] |
 
 ## Example
 ```json
