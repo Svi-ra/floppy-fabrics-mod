@@ -5,7 +5,10 @@ Flag pole flies a real flag that turns with the wind and droops when it's calm. 
 zombies and vehicles push them, passing cars and running people blow them about, they stop at walls and drape over
 furniture, and a wall flag with something tall (over 1.5 m) standing in front of it stays still. **Window curtains** move
 too, but only while their window is open or broken: the wind blows them into the room and people brushing past push
-them; behind a closed window they stay exactly vanilla. It is visual only and
+them; behind a closed window they stay exactly vanilla. **Fabric decorations** (0.4.0) move as well: church banners, the
+Fort Knox flags, the white bar banner, hospital privacy curtains and theatre stage curtains. Indoors there is no wind, so
+they only sway when someone walks into them; hospital and theatre curtains hang free across the middle of their square
+and can be pushed from either side. It is visual only and
 client-side: no new objects, no mod data, no save changes. With no wind, wall flags are pixel-identical to vanilla. Removing the mod
 restores vanilla.
 
@@ -160,6 +163,12 @@ mod load order (files sorted by name); for the same sprite a later file wins. Fu
    `RealFlags_forceWind(40, 308)` should each make it billow on one of the two directions (it only moves when the wind
    blows off its wall, and only on an outside square).
 
+### A cloth hanging inside its square
+A curtain on a ceiling rail (hospital privacy curtain, stage curtain) has no wall behind it. Measure it like a wall flag
+(the cloth starts under the rail, so the rail stays still) and add `"inset"`: how far its line is from the facing's edge,
+in metres (0.5 = across the middle). It is then not clamped to a wall, can be pushed from both sides and is never
+"blocked". Use `"profile": "curtain"` for a softer, folding cloth.
+
 ### A pole flag
 See the `street_decoration_01_16` entry in `mod/42/media/realflags/flags.json`: `anchor` (top of the hoist on the pole
 axis), `depthPoint` (a point on the shaft), `size` [fly, hoist] in metres, a `canvas` texture + `uv` (exclude rods or
@@ -255,8 +264,12 @@ reach ~2 ms (seen in the first run); the average is the acceptance metric.
   depth bias (same 2e-4 as wall flags) is applied as a precaution and has not been tuned.
 - Wall flags stored as an *attached sprite* of a wall object (rather than a separate object) are not animated. None were
   found in testing.
-- The 3-tile Knox flags and the white bar banner are not in the starter set (a cloth spanning several objects is
-  future work).
+- The Fort Knox flags are drawn over 3 tiles, and each tile is its own cloth: when one part is pushed, a gap can open
+  at the seam to the next part until it settles (a cloth spanning several objects is future work).
+- Bunting (pennant strings), awnings and the church altar cloth are fabric but are not animated: they are neither a cloth
+  hanging from a straight top edge nor a pole flag, the two shapes the simulation supports.
+- Fabric decorations (0.4.0) are verified by unit tests only, not yet in-game. The depth bias for wall cloths that are
+  attached to a wall without being `WallOverlay` tiles (church banners) is a precaution and untuned.
 - Wall flags' painted top edges are draped curves; under strong wind the art's top edge can look slightly tilted.
 - Settings changed from Lua last for the session only.
 - No tearing yet (the per-constraint/per-triangle `alive` flags exist for it).

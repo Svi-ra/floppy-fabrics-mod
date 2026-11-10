@@ -2,6 +2,32 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
 
+## [0.4.0] — unreleased — fabric decorations
+
+Decisions D77–D79. Unit-tested and patch-verified offline; not yet tested in-game.
+
+### Added
+- **31 more fabric tiles move** (data in `flags.json`, now 36 entries):
+  - church banners `location_community_church_small_01_76..78, 84..86`;
+  - Fort Knox flags `location_military_knox_01_8..13` (one flag over 3 tiles; each tile is its own cloth);
+  - the white bar banner `location_restaurant_bar_smutz_23`;
+  - hospital privacy curtains `location_community_medical_01_41..43, 45..47` (blue) and `_144..149` (white);
+  - theatre stage curtains `location_entertainment_theatre_01_92..94, 101..103`.
+  Indoors (most of them) there is no wind: they move when people, zombies or vehicles push them.
+- **`inset`** for wall cloths (flags.json): a cloth hanging inside its square instead of on its edge. Hospital and theatre
+  curtains hang from a rail across the middle of their square (`inset` 0.5): no wall plane clamp, touched from both
+  sides, never blocked. Rails stay still (the cloth is measured below them).
+
+### Changed
+- The toward-viewer depth bias for wall cloths now also covers tiles attached to a wall (`attachedN`/`attachedW`) that are
+  not `WallOverlay` tiles, e.g. the church banners (D78). Free-hanging cloths keep vanilla depth.
+
+### Not animated (reasons in D79)
+- Bunting (`walls_decoration_01_64..67, 72..75, 80..83`, `location_restaurant_bar_smutz_32..35`), awnings (`walls_decoration_01_68..71,
+  84..87, 92..95, 100..103, 108..167`, `location_restaurant_pileocrepe_01_4..5`, `location_restaurant_pie_01_4..5`,
+  `location_restaurant_bar_smutz_12..15`), the church altar cloth (`location_community_church_small_01_40..43`),
+  and rails/rods without cloth (`location_community_medical_01_40, 44`, `location_entertainment_theatre_01_95, 100`).
+
 ## [0.3.0] — unreleased — window curtains
 
 Decisions D63–D76. Verified in-game by user report (2026-11-09); per-step results and CPU figures of `docs/PHASE7_TEST.md` not recorded.

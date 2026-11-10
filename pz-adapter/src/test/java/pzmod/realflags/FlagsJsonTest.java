@@ -42,7 +42,8 @@ class FlagsJsonTest {
         Path p = Path.of(System.getProperty("realflags.modDir", "../mod"), "42", "media", "realflags", "flags.json");
         FlagJson.Parsed parsed = FlagJson.parse(Files.readString(p, StandardCharsets.UTF_8), p.toString());
         assertEquals(List.of(), parsed.errors());
-        assertEquals(5, parsed.flags().size());
+        assertEquals(36, parsed.flags().size());
+        assertEquals(36, parsed.flags().stream().map(f -> f.sprite).distinct().count(), "one entry per sprite");
         FlagDef pole = parsed.flags().stream().filter(f -> f.kind == FlagDef.Kind.POLE).findFirst().orElseThrow();
         assertEquals("street_decoration_01_16", pole.sprite);
         assertEquals("media/dgv_flags/UnitedStates_0_0_256x143.png", pole.canvasTexture);
@@ -86,6 +87,25 @@ class FlagsJsonTest {
         assertEquals(ClothProfiles.WALL.iterations, d.profile.iterations);
         String bad = json.replace("\"mass\":0.4", "\"mass\":-1");
         assertEquals(1, FlagJson.parse(bad, "t").errors().size());
+    }
+
+    @Test
+    void insetMakesAFreeHangingClothWithoutAWallPlane() {
+        String json = "{\"flags\":[{\"sprite\":\"x_0\",\"kind\":\"wall\",\"profile\":\"curtain\",\"inset\":0.5,"
+                + "\"cloth\":{\"x\":32,\"y\":34,\"w\":64,\"h\":174}}]}";
+        FlagDef d = FlagJson.parse(json, "t").flags().get(0);
+        assertEquals(0.5f, d.inset);
+        assertTrue(d.freeHanging());
+        assertFalse(d.profile.clampToAnchorPlane, "no wall to keep the cloth in front of");
+        assertFalse(d.profileFar.clampToAnchorPlane);
+        assertTrue(ClothProfiles.CURTAIN.clampToAnchorPlane, "the built-in profile is not modified");
+        // a wall flag without inset keeps its plane
+        FlagDef wall = FlagJson.parse(json.replace(",\"inset\":0.5", ""), "t").flags().get(0);
+        assertFalse(wall.freeHanging());
+        assertTrue(wall.profile.clampToAnchorPlane);
+        // out of range
+        assertEquals(1, FlagJson.parse(json.replace("0.5", "1.0"), "t").errors().size());
+        assertEquals(1, FlagJson.parse(json.replace("0.5", "-0.1"), "t").errors().size());
     }
 
     @Test

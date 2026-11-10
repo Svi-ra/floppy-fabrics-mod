@@ -78,7 +78,9 @@ final class Interactions {
             inst.nextRefresh = frame + REFRESH_FRAMES + (int) (inst.seed & 15);
             boolean wasBlocked = inst.blocked;
             // curtains are never blocked: furniture under a window is normal; it is scenery to drape over (D68)
-            inst.blocked = inst.def.kind == FlagDef.Kind.WALL && !inst.def.curtain && !inst.def.facing.flipped() && RealFlags.blockHeight > 0f && isBlocked(obj, inst.def);
+            // free-hanging cloths neither: there is no wall for furniture to stand against, only scenery around (D77)
+            inst.blocked = inst.def.kind == FlagDef.Kind.WALL && !inst.def.curtain && !inst.def.facing.flipped() && !inst.def.freeHanging()
+                    && RealFlags.blockHeight > 0f && isBlocked(obj, inst.def);
             if (inst.blocked != wasBlocked) {
                 if (inst.blocked) RealFlags.stats.blockedEvents++;
                 else RealFlags.stats.unblockedEvents++;
@@ -108,6 +110,7 @@ final class Interactions {
      * (from its tile geometry: the box touching the wall line) + the cloth's half-thickness.
      */
     static float wallStandoff(IsoGridSquare sq, FlagDef def) {
+        if (def.freeHanging()) return 0f; // no wall (and no plane clamp, D77)
         float thickness = DEFAULT_WALL_THICKNESS;
         // curtains hang in a window opening, not on a wall face; far-edge cloths have no wall object on their own square
         if (def.curtain || def.facing.flipped()) return thickness + CLOTH_THICKNESS;
@@ -285,9 +288,9 @@ final class Interactions {
         RealFlags.stats.sceneryBoxes += added;
     }
 
-    /** Wall cloths: things behind their own wall plane (other room, outside) never touch the cloth. */
+    /** Wall cloths: things behind their own wall plane (other room, outside) never touch the cloth; free-hanging ones have no wall. */
     static boolean behindWall(FlagDef def, float lx, float ly) {
-        if (def.kind != FlagDef.Kind.WALL) return false;
+        if (def.kind != FlagDef.Kind.WALL || def.freeHanging()) return false; // free-hanging: both sides are open (D77)
         return switch (def.facing) {
             case S -> ly < 0f;
             case E -> lx < 0f;

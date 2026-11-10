@@ -640,6 +640,66 @@ such objects to `Translucent`/`TranslucentSE`, never `MinusFloor`. So our layer 
 `IsoObject.getSpriteModel`) to 42.21.0, deployed. In-game (user, 2026-11-09): curtains, light and barricades work as expected; player sheets did not move →
 D76 fix, jar SHA-256 `7b1616d6db63482b26aabe5fb4090a7507bb864f99a1ef3294f9d053be093f59`. **D76 verified in-game by user report (2026-11-09): player sheets now move.** Per-step results and CPU figures of `docs/PHASE7_TEST.md` were not recorded.
 
+## Phase 8 — fabric decorations (2026-11-10)
+
+Request: cloth physics for the items made of fabric on `location_restaurant_pileocrepe_01`, `location_restaurant_pie_01`,
+`location_restaurant_bar_smutz`, `location_military_knox_01`, `location_entertainment_theatre_01`,
+`location_community_medical_01`, `location_community_church_small_01` and `walls_decoration_01`. Evidence: every sprite of
+the eight atlases extracted from `Tiles2x.pack` (build 42.21.0, 1075 tiles) and inspected; tile properties from
+`media/tile_definitions/newtiledefinitions.tiles.txt`; shapes from `media/tileGeometry.txt`; depth textures from
+`media/tileDepthTextureAssignments.txt`.
+
+**D77 · Free-hanging cloths: `inset`.** The hospital privacy curtains (`location_community_medical_01_41..47`, `_144..149`,
+properties `cutN`/`cutW`, `Material = Fabric`) and the theatre stage curtains (`location_entertainment_theatre_01_92..94`,
+`_101..103`, `cutN`/`cutW`, `MaterialType = Fabric`) hang from a ceiling rail across the **middle** of their square, not on
+its edge: the S-facing cloth spans frame x 32–96 (the line y = 0.5 runs from screen x 32 to 96) and its hem meets the
+floor line of y = 0.5 (frame row 208 at x 32) exactly; their tile geometry boxes sit at y ≈ 0.42 (medical, ±0.11) and
+≈ 0.44 (theatre). Placing them on the edge would put the simulated cloth half a tile away from the picture (wrong
+bodies, wrong scenery). New wall field `inset` (metres, [0, 1)): the cloth line is the facing's edge moved into the
+square (`Projection.clothOrigin`; along the line the screen-x relation is unchanged, so the origin still draws on the
+measured pixel — tested for every shipped wall entry). An inset cloth has no wall: `clampToAnchorPlane` is turned off
+for its near and far profiles (as for pole flags), `behindWall` is false (bodies on both sides touch it), the thick-wall
+standoff is 0, and it is never "blocked" (the 1.5 m rule is for furniture standing against a wall). They use the
+`curtain` profile (folds). The rail is drawn in the same sprite above the cloth: the cloth is measured from the first
+saturated pixel under the rail, and mesh vertices above the pinned top edge are never displaced, so the rail stays still.
+The white curtains `_144..149` have the alpha masks of `_41, 42, 43, 45, 46, 47` (≤ 30 px differ) and share their
+depth textures (`tileDepthTextureAssignments`), so they reuse the blue measurements. Rails `_40`, `_44` and theatre rods
+`_95`, `_100` carry no cloth and are not entries.
+
+**D78 · Depth bias for wall-attached cloths that are not WallOverlay.** D30/D33 bias wall-overlay flags toward the viewer
+in the per-frame pass. The church banners are `attachedN`/`attachedW` wall objects (`MoveType = WallObject`), not
+`WallOverlay`, and hang on the wall like one. The bias now applies to every wall cloth with `inset` 0 whose tile is a
+`WallOverlay`, `attachedN` or `attachedW`, plus curtains (D69); free-hanging cloths and pole flags keep vanilla depth.
+The Knox flags have neither property and their own depth texture (`location_military_knox_01_8`/`_11`); they are also
+`Translucent` in `tileGeometry.txt`, so vanilla already draws them in the per-frame pass (as curtains, D76). Precaution,
+not observed in-game.
+
+**D79 · What was added, what was not.** Added (measured with the 2× frame, overlays checked by eye):
+- `location_community_church_small_01_76..78` (S) and `_84..86` (E): banners (`CustomName = Banner`, `Material = Fabric`),
+  single tiles (Lower/Middle/Upper are different designs, not one stacked banner). The art of `_77, 78, 84, 85` runs
+  3–9 px below the floor line (geometry: the banner hangs ≈ 0.09 m off the wall); `h` stops at the floor line under the
+  pinned corner so the cloth never rests below the floor (rows under it move with the hem).
+- `location_military_knox_01_8..10` (S) and `_11..13` (E): one flag over a 3-tile sprite grid (`SpriteGridPos`). Each
+  tile is its own cloth pinned along its top; seams can open while one part is pushed (limitation; no cloth spans
+  objects yet). Top edges measured by a median fit of slope ±0.5 (their cut corners fool `flagtool.py measure`).
+- `location_restaurant_bar_smutz_23`: the white banner (`WallOverlay`, Tiles2x only), measured with `flagtool.py`.
+- D77's hospital and theatre curtains.
+Not added, with reasons:
+- Bunting (`walls_decoration_01_64..67, 72..75, 80..83`, `location_restaurant_bar_smutz_32..35`): pennants on a sagging
+  string; no straight pinned top edge, and the string line is not a wall line. Needs its own kind.
+- Awnings (`walls_decoration_01_68..71, 84..87, 92..95, 100..103, 108..167`, `location_restaurant_pileocrepe_01_4..5`,
+  `location_restaurant_pie_01_4..5`, `location_restaurant_bar_smutz_12..15`): sloped or domed canopies stretched on
+  frames; a hanging-cloth model would make them sag off their frames. Needs its own kind (e.g. a framed canopy with a
+  flutter of the valance only).
+- Church altar cloth (`location_community_church_small_01_40..43`): draped over an altar, i.e. resting on furniture.
+- Everything else on the eight atlases is not fabric (walls, signs, furniture, posters, string lights, the
+  pileocrepe/pie atlases have only the awnings as fabric) — `walls_decoration_01_16..19` were already animated.
+
+### Phase 8 status
+0.4.0: 69 unit tests pass (3 new: inset parsing, free-hanging placement, wall-hung placement; the origin round-trip test
+now covers all 35 wall entries), `verifyPatches` applies all advices to 42.21.0, deployed to `mods/RealFlags` (jar SHA-256
+`fcb3ac5709da7fc04bea8846cd538ccb632ab7bb97ce9acf592addd6fc14ec0f`). **Not yet tested in-game.**
+
 ## Acceptance status (MVP)
 | Criterion | Status |
 |---|---|

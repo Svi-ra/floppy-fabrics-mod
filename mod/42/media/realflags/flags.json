@@ -34,6 +34,166 @@
         { "sprite": "street_decoration_01_24", "src": [60, 100, 68, 164], "dst": [60, 158, 68, 222] }
       ],
       "exposure": 1.0
+    },
+    {
+      "comment": "White banner (Tiles2x only), WallOverlay like walls_decoration_01_16.",
+      "sprite": "location_restaurant_bar_smutz_23", "kind": "wall", "facing": "S",
+      "cloth": { "x": 68, "y": 34, "w": 55, "h": 96 },
+      "exposure": 0.35
+    },
+    {
+      "comment": "Church banners (attachedN/W). Where the art runs a few px below the floor line, h stops at the floor.",
+      "sprite": "location_community_church_small_01_76", "kind": "wall", "facing": "S",
+      "cloth": { "x": 58, "y": 4, "w": 58, "h": 165 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_church_small_01_77", "kind": "wall", "facing": "S",
+      "cloth": { "x": 58, "y": 26, "w": 59, "h": 163 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_church_small_01_78", "kind": "wall", "facing": "S",
+      "cloth": { "x": 58, "y": 3, "w": 58, "h": 186 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_church_small_01_84", "kind": "wall", "facing": "E",
+      "cloth": { "x": 8, "y": 34, "w": 58, "h": 186 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_church_small_01_85", "kind": "wall", "facing": "E",
+      "cloth": { "x": 7, "y": 58, "w": 59, "h": 162 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_church_small_01_86", "kind": "wall", "facing": "E",
+      "cloth": { "x": 8, "y": 34, "w": 58, "h": 165 },
+      "exposure": 0.35
+    },
+    {
+      "comment": "Fort Knox flag: one flag drawn over 3 tiles (SpriteGridPos); each tile is simulated as its own cloth.",
+      "sprite": "location_military_knox_01_8", "kind": "wall", "facing": "S",
+      "cloth": { "x": 71, "y": 27, "w": 53, "h": 89 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_military_knox_01_9", "kind": "wall", "facing": "S",
+      "cloth": { "x": 60, "y": 27, "w": 64, "h": 87 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_military_knox_01_10", "kind": "wall", "facing": "S",
+      "cloth": { "x": 60, "y": 21, "w": 43, "h": 88 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_military_knox_01_11", "kind": "wall", "facing": "E",
+      "cloth": { "x": 24, "y": 42, "w": 42, "h": 89 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_military_knox_01_12", "kind": "wall", "facing": "E",
+      "cloth": { "x": 2, "y": 58, "w": 64, "h": 88 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_military_knox_01_13", "kind": "wall", "facing": "E",
+      "cloth": { "x": 2, "y": 55, "w": 51, "h": 88 },
+      "exposure": 0.35
+    },
+    {
+      "comment": "Hospital privacy curtains (blue 41-47; white 144-149 have the same shapes) hang from a rail across the middle of their square: inset 0.5. The cloth starts under the rail, so the rail stays still. Rails 40/44 have no cloth.",
+      "sprite": "location_community_medical_01_41", "kind": "wall", "facing": "S", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 32, "y": 34, "w": 64, "h": 174 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_medical_01_42", "kind": "wall", "facing": "S", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 32, "y": 34, "w": 28, "h": 173 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_medical_01_43", "kind": "wall", "facing": "S", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 66, "y": 51, "w": 30, "h": 173 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_medical_01_45", "kind": "wall", "facing": "E", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 30, "y": 66, "w": 64, "h": 174 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_medical_01_46", "kind": "wall", "facing": "E", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 66, "y": 48, "w": 28, "h": 173 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_medical_01_47", "kind": "wall", "facing": "E", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 30, "y": 66, "w": 30, "h": 173 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_medical_01_144", "kind": "wall", "facing": "S", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 32, "y": 34, "w": 64, "h": 174 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_medical_01_145", "kind": "wall", "facing": "S", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 32, "y": 34, "w": 28, "h": 173 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_medical_01_146", "kind": "wall", "facing": "S", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 66, "y": 51, "w": 30, "h": 173 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_medical_01_147", "kind": "wall", "facing": "E", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 30, "y": 66, "w": 64, "h": 174 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_medical_01_148", "kind": "wall", "facing": "E", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 66, "y": 48, "w": 28, "h": 173 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_community_medical_01_149", "kind": "wall", "facing": "E", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 30, "y": 66, "w": 30, "h": 173 },
+      "exposure": 0.35
+    },
+    {
+      "comment": "Theatre stage curtains: same rail geometry as the hospital curtains (inset 0.5). Rods 95/100 have no cloth.",
+      "sprite": "location_entertainment_theatre_01_92", "kind": "wall", "facing": "S", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 32, "y": 34, "w": 64, "h": 172 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_entertainment_theatre_01_93", "kind": "wall", "facing": "S", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 32, "y": 14, "w": 64, "h": 193 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_entertainment_theatre_01_94", "kind": "wall", "facing": "S", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 32, "y": 14, "w": 64, "h": 192 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_entertainment_theatre_01_101", "kind": "wall", "facing": "E", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 30, "y": 46, "w": 64, "h": 192 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_entertainment_theatre_01_102", "kind": "wall", "facing": "E", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 30, "y": 46, "w": 64, "h": 193 },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_entertainment_theatre_01_103", "kind": "wall", "facing": "E", "profile": "curtain", "inset": 0.5,
+      "cloth": { "x": 30, "y": 66, "w": 64, "h": 172 },
+      "exposure": 0.35
     }
   ]
 }

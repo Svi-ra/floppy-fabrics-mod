@@ -72,6 +72,11 @@ public final class FlagJson {
             b.clothH = num(cloth, "h", Float.NaN);
             float[] mesh = nums(e, "mesh", 2);
             if (mesh != null) { b.meshCols = (int) mesh[0]; b.meshRows = (int) mesh[1]; }
+            b.inset = num(e, "inset", 0f);
+            if (b.inset > 0f) { // free-hanging: no wall plane to keep the cloth in front of (D77)
+                b.profile = b.profile.toBuilder().clampToAnchorPlane(false).build();
+                b.profileFar = b.profileFar.toBuilder().clampToAnchorPlane(false).build();
+            }
         } else {
             b.anchor = point(e, "anchor");
             b.depthPoint = point(e, "depthPoint");

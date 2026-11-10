@@ -44,6 +44,8 @@ public final class Projection {
      *   <li>Wall S (cloth on the north wall, y = sy): top-left at frame x = clothX → dx = (clothX − 64)/64.</li>
      *   <li>Wall E (cloth on the west wall, x = sx; u runs north = screen right): dy = (64 − clothX)/64.</li>
      *   <li>Curtain N (south edge, y = sy + 1): dx = clothX/64. Curtain W (east edge, x = sx + 1): dy = (128 − clothX)/64.</li>
+     *   <li>{@code inset} (D77) moves the line into the square: S at y = inset, E at x = inset, N at y = 1 − inset,
+     *       W at x = 1 − inset; along the line the same screen-x relation holds.</li>
      *   <li>Pole: the shaft stands at the square centre (the lower tile {@code street_decoration_01_24}'s shaft ends at
      *       frame row 228 ≈ the centre row 224, measured with tools/flagtool.py); the anchor is on the axis.</li>
      * </ul>
@@ -54,12 +56,13 @@ public final class Projection {
         if (def.kind == FlagDef.Kind.POLE) {
             dx = 0.5f; dy = 0.5f; py = def.anchor.y();
         } else {
+            // the cloth's line: the facing's edge moved `inset` metres into the square (D77); screen x = 64 + 64·(dx − dy)
             switch (def.facing) {
-                case S -> { dx = (def.clothX - 64f) / PX_PER_M_X_2X; dy = 0f; }
-                case E -> { dx = 0f; dy = (64f - def.clothX) / PX_PER_M_X_2X; }
-                // far edges (curtains, D64): screen x = 64 + 64·(dx − dy) on the line y = 1 / x = 1
-                case N -> { dx = def.clothX / PX_PER_M_X_2X; dy = 1f; }
-                default -> { dx = 1f; dy = (128f - def.clothX) / PX_PER_M_X_2X; }
+                case S -> { dy = def.inset; dx = (def.clothX - 64f) / PX_PER_M_X_2X + dy; }
+                case E -> { dx = def.inset; dy = (64f - def.clothX) / PX_PER_M_X_2X + dx; }
+                // far edges (curtains, D64): the line y = 1 / x = 1
+                case N -> { dy = 1f - def.inset; dx = (def.clothX - 64f) / PX_PER_M_X_2X + dy; }
+                default -> { dx = 1f - def.inset; dy = (64f - def.clothX) / PX_PER_M_X_2X + dx; }
             }
             py = def.clothY;
         }

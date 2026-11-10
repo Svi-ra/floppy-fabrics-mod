@@ -64,6 +64,13 @@ public final class FlagDef {
     public final Facing facing;
     /** Wall cloth: top-left of the pinned edge (x, y), horizontal span w and vertical height h of the parallelogram. */
     public final float clothX, clothY, clothW, clothH;
+    /**
+     * Wall cloth: distance (metres, 0 ≤ inset < 1) of the cloth's line from the facing's edge, into the square. 0 = on the
+     * wall (flags, curtains). Greater than 0 = a free-hanging cloth with no wall behind it, e.g. a hospital privacy curtain
+     * on a ceiling rail across the middle of its square (0.5): not clamped to a wall plane, touched from both sides, never
+     * "blocked" (DECISIONS D77).
+     */
+    public final float inset;
     /** Render mesh over the sprite rectangle (cells). */
     public final int meshCols, meshRows;
 
@@ -85,12 +92,17 @@ public final class FlagDef {
 
     private FlagDef(Builder b) {
         sprite = b.sprite; kind = b.kind; curtain = b.curtain; profile = b.profile; profileFar = b.profileFar; exposure = b.exposure; timeScale = b.timeScale;
-        facing = b.facing; clothX = b.clothX; clothY = b.clothY; clothW = b.clothW; clothH = b.clothH;
+        facing = b.facing; clothX = b.clothX; clothY = b.clothY; clothW = b.clothW; clothH = b.clothH; inset = b.inset;
         meshCols = b.meshCols; meshRows = b.meshRows;
         anchor = b.anchor; depthPoint = b.depthPoint; sizeW = b.sizeW; sizeH = b.sizeH;
         canvasTexture = b.canvasTexture; canvasU0 = b.canvasU0; canvasV0 = b.canvasV0; canvasU1 = b.canvasU1; canvasV1 = b.canvasV1;
         staticQuads = List.copyOf(b.staticQuads);
         source = b.source;
+    }
+
+    /** True for a wall cloth hanging free inside its square ({@link #inset} &gt; 0): no wall behind it. */
+    public boolean freeHanging() {
+        return kind == Kind.WALL && inset > 0f;
     }
 
     /** Wall cloth width in metres (horizontal pixel span along the wall axis: 32·tileScale px per metre at 2×). */
@@ -115,7 +127,7 @@ public final class FlagDef {
         ClothProfile profile, profileFar;
         float exposure = 1f, timeScale = 1f;
         Facing facing = Facing.S;
-        float clothX, clothY, clothW, clothH;
+        float clothX, clothY, clothW, clothH, inset;
         int meshCols = 5, meshRows = 8;
         Point anchor, depthPoint;
         float sizeW, sizeH;
@@ -132,6 +144,8 @@ public final class FlagDef {
             if (kind == Kind.WALL) {
                 if (!(clothW > 1f && clothH > 1f)) throw new IllegalArgumentException(sprite + ": wall needs \"cloth\" {x,y,w,h} > 1 px");
                 if (meshCols < 1 || meshRows < 1 || meshCols > 32 || meshRows > 32) throw new IllegalArgumentException(sprite + ": mesh 1..32");
+                if (!(inset >= 0f && inset < 1f)) throw new IllegalArgumentException(sprite + ": inset must be in [0, 1) metres");
+                if (curtain && inset != 0f) throw new IllegalArgumentException(sprite + ": a window curtain hangs on its window line (inset 0)");
             } else {
                 if (anchor == null) throw new IllegalArgumentException(sprite + ": pole needs \"anchor\"");
                 if (!(sizeW > 0.05f && sizeH > 0.05f && sizeW < 10f && sizeH < 10f)) throw new IllegalArgumentException(sprite + ": pole \"size\" [w,h] metres");

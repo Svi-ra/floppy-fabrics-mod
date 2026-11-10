@@ -84,7 +84,10 @@ public final class Hooks {
             if (def == null) return z2;
             // exactly the case where vanilla gives the flag its wall's depth preset (IsoSprite.setupTileDepth)
             // curtains: same bias as a precaution, they hang on the window line drawn with GL_LEQUAL (D69)
-            if (!def.curtain && !sprite.getProperties().has(IsoFlagType.WallOverlay)) return z2;
+            // wall cloths that are not WallOverlay tiles but attachedN/W (church banners) hang on the wall too (D78);
+            // free-hanging cloths (inset > 0) have no wall at their line and keep vanilla depth
+            if (def.kind != FlagDef.Kind.WALL || def.freeHanging()) return z2;
+            if (!def.curtain && !sprite.getProperties().has(IsoFlagType.WallOverlay) && !onWall(sprite)) return z2;
             // idempotent if the advice were ever applied twice to the same call: never bias our own output again
             if (sprite == lastBiasedSprite && z2 == lastBiasedZ2) return z2;
             float bias = RealFlags.depthBiasAmount;
@@ -100,6 +103,12 @@ public final class Hooks {
             RealFlags.fail("startTileDepthShader", t);
             return z2;
         }
+    }
+
+    /** A tile attached to a wall (vanilla's attachedN/attachedW), drawn against that wall's depth like an overlay (D78). */
+    private static boolean onWall(IsoSprite sprite) {
+        var p = sprite.getProperties();
+        return p.has(IsoFlagType.attachedN) || p.has(IsoFlagType.attachedW);
     }
 
     /** Enter of {@code IsoSprite.performRenderFrame}: remember which flag is about to be drawn. */

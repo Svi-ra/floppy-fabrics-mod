@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -15,6 +16,11 @@ class InteractionsTest {
     private static final float LEVEL = Projection.LEVEL_M;
     private final float[] o = new float[6];
 
+    private static List<FlagDef> allShipped() throws Exception {
+        Path p = Path.of(System.getProperty("realflags.modDir", "../mod"), "42", "media", "realflags", "flags.json");
+        return FlagJson.parse(Files.readString(p, StandardCharsets.UTF_8), p.toString()).flags();
+    }
+
     private static FlagDef shipped(String sprite) throws Exception {
         Path p = Path.of(System.getProperty("realflags.modDir", "../mod"), "42", "media", "realflags", "flags.json");
         return FlagJson.parse(Files.readString(p, StandardCharsets.UTF_8), p.toString()).flags().stream()
@@ -24,8 +30,9 @@ class InteractionsTest {
     @Test
     void clothOriginProjectsBackOntoTheMeasuredPixel() throws Exception {
         // the origin must draw exactly at the cloth's top-left pixel of the 2× frame (north floor corner = (64, 192))
-        for (String s : new String[]{"walls_decoration_01_16", "walls_decoration_01_17", "walls_decoration_01_18", "walls_decoration_01_19"}) {
-            FlagDef d = shipped(s);
+        for (FlagDef d : allShipped()) {
+            if (d.kind != FlagDef.Kind.WALL) continue;
+            String s = d.sprite;
             Projection.clothOrigin(d, 10, 20, 1, o);
             Projection.worldToScreen(o[0] - 10f, o[1] - 20f, o[2] - LEVEL, 2, o, 3);
             assertEquals(d.clothX - 64f, o[3], 1e-3f, s + " screen x");
@@ -49,6 +56,48 @@ class InteractionsTest {
         assertTrue(o[2] - d.wallHeightMetres() < 1.0f);
         assertTrue(o[2] < LEVEL);
         assertEquals(0f, o[1], 0f, "S-facing cloth hangs on the north wall line");
+    }
+
+    @Test
+    void freeHangingCurtainsHangAcrossTheMiddleOfTheirSquare() throws Exception {
+        // hospital curtain on a ceiling rail: the cloth line is y = 0.5 (S) / x = 0.5 (E), the hem on the floor
+        FlagDef s = shipped("location_community_medical_01_41");
+        assertTrue(s.freeHanging());
+        Projection.clothOrigin(s, 0, 0, 0, o);
+        assertEquals(0f, o[0], 1e-6f, "starts at the west edge");
+        assertEquals(0.5f, o[1], 1e-6f);
+        assertEquals(0f, o[2] - s.wallHeightMetres(), 0.03f, "hem on the floor");
+        assertEquals(1f, s.wallWidthMetres(), 1e-6f, "spans the square");
+        FlagDef e = shipped("location_community_medical_01_45");
+        Projection.clothOrigin(e, 0, 0, 0, o);
+        assertEquals(0.5f, o[0], 1e-6f);
+        assertEquals(1f, o[1], 0.05f, "u runs north: the pinned left end is at the south edge");
+        assertEquals(0f, o[2] - e.wallHeightMetres(), 0.03f, "hem on the floor");
+        // both sides are open: bodies north of an S curtain still touch it, and it is never clamped to a wall
+        assertFalse(Interactions.behindWall(s, 0.5f, -0.3f));
+        assertFalse(Interactions.behindWall(e, -0.3f, -0.5f));
+        assertEquals(0f, Interactions.wallStandoff(null, s));
+        assertFalse(s.profile.clampToAnchorPlane);
+        // the far edge facings move inward the same way
+        FlagDef n = FlagJson.parse("{\"flags\":[{\"sprite\":\"n_0\",\"facing\":\"N\",\"inset\":0.25,"
+                + "\"cloth\":{\"x\":10,\"y\":40,\"w\":40,\"h\":80}}]}", "t").flags().get(0);
+        Projection.clothOrigin(n, 0, 0, 0, o);
+        assertEquals(0.75f, o[1], 1e-6f);
+        Projection.worldToScreen(o[0], o[1], o[2], 2, o, 3);
+        assertEquals(10f - 64f, o[3], 1e-3f);
+        assertEquals(40f - 192f, o[4], 1e-3f);
+    }
+
+    @Test
+    void wallsHungClothsStayOnTheirWall() throws Exception {
+        for (String sprite : new String[]{"location_community_church_small_01_78", "location_military_knox_01_8"}) {
+            FlagDef d = shipped(sprite);
+            assertFalse(d.freeHanging(), sprite);
+            Projection.clothOrigin(d, 0, 0, 0, o);
+            assertEquals(0f, o[1], 0f, sprite + " on the north wall line");
+            assertTrue(o[2] - d.wallHeightMetres() >= -0.01f, sprite + " hem not below the floor");
+            assertTrue(o[2] < LEVEL, sprite + " below the ceiling");
+        }
     }
 
     @Test

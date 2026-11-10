@@ -29,8 +29,10 @@ The vanilla sprite stays the image; the cloth bends it. At zero wind it is pixel
 | `facing` | `"S"` / `"E"` / `"N"` / `"W"` | Which way the flag faces: S lies along the north wall (top edge slopes **down** to the right), E along the west wall (top edge slopes **up** to the right). N/W lie on the square's south/east edge facing into the square (used for curtains) |
 | `cloth` | `{x, y, w, h}` px | Top-left corner of the pinned top edge, horizontal span `w`, vertical height `h` (measured at the left edge) |
 | `mesh` | [cols, rows] | Render mesh over the sprite rectangle; default [5, 8] (halved at far LOD) |
+| `inset` | metres, 0 ≤ inset < 1 | Default 0 (on the wall). Distance of the cloth's line from the facing's edge into the square: S at y = inset, E at x = inset, N at y = 1 − inset, W at x = 1 − inset. Above 0 the cloth hangs **free** (e.g. a hospital curtain on a rail across the middle of its square, 0.5): it is not clamped to a wall plane, bodies on both sides touch it, and it is never blocked by furniture |
 
-Wall flags only move on an **outside** square (vanilla's `exterior` flag).
+Wall flags only feel the wind on an **outside** square (vanilla's `exterior` flag); indoors they still move when people,
+zombies or vehicles push them.
 
 Window curtains need no entry: any sprite with a `curtainN/S/W/E` tile type is measured automatically (DECISIONS D64).
 A `flags.json` entry for a curtain sprite turns it into an ordinary wall flag instead.
@@ -54,10 +56,15 @@ from the pole.
 
 If the canvas texture is missing (mod not enabled) the flag draws as vanilla and one WARN is logged.
 
+For a cloth under a rail or rod drawn in the same sprite, measure the cloth below the rail: pixels above the pinned top
+edge are never moved, so the rail stays still.
+
 ## Example
 ```json
 { "version": 2, "flags": [
   { "sprite": "walls_decoration_01_16", "kind": "wall", "facing": "S",
-    "cloth": { "x": 66, "y": 35, "w": 52, "h": 90 }, "exposure": 0.35 }
+    "cloth": { "x": 66, "y": 35, "w": 52, "h": 90 }, "exposure": 0.35 },
+  { "sprite": "location_community_medical_01_41", "kind": "wall", "facing": "S", "profile": "curtain", "inset": 0.5,
+    "cloth": { "x": 32, "y": 34, "w": 64, "h": 174 } }
 ]}
 ```
