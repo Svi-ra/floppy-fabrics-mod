@@ -1,6 +1,6 @@
 # Phase 6 in-game test — flags meet the world
 
-Build: Real Flags 0.2.1 on Build 42.21.0. ZombieBuddy will ask to approve the new jar; check its SHA-256 against
+Build: Floppy Fabrics 0.2.1 on Build 42.21.0. ZombieBuddy will ask to approve the new jar; check its SHA-256 against
 `DECISIONS.md` "Phase 6b status". Launch with `-agentlib:zbNative -- -debug` so the Lua console works.
 
 Setup for every step: `RealFlags_overlay(true)`. The last overlay line shows `interactions`, `blocked`, `in contact`

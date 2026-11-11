@@ -7,6 +7,10 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 Decisions D86–D90. Unit-tested (103 tests) and patch-verified offline; not yet tested in-game.
 
 ### Changed
+- **Renamed to Floppy Fabrics.** The mod now presents itself as general dynamic physics for all fabrics, not just flags
+  (README, `mod.info` name and description, Options > Mods entry). Internal ids are unchanged: mod id `RealFlags`, jar,
+  package `pzmod.realflags`, `media/realflags/`, `RealFlags_*` console commands. Planned: garments on clothing racks
+  (docs/HANGING_CLOTHES_FUTURE.md).
 - **No more Any Wall Flags 3D dependency** (D91): the pole flag canvas is now `media/realflags/pole_flag.png`, shipped
   with the mod (generated with Magnific, creation `YMjQSixWeC`, downscaled to 512×286); `mod.info` is
   `require=\ZombieBuddy` only. Pole physics is unchanged. The texture is full-bleed, so `canvas.uv` is `[0,0,1,1]`.

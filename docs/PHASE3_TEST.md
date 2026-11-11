@@ -1,6 +1,6 @@
 # Phase 3 in-game test — pole + wall flag animated end-to-end
 
-Setup as in Phase 2 (ZombieBuddy + Real Flags, `-agentlib:zbNative -- -debug`). Approve the new jar
+Setup as in Phase 2 (ZombieBuddy + Floppy Fabrics, `-agentlib:zbNative -- -debug`). Approve the new jar
 (SHA-256 in chat). Use the same test spot: the pole (`street_decoration_01_24` + `_16` above it) and the wall flags
 on the **outside** wall. Debug overlay is now **off** by default (`RealFlags_debug(true)` to show it).
 

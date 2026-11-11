@@ -1,5 +1,5 @@
 {
-    "UI_RealFlags_Options": "Real Flags",
+    "UI_RealFlags_Options": "Floppy Fabrics",
     "UI_RealFlags_Detail": "Simulation detail",
     "UI_RealFlags_Detail_Tooltip": "Resolution of every simulated cloth, string and awning, from 0.5x (fastest) to 4x the default (1x). Applies immediately; moving fabric restarts from rest.",
     "UI_RealFlags_Detail_Description": "Lower values reduce CPU cost. Attachment points, stability and multi-tile cloths are kept at any setting."

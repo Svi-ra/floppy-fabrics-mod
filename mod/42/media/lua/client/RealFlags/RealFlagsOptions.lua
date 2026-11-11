@@ -1,5 +1,5 @@
 --[[
-Real Flags: mod options (Build 42 PZAPI.ModOptions, Options > Mods).
+Floppy Fabrics: mod options (Build 42 PZAPI.ModOptions, Options > Mods).
 
 Simulation detail (DECISIONS D89): 0.5x to 4x the shipped resolution of every cloth grid, string, valance and render
 mesh. The Java side (RealFlags_setDetail, a ZombieBuddy Lua global) clamps it and rebuilds the simulations at the start

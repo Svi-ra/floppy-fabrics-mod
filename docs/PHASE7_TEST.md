@@ -1,6 +1,6 @@
 # Phase 7 in-game test — window curtains
 
-Build: Real Flags 0.3.0 on Build 42.21.0. ZombieBuddy will ask to approve the new jar; check its SHA-256 against
+Build: Floppy Fabrics 0.3.0 on Build 42.21.0. ZombieBuddy will ask to approve the new jar; check its SHA-256 against
 `DECISIONS.md` "Phase 7 status". Launch with `-agentlib:zbNative -- -debug` so the Lua console works.
 
 Setup: a house with curtains on an **outside** window. `RealFlags_overlay(true)`. `RealFlags_status()` prints

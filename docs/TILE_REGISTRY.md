@@ -11,7 +11,7 @@ Regenerate with `python tools/genregistry.py` (sprite lists come from `flags.jso
 | Source id | Name | Version | Kind |
 |---|---|---|---|
 | `vanilla` | Project Zomboid | 42.21.0 | vanilla |
-| `realflags` | Real Flags (custom textures) | 0.6.0 | mod |
+| `realflags` | Floppy Fabrics (custom textures) | 0.6.0 | mod |
 
 ### Adding a third-party mod
 

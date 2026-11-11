@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-flagtool.py — helpers for adding flags to Real Flags by data (flags.json). Dev tool, never shipped with the mod.
+flagtool.py — helpers for adding flags to Floppy Fabrics by data (flags.json). Dev tool, never shipped with the mod.
 
   extract  Pull named sprites out of a Project Zomboid texture pack (.pack, "PZPK" v1) as PNGs in the full tile frame
            (2x packs give 128x256 frames — the coordinate system flags.json uses), and print their atlas coordinates.

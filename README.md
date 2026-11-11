@@ -1,22 +1,33 @@
-# Real Flags — wind-reactive cloth for Project Zomboid flags (Build 42)
+# Floppy Fabrics — dynamic physics for every fabric in Project Zomboid (Build 42)
 
-Vanilla flags react to the wind with a real-time cloth simulation: wall flags billow off their walls, and the American
-Flag pole flies a real flag that turns with the wind and droops when it's calm. Flags also meet the world: players,
-zombies and vehicles push them, passing cars and running people blow them about, they stop at walls and drape over
-furniture, and a wall flag with something tall (over 1.5 m) standing in front of it stays still. **Window curtains** move
-too, but only while their window is open or broken: the wind blows them into the room and people brushing past push
-them; behind a closed window they stay exactly vanilla. **Fabric decorations** (0.4.0) move as well: church banners, the
-Fort Knox flags, the white bar banner, hospital privacy curtains and theatre stage curtains. Indoors there is no wind, so
-they only sway when someone walks into them; hospital and theatre curtains hang free across the middle of their square
-and can be pushed from either side. **Strings, awnings and drapes** (0.5.0) have simulations of their own: bunting
-sways and its pennants swing about the string, string lights swing on their sockets (the glow of lit bulbs follows
-them), awnings and market canopies breathe in the wind while their valance flutters, and the altar cloths move when
-someone brushes past. **0.6.0:** awnings and pennants flap continuously in strong wind instead of leaning into the
-wind; multi-tile flags (the Fort Knox flags, the 16-tile Riverside street banner) are one cloth across their tiles;
-the banners on Riverside's light poles move; walking past fabric barely stirs it and touching it only dents it locally;
-and the simulation detail is a setting (Options > Mods > Real Flags, 0.5× to 4×). It is visual only and
-client-side: no new objects, no mod data, no save changes. With no wind, wall flags are pixel-identical to vanilla. Removing the mod
-restores vanilla.
+**Floppy Fabrics gives every piece of fabric in Project Zomboid real, dynamic physics.** Cloth that hangs, drapes or
+flaps in the vanilla world stops being a frozen painting and starts to move: it billows in the wind, swings when
+something brushes past, is pushed by players, zombies and vehicles, drapes over furniture and stops at walls. Each
+fabric type has its own simulation tuned to how it behaves (a flag, a curtain, an awning, a string of bunting and a
+hanging coat do not move alike), and the mod is built so new kinds of fabric are added as data, not as new code.
+
+**Fabrics covered today:**
+- **Flags:** wall flags, the American Flag pole flag (a shipped canvas that turns with the wind and droops when calm),
+  the Fort Knox flags and the white bar banner. Multi-tile flags are one cloth across their tiles.
+- **Curtains:** window curtains and player-hung sheets (they move while the window is open or broken), hospital
+  privacy curtains and theatre stage curtains (they hang free across the middle of their square and can be pushed from
+  either side).
+- **Banners and cloths:** church banners, the Riverside street banner (16 tiles, hung from a sagging cable) and the
+  banners on its light poles, altar cloths.
+- **Strings, awnings and canopies:** bunting and string lights swing on their strings (the glow of lit bulbs follows
+  them); awnings and market canopies billow and flap in strong wind while their valances flutter.
+
+**Planned next** (see [docs/HANGING_CLOTHES_FUTURE.md](docs/HANGING_CLOTHES_FUTURE.md) and
+[docs/CLOTHING_RACKS_FUTURE.md](docs/CLOTHING_RACKS_FUTURE.md)): the garments hanging on clothing racks, then more
+fabric tiles as they are mapped.
+
+The simulation detail is a setting (Options > Mods > Floppy Fabrics, 0.5× to 4×). The mod is visual only and
+client-side: no new objects, no mod data, no save changes. With no wind, fabric is pixel-identical to vanilla, and
+removing the mod restores vanilla.
+
+> **Name.** The mod was called *Real Flags* until 0.6.0. Only the display name changed: the mod id (`RealFlags`), the
+> jar, the Java package (`pzmod.realflags`), the `media/realflags/` data folder, the Lua console commands
+> (`RealFlags_*`) and the log tag `[RealFlags]` are unchanged, so existing installs, saves and data files keep working.
 
 - **Game:** Build **42.21.0** (built and tested against revision `4a0e9546ec`).
 - **Java mod** loaded by [ZombieBuddy](https://github.com/zed-0xff/ZombieBuddy) ≥ 2.3.4.
@@ -29,7 +40,7 @@ restores vanilla.
 1. **ZombieBuddy.** Subscribe on the Workshop (item 3619862853) and install its launcher hook with its Windows
    installer. On this machine it patched `ProjectZomboid64.json` and the Steam launch options. Details:
    ZombieBuddy's `doc/Installation.md`.
-2. **Mods.** In the mod manager enable **ZombieBuddy** and **Real Flags**
+2. **Mods.** In the mod manager enable **ZombieBuddy** and **Floppy Fabrics**
    (`mod.info` declares `require=\ZombieBuddy`).
 3. **First launch.** ZombieBuddy asks before loading any new or changed Java jar. Check that the SHA-256 it shows
    matches the release, then approve. Every rebuild changes the hash.
@@ -40,7 +51,7 @@ restores vanilla.
    Note the spaces around `--`: it separates Java options from game options. `-agentlib:zbNative --debug` (no
    space) passes an unknown option and debug mode stays off (`console.txt`: `unknown option "--debug"`).
 
-**Uninstall:** disable Real Flags (or remove `mods/RealFlags`). Nothing is stored in saves or mod data.
+**Uninstall:** disable Floppy Fabrics (or remove `mods/RealFlags`). Nothing is stored in saves or mod data.
 
 **Multiplayer / dedicated server:** the jar lives in `42/media/java/client/`, which ZombieBuddy never loads on a
 dedicated server. Wind visuals are client-only in vanilla too. Nothing is synced or needed server-side. This is by
@@ -166,7 +177,7 @@ longer matches.
 ## 5. Adding a flag via flags.json
 
 Any mod (yours or a third party's) can add or override flags **by data only**. Ship one or more
-`media/realflags/*.json` files in the mod's `common/` or version folder. Real Flags merges every active mod's files in
+`media/realflags/*.json` files in the mod's `common/` or version folder. Floppy Fabrics merges every active mod's files in
 mod load order (files sorted by name); for the same sprite a later file wins. Full field reference:
 [`docs/FLAGS_JSON.md`](docs/FLAGS_JSON.md).
 
@@ -236,7 +247,7 @@ enabled) makes that flag draw as vanilla.
 | `RealFlags_curtainLight(bool)` | Daylight flickers into the room past a closed curtain the wind lifts (default on) |
 | `RealFlags_curtainLightGain(x)` | Strength of that light at a fully lifted curtain in full daylight (default 0.12; max 0.5) |
 | `RealFlags_decorations(bool)` | Strings (bunting, string lights) and canopies move (default on); off draws them as vanilla |
-| `RealFlags_setDetail(x)` | Simulation detail 0.5–4× (also Options > Mods > Real Flags); every simulation restarts from rest at the new resolution |
+| `RealFlags_setDetail(x)` | Simulation detail 0.5–4× (also Options > Mods > Floppy Fabrics); every simulation restarts from rest at the new resolution |
 
 Lua needs the parentheses: `RealFlags_status()`, not `RealFlags_status`.
 

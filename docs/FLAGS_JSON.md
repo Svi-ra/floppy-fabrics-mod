@@ -1,6 +1,6 @@
 # flags.json reference (schema v2)
 
-Location: `media/realflags/*.json` in **any active mod** (its `common/` or version folder). Real Flags ships
+Location: `media/realflags/*.json` in **any active mod** (its `common/` or version folder). Floppy Fabrics ships
 `42/media/realflags/flags.json`; other mods add or override flags by shipping their own files. All files are merged
 in mod load order, files sorted by name; for the same sprite a later file wins. Each file is one object with a
 `"flags"` array, each entry describing one **sprite** (tile). Unknown keys are ignored; a bad entry is logged
