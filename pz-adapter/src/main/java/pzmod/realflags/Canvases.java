@@ -5,7 +5,7 @@ import java.util.Map;
 import zombie.core.textures.Texture;
 
 /**
- * Cached texture lookups for canvases (loose PNGs from other mods, e.g. DGVFlags) and for sprite textures used by
+ * Cached texture lookups for canvases (loose PNGs, e.g. this mod's media/realflags/pole_flag.png) and for sprite textures used by
  * static quads. {@code Texture.getSharedTexture} resolves {@code media/...} paths through the active mods' file map
  * (ZomboidFileSystem.getString, RECON §3b) and sprite names through the texture packs. Loading is asynchronous: callers
  * check {@code isReady()}. A missing file is logged once and cached as missing (that flag then draws as vanilla).

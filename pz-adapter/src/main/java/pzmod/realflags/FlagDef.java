@@ -129,7 +129,7 @@ public final class FlagDef {
     public final Point depthPoint;
     /** Canvas size in metres: fly length (u) × hoist height (v). */
     public final float sizeW, sizeH;
-    /** Canvas texture path, e.g. media/dgv_flags/UnitedStates_0_0_256x143.png; null for wall flags. */
+    /** Canvas texture path, e.g. media/realflags/pole_flag.png; null for wall flags. */
     public final String canvasTexture;
     /** Canvas UV sub-rectangle (normalised 0..1) excluding rods/hems. */
     public final float canvasU0, canvasV0, canvasU1, canvasV1;

@@ -7,6 +7,9 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 Decisions D86–D90. Unit-tested (103 tests) and patch-verified offline; not yet tested in-game.
 
 ### Changed
+- **No more Any Wall Flags 3D dependency** (D91): the pole flag canvas is now `media/realflags/pole_flag.png`, shipped
+  with the mod (generated with Magnific, creation `YMjQSixWeC`, downscaled to 512×286); `mod.info` is
+  `require=\ZombieBuddy` only. Pole physics is unchanged. The texture is full-bleed, so `canvas.uv` is `[0,0,1,1]`.
 - **Floppier fabric** (D86): canopies keep six membrane modes (local ripples) with a Van der Pol flutter term, much
   softer stiffening (15 cm at a 15 m/s gale, cap 25 cm) and turbulence whose frequency rises with the wind: strong wind
   gives continuous, fast, large flapping instead of a static bulge. Valance flaps are coupled along the hem and driven

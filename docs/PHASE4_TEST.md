@@ -36,7 +36,7 @@ wind … m/s (… km/h) @ … deg (forced)
 ## D. Re-measure after D49 (cheaper near LOD)
 Same as B with the new build: `RealFlags_overlay(true)`, `RealFlags_forceWind(40, 135)`, `RealFlags_stress(n)` so that
 **flags drawn = 50** (e.g. 5 real flags × 10), `RealFlags_lodDistance(100)` (all full detail), wait 10 s, screenshot.
-Target: `avg(60)` < 1.0 ms. Also check the pole shows the DGVFlags flag from the very first frame after a restart
+Target: `avg(60)` < 1.0 ms. Also check the pole shows the pole flag texture from the very first frame after a restart
 (`RealFlags_status()` → `fallbacks{… canvas=0 …}`).
 
 ## Send back

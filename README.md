@@ -20,8 +20,7 @@ restores vanilla.
 
 - **Game:** Build **42.21.0** (built and tested against revision `4a0e9546ec`).
 - **Java mod** loaded by [ZombieBuddy](https://github.com/zed-0xff/ZombieBuddy) ≥ 2.3.4.
-- **Pole canvas textures** come from **Any Wall Flags 3D [B42] byDGV** (`DGVFlags`, Workshop 3818605688), used as a
-  dependency and never copied.
+- **Pole canvas texture** ships with the mod (`media/realflags/pole_flag.png`); no other mod is needed for it.
 
 ---
 
@@ -30,8 +29,8 @@ restores vanilla.
 1. **ZombieBuddy.** Subscribe on the Workshop (item 3619862853) and install its launcher hook with its Windows
    installer. On this machine it patched `ProjectZomboid64.json` and the Steam launch options. Details:
    ZombieBuddy's `doc/Installation.md`.
-2. **Mods.** In the mod manager enable **ZombieBuddy**, **Any Wall Flags 3D [B42] byDGV** and **Real Flags**
-   (`mod.info` declares `require=\ZombieBuddy,\DGVFlags`).
+2. **Mods.** In the mod manager enable **ZombieBuddy** and **Real Flags**
+   (`mod.info` declares `require=\ZombieBuddy`).
 3. **First launch.** ZombieBuddy asks before loading any new or changed Java jar. Check that the SHA-256 it shows
    matches the release, then approve. Every rebuild changes the hash.
 4. **Launch options for debugging** (Steam → Project Zomboid → Properties → Launch Options):
@@ -118,7 +117,7 @@ longer matches.
   D16–D22, D41–D42.
 - **Wall flags:** the vanilla sprite stays the image. A mesh over it is displaced by the cloth's projected motion, so
   zero wind is pixel-identical to vanilla. Depth follows the rest pose.
-- **Pole flags:** the pole is rebuilt from vanilla art; a DGVFlags canvas is simulated hanging from it.
+- **Pole flags:** the pole is rebuilt from vanilla art; the mod's own flag canvas is simulated hanging from it.
 - **Wind:** `ClimateManager` speed and angle → world vector blowing toward `(sin θ, cos θ)` (verified in-game against
   rain, both directions); ×0.35 for wall flags; 0 indoors. Real-time, frozen while paused.
 - **World (DECISIONS D55–D60):** each flag knows where its cloth is in the world (from the sprite's pixel frame).
@@ -328,4 +327,4 @@ reach ~2 ms (seen in the first run); the average is the acceptance metric.
 ## 9. License
 
 MIT, see [LICENSE](LICENSE). This repository contains no game code, no decompiled sources and no third-party art.
-Vanilla sprites and DGVFlags textures are referenced by name or path at runtime only.
+Vanilla sprites are referenced by name at runtime only. `pole_flag.png` is generated art (Magnific, creation `YMjQSixWeC`) shipped with the mod.

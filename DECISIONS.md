@@ -44,7 +44,7 @@ at ERROR/exception level".
 
 ## Decided by you (answers to Q1–Q4, 2026-11-05)
 
-**D11 · Q1 — Pole flag = vanilla pole tile + DGVFlags canvas.**
+**D11 · Q1 — Pole flag = vanilla pole tile + DGVFlags canvas.** *(Superseded by D91: the canvas is now shipped with the mod and DGVFlags is no longer required.)*
 Draw only the pole of `street_decoration_01_16` (finial and shaft, with a re-sampled strip filling where vanilla painted
 cloth), and simulate a cloth textured from DGVFlags (`media/dgv_flags/UnitedStates_0_0_256x143.png` for the vanilla
 "American Flag" pole, UV excluding the 8 px rod strip). `require=\ZombieBuddy,\DGVFlags`.
@@ -861,3 +861,5 @@ observed in-game which way Riverside's map places them.
 - Wall flags stored as an *attached sprite* of a wall object would not be caught (layer reclassification keys on the
   object's own sprite). None seen so far; the test placements were separate objects.
 - The canvas always draws in front of its own pole (D37).
+
+**D91 · Drop the Any Wall Flags 3D (DGVFlags) dependency.** The pole flag was the only feature using it. Its canvas is now `media/realflags/pole_flag.png` (Magnific creation `YMjQSixWeC`, 2752×1536 downscaled to 512×286), full-bleed so `canvas.uv` = `[0,0,1,1]`; `mod.info` is `require=\ZombieBuddy`. Pole physics and rendering code are untouched; the path is data in `flags.json`. If the PNG can't load the pole still falls back to vanilla (Canvases). Supersedes D11's source of the texture.

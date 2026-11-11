@@ -46,7 +46,7 @@ class FlagsJsonTest {
         assertEquals(54, parsed.flags().stream().map(f -> f.sprite).distinct().count(), "one entry per sprite");
         FlagDef pole = parsed.flags().stream().filter(f -> f.kind == FlagDef.Kind.POLE).findFirst().orElseThrow();
         assertEquals("street_decoration_01_16", pole.sprite);
-        assertEquals("media/dgv_flags/UnitedStates_0_0_256x143.png", pole.canvasTexture);
+        assertEquals("media/realflags/pole_flag.png", pole.canvasTexture);
         assertEquals(2, pole.staticQuads.size());
         assertEquals("street_decoration_01_24", pole.staticQuads.get(1).sprite());
         assertEquals(PinLayout.LEFT_EDGE, pole.profile.pinLayout);

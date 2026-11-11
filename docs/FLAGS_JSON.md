@@ -46,14 +46,14 @@ opaque column's top pixel → `x, y`; `w` = opaque column span; `h` = left colum
 slope ±0.5 (iso wall): down to the right = S, up to the right = E.
 
 ## Pole flags (`"kind": "pole"`)
-The pole is rebuilt from static quads; the cloth is a separate canvas texture (e.g. from DGVFlags) simulated hanging
+The pole is rebuilt from static quads; the cloth is a separate canvas texture (e.g. this mod's `media/realflags/pole_flag.png`) simulated hanging
 from the pole.
 | Key | Type | Meaning |
 |---|---|---|
 | `anchor` | `{x, y}` px | Top of the hoist on the pole axis |
 | `depthPoint` | `{x, y}` px | A point on the shaft whose depth the canvas uses (default = anchor) |
 | `size` | [fly, hoist] m | Canvas size: fly length × hoist height |
-| `canvas.texture` | string | Path of a PNG in any active mod, e.g. `media/dgv_flags/UnitedStates_0_0_256x143.png` (no `..`) |
+| `canvas.texture` | string | Path of a PNG in any active mod, e.g. `media/realflags/pole_flag.png` (no `..`) |
 | `canvas.uv` | [u0, v0, u1, v1] | Part of the texture that is cloth (e.g. exclude a rod strip) |
 | `staticQuads` | array | Unanimated art: `{ "sprite"?: name, "src": [x0,y0,x1,y1], "dst": [x0,y0,x1,y1] }` — `src` of `sprite`'s texture (default: this flag's own sprite) drawn at `dst` of this frame. Keep `src` inside the sprite's opaque bounds. |
 

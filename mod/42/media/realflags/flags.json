@@ -53,7 +53,7 @@
     {
       "sprite": "street_decoration_01_16",
       "kind": "pole",
-      "comment": "Upper tile of the vanilla American Flag pole. The painted furled cloth is replaced by a DGVFlags canvas; the pole is rebuilt from the finial of this sprite and a clean shaft slice of the lower tile street_decoration_01_24.",
+      "comment": "Upper tile of the vanilla American Flag pole. The painted furled cloth is replaced by a canvas shipped with this mod (media/realflags/pole_flag.png); the pole is rebuilt from the finial of this sprite and a clean shaft slice of the lower tile street_decoration_01_24.",
       "anchor": {
         "x": 63.5,
         "y": 158
@@ -64,12 +64,12 @@
       },
       "size": [1.6, 0.85],
       "canvas": {
-        "texture": "media/dgv_flags/UnitedStates_0_0_256x143.png",
+        "texture": "media/realflags/pole_flag.png",
         "uv": [
           0,
           0,
           1,
-          0.944
+          1
         ]
       },
       "staticQuads": [

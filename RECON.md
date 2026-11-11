@@ -4,7 +4,7 @@ Status: **Phase 0 complete; Q1–Q4 answered (see DECISIONS.md D11–D15). Phase
 
 Project: Gradle source in `D:\Real-flags`; the build copies a clean mod folder to
 `C:\Users\user\Zomboid\mods\RealFlags`. Mod id `RealFlags`, package `pzmod.realflags`, log tag `[RealFlags]`.
-Dependencies: `\ZombieBuddy`, `\DGVFlags` (cloth textures for the pole flag, §3b).
+Dependencies: `\ZombieBuddy` (DGVFlags was dropped, D91; see §3b for history).
 Date: 2026-11-05. All class/method names below were read from the installed game,
 decompiled locally with IntelliJ's Fernflower into a scratch directory (reference only, **not
 committed**). Line numbers refer to that decompilation of build 42.21.0 and will drift between builds.
@@ -149,7 +149,7 @@ int entryCount, int hasAlpha, entries `{string name, int x,y,w,h, offX,offY, fra
   would tear at the seams; doing it properly needs a cross-object instance. → proposed for **post-MVP**.
 - Many wall flags are on **interior** walls. → Wind must be zero indoors (see §6).
 
-## 3b. DGVFlags — cloth textures for the pole flag (your Q1 answer)
+## 3b. DGVFlags — cloth textures for the pole flag (your Q1 answer) — HISTORICAL: dependency removed in D91; texture now ships as media/realflags/pole_flag.png
 
 | Item | Value | Evidence |
 |---|---|---|

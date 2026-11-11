@@ -7,8 +7,8 @@ appears over flag sprites, (5) the fallback/disable paths restore vanilla. No wi
 Build deployed to `C:\Users\user\Zomboid\mods\RealFlags` (jar SHA-256 in CHANGELOG / chat).
 
 ## 0. Setup (once)
-1. Mod manager: enable **ZombieBuddy**, **Any Wall Flags 3D [B42] byDGV** (`DGVFlags`) and **Real Flags**.
-   Real Flags declares `require=\ZombieBuddy,\DGVFlags`.
+1. Mod manager: enable **ZombieBuddy** and **Real Flags**.
+   Real Flags declares `require=\ZombieBuddy`.
 2. Launch with **`-debug`** (Steam → Properties → Launch options) so the Lua console and Brush Tool are available.
 3. ZombieBuddy shows an approval dialog for `RealFlags.jar` (new, unsigned). Check the SHA-256 matches the one I
    gave you, then approve (session-only is fine while iterating: every rebuild changes the hash).

@@ -1,6 +1,6 @@
 # Phase 3 in-game test — pole + wall flag animated end-to-end
 
-Setup as in Phase 2 (ZombieBuddy + DGVFlags + Real Flags, `-agentlib:zbNative -- -debug`). Approve the new jar
+Setup as in Phase 2 (ZombieBuddy + Real Flags, `-agentlib:zbNative -- -debug`). Approve the new jar
 (SHA-256 in chat). Use the same test spot: the pole (`street_decoration_01_24` + `_16` above it) and the wall flags
 on the **outside** wall. Debug overlay is now **off** by default (`RealFlags_debug(true)` to show it).
 
@@ -8,7 +8,7 @@ All commands need parentheses. `kph` = km/h; the angle uses the game's own conve
 
 | # | Do | Expect |
 |---|---|---|
-| 1 | Look at the flags with calm weather or `RealFlags_forceWind(0, 0)` | Wall flags exactly vanilla; pole shows the DGVFlags US flag hanging limp from the pole top (no painted furled cloth) and a continuous pole |
+| 1 | Look at the flags with calm weather or `RealFlags_forceWind(0, 0)` | Wall flags exactly vanilla; pole shows the US flag (media/realflags/pole_flag.png) hanging limp from the pole top (no painted furled cloth) and a continuous pole |
 | 2 | `RealFlags_forceWind(40, 308)` | Pole flag swings out and flies toward **screen-left/down-left** (same way the rain went at 308°); wall flags billow (outside wall only) |
 | 3 | `RealFlags_forceWind(40, 135)` | Pole flag swings round to fly toward **screen-right** |
 | 4 | `RealFlags_forceWind(10, 308)`, then `(25, 308)`, then `(70, 308)` | Visibly stronger response each time; at 70 the pole flag streams nearly flat |
