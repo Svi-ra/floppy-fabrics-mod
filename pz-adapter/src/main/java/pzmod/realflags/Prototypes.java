@@ -38,7 +38,7 @@ final class Prototypes {
         if (c == null) {
             float w = def.kind == FlagDef.Kind.WALL ? def.wallWidthMetres() : def.sizeW;
             float hgt = def.kind == FlagDef.Kind.WALL ? def.wallHeightMetres() : def.sizeH;
-            c = new Cloth(lod == NEAR ? def.profile : def.profileFar, w, hgt, h.anchor);
+            c = new Cloth(Detail.cloth(lod == NEAR ? def.profile : def.profileFar), w, hgt, h.anchor); // detail setting (D89)
             h.lod[lod] = c;
             settled++;
         }

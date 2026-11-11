@@ -132,6 +132,16 @@ public final class FlagRegistry {
             String on = onSpriteName(def.sprite);
             if (on != null && !byName.containsKey(on)) onAliases.put(on, def);
         }
+        // pieces of one multi-tile cloth must describe the same cloth (D87)
+        Map<String, FlagDef> firstOfGroup = new HashMap<>();
+        for (FlagDef def : byName.values()) {
+            if (!def.isGroupPiece()) continue;
+            FlagDef first = firstOfGroup.putIfAbsent(def.groupId, def);
+            if (first != null && !first.sameClothAs(def)) {
+                RealFlags.warn("group '" + def.groupId + "': " + def.sprite + " describes a different cloth than " + first.sprite
+                        + " — its tiles will not share a simulation");
+            }
+        }
         bySprite.clear();
         return parsed.flags().size();
     }
@@ -147,6 +157,11 @@ public final class FlagRegistry {
             Canvases.get(def.canvasTexture);
             for (FlagDef.StaticQuad q : def.staticQuads) if (q.sprite() != null) Canvases.sprite(q.sprite());
         }
+    }
+
+    /** True if {@code def} is still in use (not replaced by a later load); curtain definitions are generated, always current. */
+    static boolean isCurrent(FlagDef def) {
+        return def.curtain || byName.get(def.sprite) == def || onAliases.get(def.sprite) == def;
     }
 
     /** "tileset_12" → "tileset_on_12" (vanilla's lit-overlay naming, IsoWorld.java), or null. */

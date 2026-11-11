@@ -1,9 +1,9 @@
 name=Real Flags
 id=RealFlags
 author=Svi-ra
-modversion=0.5.0
+modversion=0.6.0
 versionMin=42.21
-description=Vanilla flags react to the wind with a real-time cloth simulation, and to the world: players, zombies and vehicles push them, passing cars blow them about, and they drape over furniture and stop at walls. Window curtains sway and billow while their window is open or broken. Church banners, Fort Knox flags, hospital privacy curtains and theatre stage curtains move when pushed (and in the wind outdoors). Bunting, string lights, awnings and market canopies have their own simulations: pennants and bulbs swing on their strings, canopies breathe and their valances flutter, altar cloths sway. Visual only and client-side: no new objects, no save data, removing the mod restores vanilla. Needs ZombieBuddy (Java mods) and Any Wall Flags 3D by DGV (flag canvas textures).
+description=Vanilla flags react to the wind with a real-time cloth simulation, and to the world: players, zombies and vehicles push them, passing cars blow them about, and they drape over furniture and stop at walls. Window curtains sway and billow while their window is open or broken. Church banners, Fort Knox flags, hospital privacy curtains and theatre stage curtains move when pushed (and in the wind outdoors). Bunting, string lights, awnings and market canopies have their own simulations: pennants and bulbs swing on their strings, canopies billow and flap and their valances flutter, altar cloths sway. The Riverside street banner and the banners on its light poles move too, and multi-tile flags move as one cloth. Simulation detail is adjustable in Options > Mods. Visual only and client-side: no new objects, no save data, removing the mod restores vanilla. Needs ZombieBuddy (Java mods) and Any Wall Flags 3D by DGV (flag canvas textures).
 require=\ZombieBuddy,\DGVFlags
 javaJarFile=media/java/client/RealFlags.jar
 javaPkgName=pzmod.realflags

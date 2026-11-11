@@ -2,6 +2,32 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
 
+## [0.6.0] — unreleased — flutter, multi-tile cloths, banners, soft contacts, detail setting
+
+Decisions D86–D90. Unit-tested (103 tests) and patch-verified offline; not yet tested in-game.
+
+### Changed
+- **Floppier fabric** (D86): canopies keep six membrane modes (local ripples) with a Van der Pol flutter term, much
+  softer stiffening (15 cm at a 15 m/s gale, cap 25 cm) and turbulence whose frequency rises with the wind: strong wind
+  gives continuous, fast, large flapping instead of a static bulge. Valance flaps are coupled along the hem and driven
+  by vortex shedding (Strouhal 0.14) as a wave; pennants flap the same way, with less damping. Strings gained
+  long-range tethers so the flutter never stretches them.
+- **Softer contacts** (D88): characters are soft bodies (30 % of the penetration resolved per step, friction likewise),
+  slimmer (0.2 m), and a runner's air wash is 0.08 of its speed within 0.6 m (was 0.35 within 1.2 m). Vehicles unchanged.
+
+### Added
+- **Multi-tile cloths** (D87): `group` and `topCurve` in flags.json; the tiles of one cloth share a single simulation.
+  The Fort Knox flags (`location_military_knox_01_8..13`) are now two 3-tile cloths with no seams.
+- **Riverside street banner** `signs_one-off_09_312..327`: one 16 m cloth hung from a sagging cable, lashed at both ends
+  (`top_sides`), free in the air (`free`).
+- **Pole banners** `signs_one-off_09_336..337` on the `lighting_outdoor_01_4` light poles (D90), tied down at their
+  lower corners (`top_and_bottom_corners`); drawn as their own objects or as attached sprites of the pole (an object
+  with a cloth among its attached sprites is drawn every frame).
+- **Simulation detail** (D89): 0.5×–4× of every cloth grid, string, valance and render mesh; Options > Mods > Real Flags
+  (`media/lua/client/RealFlags/RealFlagsOptions.lua`, PZAPI.ModOptions) and `RealFlags_setDetail(x)`.
+- One object may carry several cloths (instances chained per definition).
+- 11 tests (`SoftContactTest`, `GroupsAndDetailTest`, new `CanopyTest` cases).
+
 ## [0.5.0] — unreleased — strings, canopies and drapes
 
 Decisions D80–D85. Unit-tested (92 tests) and patch-verified offline; not yet tested in-game.

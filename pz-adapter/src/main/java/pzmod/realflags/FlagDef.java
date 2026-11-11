@@ -85,6 +85,20 @@ public final class FlagDef {
      * move (the furniture beside it stays still).
      */
     public final boolean drape;
+    /** Wall cloth hanging in free air on its line (a street banner, a pole banner; D87): no wall behind it, as an inset cloth. */
+    public final boolean free;
+    /**
+     * Multi-tile cloth (D87): every tile of one cloth (the Fort Knox flag, the street banner) names the same group and its
+     * own offset in squares from the group's anchor tile; the cloth fields are in the anchor tile's 2x frame. All tiles
+     * draw one shared simulation, so the cloth cannot come apart at the seams. Null for a single-tile cloth.
+     */
+    public final String groupId;
+    public final int groupDx, groupDy;
+    /**
+     * Optional top edge as a curve in the (anchor) 2x frame, flattened {x, y}, x ascending: a banner hung from a sagging
+     * cable. Pixels are mapped onto the cloth relative to it instead of the straight iso top edge. Null = straight.
+     */
+    public final float[] topCurve;
 
     // LINE (relative to the object's square: x east, y south from its north corner, z up from its floor; metres)
     /** String end points A and B; sag of the middle below the chord; the string kind. */
@@ -130,6 +144,8 @@ public final class FlagDef {
         meshCols = b.meshCols; meshRows = b.meshRows;
         anchor = b.anchor; depthPoint = b.depthPoint; sizeW = b.sizeW; sizeH = b.sizeH;
         drape = b.drape;
+        free = b.free;
+        groupId = b.groupId; groupDx = b.groupDx; groupDy = b.groupDy; topCurve = b.topCurve;
         lineAx = b.lineAx; lineAy = b.lineAy; lineAz = b.lineAz; lineBx = b.lineBx; lineBy = b.lineBy; lineBz = b.lineBz;
         lineSag = b.lineSag; lineProfile = b.lineProfile;
         canopyColumns = b.canopyColumns; canopyNx = b.canopyNx; canopyNy = b.canopyNy; canopyNz = b.canopyNz;
@@ -143,7 +159,37 @@ public final class FlagDef {
 
     /** True for a wall cloth hanging free inside its square ({@link #inset} &gt; 0): no wall behind it. */
     public boolean freeHanging() {
-        return kind == Kind.WALL && inset > 0f && !drape;
+        return kind == Kind.WALL && (inset > 0f || free) && !drape;
+    }
+
+    /** One tile of a multi-tile cloth (D87). */
+    public boolean isGroupPiece() {
+        return groupId != null;
+    }
+
+    /**
+     * True if two pieces describe the same cloth (everything but the sprite and the tile offset), so they may share one
+     * simulation. A mismatch is a data error reported at load time.
+     */
+    public boolean sameClothAs(FlagDef o) {
+        return kind == o.kind && facing == o.facing && clothX == o.clothX && clothY == o.clothY && clothW == o.clothW
+                && clothH == o.clothH && inset == o.inset && profile.cols == o.profile.cols && profile.rows == o.profile.rows
+                && profile.pinLayout == o.profile.pinLayout && java.util.Arrays.equals(topCurve, o.topCurve);
+    }
+
+    /** Top edge y (2x anchor frame px) at frame x on {@link #topCurve}, clamped at its ends. */
+    public float topCurveAt(float x) {
+        float[] c = topCurve;
+        int n = c.length / 2;
+        if (x <= c[0]) return c[1];
+        if (x >= c[2 * (n - 1)]) return c[2 * (n - 1) + 1];
+        int lo = 0, hi = n - 1;
+        while (hi - lo > 1) {
+            int mid = (lo + hi) >>> 1;
+            if (c[2 * mid] <= x) lo = mid; else hi = mid;
+        }
+        float t = (x - c[2 * lo]) / (c[2 * hi] - c[2 * lo]);
+        return c[2 * lo + 1] + (c[2 * hi + 1] - c[2 * lo + 1]) * t;
     }
 
     /** LINE or CANOPY: simulated and drawn by {@link Decorations}, not by a {@code Cloth}. */
@@ -175,7 +221,10 @@ public final class FlagDef {
         float exposure = 1f, timeScale = 1f;
         Facing facing = Facing.S;
         float clothX, clothY, clothW, clothH, inset;
-        boolean drape;
+        boolean drape, free;
+        String groupId;
+        int groupDx, groupDy;
+        float[] topCurve;
         float lineAx, lineAy, lineAz, lineBx, lineBy, lineBz, lineSag;
         StringLine.Profile lineProfile;
         float[] canopyColumns;
@@ -234,6 +283,13 @@ public final class FlagDef {
                 if (!(inset >= 0f && inset < 1f)) throw new IllegalArgumentException(sprite + ": inset must be in [0, 1) metres");
                 if (curtain && inset != 0f) throw new IllegalArgumentException(sprite + ": a window curtain hangs on its window line (inset 0)");
                 if (drape && curtain) throw new IllegalArgumentException(sprite + ": a curtain is not a drape");
+                if (topCurve != null) {
+                    if (topCurve.length < 4 || topCurve.length % 2 != 0) throw new IllegalArgumentException(sprite + ": topCurve needs at least 2 points [x, y]");
+                    for (int i = 2; i < topCurve.length; i += 2) {
+                        if (!(topCurve[i] > topCurve[i - 2])) throw new IllegalArgumentException(sprite + ": topCurve x must increase");
+                    }
+                }
+                if (groupId != null && groupId.isBlank()) throw new IllegalArgumentException(sprite + ": group id must not be blank");
             } else {
                 if (anchor == null) throw new IllegalArgumentException(sprite + ": pole needs \"anchor\"");
                 if (!(sizeW > 0.05f && sizeH > 0.05f && sizeW < 10f && sizeH < 10f)) throw new IllegalArgumentException(sprite + ": pole \"size\" [w,h] metres");

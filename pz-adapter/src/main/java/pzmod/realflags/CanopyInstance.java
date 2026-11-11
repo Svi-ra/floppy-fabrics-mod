@@ -28,7 +28,7 @@ final class CanopyInstance {
 
     CanopyInstance(FlagDef def, int sx, int sy, int sz) {
         this.def = def;
-        int k = def.canopyFlaps;
+        int k = Detail.flaps(def.canopyFlaps); // detail setting (D89)
         canopy = new Canopy(def.canopyProfile, def.canopyWidth, def.canopyDepth, def.canopyNx, def.canopyNy, def.canopyNz,
                 k, def.canopyValance);
         cx = sx + 0.5f; cy = sy + 0.5f; cz = sz * Projection.LEVEL_M + HEM_HEIGHT;

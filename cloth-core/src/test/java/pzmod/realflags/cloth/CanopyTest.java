@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-/** Canopies: membrane modes, valance flaps, bounds, sleep, gust coherence (D81). */
+/** Canopies: membrane modes with flutter, coupled valance flaps, bounds, sleep, gust coherence (D81, D86). */
 class CanopyTest {
     private static final float DT = 1f / 60f;
     private static final float SIN35 = (float) Math.sin(Math.toRadians(35)), COS35 = (float) Math.cos(Math.toRadians(35));
@@ -25,15 +25,25 @@ class CanopyTest {
         return clock;
     }
 
-    private static float meanMode(Canopy c, float seconds, float clock) {
-        float sum = 0f;
+    /** Mean, standard deviation and mean-crossings per second of the fundamental over {@code seconds}. */
+    private static float[] stats(Canopy c, float seconds, float clock, boolean flap) {
         int n = (int) (seconds / DT);
+        float[] x = new float[n];
         for (int i = 0; i < n; i++) {
             clock += DT;
             c.step(DT, clock);
-            sum += c.mode(0);
+            x[i] = flap ? c.flap(4) : c.mode(0);
         }
-        return sum / n;
+        double mean = 0;
+        for (float v : x) mean += v;
+        mean /= n;
+        double var = 0;
+        int crossings = 0;
+        for (int i = 0; i < n; i++) {
+            var += (x[i] - mean) * (x[i] - mean);
+            if (i > 0 && (x[i - 1] - mean) * (x[i] - mean) < 0) crossings++;
+        }
+        return new float[]{(float) mean, (float) Math.sqrt(var / n), crossings / seconds};
     }
 
     @Test
@@ -48,64 +58,70 @@ class CanopyTest {
     @Test
     void windIntoThePanelPressesItInAndCrossWindLiftsIt() {
         Canopy in = stall();
-        in.setWind(0f, -10f, 0f); // from the south, into the sloping top surface (w·n < 0)
+        in.setWind(0f, -5f, 0f); // a breeze from the south into the sloping top surface (below the flutter speed)
         float c = run(in, 3f, 0f);
-        assertTrue(meanMode(in, 4f, c) < -0.01f, "pressed in: " + in.mode(0));
+        assertTrue(stats(in, 6f, c, false)[0] < -0.005f, "pressed in");
 
         Canopy cross = stall();
-        cross.setWind(10f, 0f, 0f); // along the hem: no normal component, air flowing over the panel
+        cross.setWind(5f, 0f, 0f); // along the hem: air flowing over the panel lifts it
         c = run(cross, 3f, 0f);
-        assertTrue(meanMode(cross, 4f, c) > 0.003f, "lifted by the suction over the top: " + cross.mode(0));
+        assertTrue(stats(cross, 6f, c, false)[0] > 0.001f, "lifted by the suction over the top");
     }
 
     @Test
-    void referenceGaleGivesAboutTheReferenceDeflectionAndAmplitudesStayBounded() {
-        Canopy c = stall();
-        // the steady part straight at the panel (gusts average out over the window)
-        c.setWind(0f, -15f * SIN35, -15f * COS35);
-        float t = run(c, 3f, 0f);
-        float m = Math.abs(meanMode(c, 8f, t));
-        assertTrue(m > 0.6f * Canopy.AWNING.refAmplitude && m < 1.4f * Canopy.AWNING.refAmplitude, "mean " + m);
+    void strongWindFlapsContinuouslyFasterAndLargerInsteadOfLeaning() {
+        Canopy breeze = stall(), gale = stall();
+        breeze.setWind(0f, -5f, 0f);
+        gale.setWind(0f, -16f, 0f);
+        float c1 = run(breeze, 4f, 0f), c2 = run(gale, 4f, 0f);
+        float[] b = stats(breeze, 6f, c1, false), g = stats(gale, 6f, c2, false);
+        assertTrue(g[1] > 0.03f, "a gale keeps the panel flapping: std " + g[1]);
+        assertTrue(g[1] > 2.5f * b[1], "much larger than in a breeze: " + g[1] + " vs " + b[1]);
+        assertTrue(g[2] > 3f, "and fast: " + g[2] + " crossings/s");
+        assertTrue(g[1] > 0.5f * Math.abs(g[0]), "flapping, not one static bulge: mean " + g[0] + " std " + g[1]);
+    }
 
+    @Test
+    void valanceFlutters() {
+        Canopy c = stall();
+        c.setWind(0f, 12f, 0f); // out through the hem
+        float t = run(c, 3f, 0f);
+        float[] s = stats(c, 6f, t, true);
+        assertTrue(s[1] > 0.08f, "flaps keep moving: std " + s[1]);
+        assertTrue(s[2] > 4f, "at a high frequency: " + s[2] + " crossings/s");
+        // neighbouring flaps move together (a wave along the hem, not noise)
+        double corr = 0, n3 = 0, n4 = 0;
+        for (int i = 0; i < 240; i++) {
+            t += DT;
+            c.step(DT, t);
+            corr += c.flap(3) * c.flap(4);
+            n3 += c.flap(3) * c.flap(3);
+            n4 += c.flap(4) * c.flap(4);
+        }
+        assertTrue(corr / Math.sqrt(n3 * n4) > 0.5, "neighbours correlated: " + corr / Math.sqrt(n3 * n4));
+    }
+
+    @Test
+    void amplitudesStayBoundedInAStormAndAfterHitches() {
         Canopy storm = stall();
         storm.setWind(0f, -45f, -5f);
         float clock = 0f;
         for (int i = 0; i < 600; i++) {
             clock += 0.1f;
-            storm.step(0.1f, clock); // frame hitches too
-            assertTrue(Math.abs(storm.mode(0)) <= Canopy.AWNING.maxAmplitude + 1e-6f);
-            assertTrue(Math.abs(storm.mode(1)) <= Canopy.AWNING.maxAmplitude + 1e-6f);
+            storm.step(0.1f, clock);
+            for (int k = 0; k < Canopy.MODES; k++) assertTrue(Math.abs(storm.mode(k)) <= Canopy.AWNING.maxAmplitude + 1e-6f);
             for (int k = 0; k < 8; k++) assertTrue(Math.abs(storm.flap(k)) <= Canopy.AWNING.maxFlap + 1e-6f);
         }
     }
 
     @Test
-    void valanceSwingsOutwardWithTheWindBehindItAndHangsInAgainstIt() {
-        Canopy out = stall();
-        out.setWind(0f, 4f, 0f); // blowing outward through the hem (toward +y)
-        float t = run(out, 3f, 0f);
-        float sum = 0f;
-        for (int i = 0; i < 120; i++) { t += DT; out.step(DT, t); for (int k = 0; k < 8; k++) sum += out.flap(k); }
-        assertTrue(sum / 960f > 0.1f, "outward: " + sum / 960f);
-        float mean = sum / 960f;
-        assertTrue(mean < 1.0f, "a 4 m/s breeze does not hold it near horizontal: " + mean);
-
-        Canopy in = stall();
-        in.setWind(0f, -4f, 0f);
-        t = run(in, 3f, 0f);
-        sum = 0f;
-        for (int i = 0; i < 120; i++) { t += DT; in.step(DT, t); for (int k = 0; k < 8; k++) sum += in.flap(k); }
-        assertTrue(sum / 960f < -0.1f, "pushed in: " + sum / 960f);
-    }
-
-    @Test
     void settlesBackToSleepWhenTheWindDrops() {
         Canopy c = stall();
-        c.setWind(6f, 6f, 0f);
+        c.setWind(10f, 10f, 0f);
         float t = run(c, 4f, 0f);
         assertFalse(c.isSleeping());
         c.setWind(0f, 0f, 0f);
-        run(c, 20f, t);
+        run(c, 30f, t);
         assertTrue(c.isSleeping());
         assertEquals(0f, c.mode(0));
         assertEquals(0f, c.flap(4));
@@ -113,16 +129,13 @@ class CanopyTest {
 
     @Test
     void neighbouringHemsShareTheGustField() {
-        // two canopies side by side: the flap at the same world point behaves identically (seams match)
-        Canopy a = stall(), b = new Canopy(Canopy.AWNING, 1f, 1f, 0f, SIN35, COS35, 8, 0.2f);
-        b.setCenter(10.5f, 20.5f);
-        for (int k = 0; k < 8; k++) b.setFlap(k, 10f + k / 7f, 21f, 0f, 1f);
+        Canopy a = stall(), b = stall();
         a.setWind(2f, 7f, 0f);
         b.setWind(2f, 7f, 0f);
         run(a, 3f, 100f);
         run(b, 3f, 100f);
         for (int k = 0; k < 8; k++) assertEquals(a.flap(k), b.flap(k), 0f);
-        // and the field is advected: what hits x now hits x + U·Δt·ŵ later
+        // the field is advected: what hits x now hits x + U·Δt·ŵ later
         float g0 = GustField.gust(5f, 0f, 0f, 8f, 0f, 0.5f, 0.35f);
         float g1 = GustField.gust(5.5f, 4f, 0f, 8f, 0f, 0.5f, 0.35f);
         assertEquals(g0, g1, 1e-5f);
@@ -132,10 +145,12 @@ class CanopyTest {
     void stableModalFrequencies() {
         Canopy c = stall();
         assertEquals(2 * Math.PI * Canopy.AWNING.panelFrequency, c.omega1(), 1e-3);
-        assertTrue(c.omega2() > c.omega1());
+        assertTrue(c.omega(Canopy.index(2, 1)) > c.omega(Canopy.index(1, 1)));
+        assertTrue(c.omega(Canopy.index(3, 2)) > c.omega(Canopy.index(2, 1)));
         // the stiffened panel at its amplitude cap stays within the explicit step's stability limit (ω·h < 2)
         float a = Canopy.AWNING.maxAmplitude;
-        double wMax = Math.sqrt(c.omega1() * c.omega1() + 3 * c.kappa() * a * a);
+        float wTop = c.omega(Canopy.index(3, 2));
+        double wMax = Math.sqrt(wTop * wTop + 3 * c.kappa() * a * a);
         assertTrue(wMax * Canopy.TIMESTEP < 2.0, "omega*h = " + wMax * Canopy.TIMESTEP);
     }
 }

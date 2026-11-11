@@ -24,6 +24,13 @@ public final class Colliders {
     private final int capacity;
     private final byte[] shape;
     private final boolean[] dynamic;
+    /**
+     * Per body: how firmly it pushes cloth out (1 = fully, every step; less = a soft body the cloth only partly yields
+     * to, so it deforms locally and slips past). Characters are soft (DECISIONS D88), vehicles and scenery firm.
+     */
+    private final float[] strength;
+    /** Strength given to the bodies added next ({@link #setNextStrength}). */
+    private float nextStrength = 1f;
     /** cylinder: cx, cy, z0, z1, r, -, -, -, vx, vy · box: cx, cy, z0, z1, hx, hy, ax, ay, vx, vy */
     private final float[] d;
     private int count;
@@ -39,6 +46,7 @@ public final class Colliders {
         this.capacity = capacity;
         shape = new byte[capacity];
         dynamic = new boolean[capacity];
+        strength = new float[capacity];
         d = new float[capacity * STRIDE];
     }
 
@@ -53,15 +61,23 @@ public final class Colliders {
         return this;
     }
 
+    /** Strength (0..1] of the bodies added from now on; reset to 1 by {@link #clearDynamic} and {@link #clear}. */
+    public Colliders setNextStrength(float s) {
+        nextStrength = !(s > 0f) ? 0.01f : (s > 1f ? 1f : s);
+        return this;
+    }
+
     /** Removes everything (static and dynamic). */
     public void clear() {
         count = 0;
         staticCount = 0;
+        nextStrength = 1f;
     }
 
     /** Removes the dynamic bodies, keeping the static ones. */
     public void clearDynamic() {
         count = staticCount;
+        nextStrength = 1f;
     }
 
     /** Everything added so far becomes the static part kept by {@link #clearDynamic}. */
@@ -82,6 +98,7 @@ public final class Colliders {
         d[o + 5] = 0f; d[o + 6] = 0f; d[o + 7] = 0f; d[o + 8] = vx; d[o + 9] = vy;
         shape[count] = CYLINDER;
         dynamic[count] = isDynamic;
+        strength[count] = nextStrength;
         count++;
         return true;
     }
@@ -97,6 +114,7 @@ public final class Colliders {
         d[o + 5] = hy; d[o + 6] = ax / l; d[o + 7] = ay / l; d[o + 8] = vx; d[o + 9] = vy;
         shape[count] = BOX;
         dynamic[count] = isDynamic;
+        strength[count] = nextStrength;
         count++;
         return true;
     }
@@ -257,6 +275,8 @@ public final class Colliders {
                 float depth = penetration(c, pos[o], pos[o + 1], pos[o + 2], margin, nrm, wall, wnx, wny);
                 if (depth <= 0f) continue;
                 contacts++;
+                float ks = strength[c];
+                depth *= ks;
                 pos[o] += nrm[0] * depth;
                 pos[o + 1] += nrm[1] * depth;
                 pos[o + 2] += nrm[2] * depth;
@@ -268,9 +288,10 @@ public final class Colliders {
                     float rz = pos[o + 2] - prev[o + 2];
                     float rn = rx * nrm[0] + ry * nrm[1] + rz * nrm[2];
                     rx -= rn * nrm[0]; ry -= rn * nrm[1]; rz -= rn * nrm[2];
-                    pos[o] -= rx * friction;
-                    pos[o + 1] -= ry * friction;
-                    pos[o + 2] -= rz * friction;
+                    float f = friction * ks;
+                    pos[o] -= rx * f;
+                    pos[o + 1] -= ry * f;
+                    pos[o + 2] -= rz * f;
                 }
             }
         }

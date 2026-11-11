@@ -45,12 +45,18 @@ final class Interactions {
     /** Depth of the space in front of a wall flag that an object must reach into to block it, metres. */
     static final float BLOCK_DEPTH = 0.5f;
     /** Character body: radius and standing / low (crawling, sitting) height, metres. */
-    static final float BODY_RADIUS = 0.25f, BODY_HEIGHT = 1.8f, BODY_LOW = 0.6f;
+    static final float BODY_RADIUS = 0.2f, BODY_HEIGHT = 1.8f, BODY_LOW = 0.6f;
+    /**
+     * How firmly a character pushes cloth (Colliders strength, D88): a fraction of the penetration resolved per step, so
+     * fabric yields only where it is touched and slips past the body instead of being shoved aside. Vehicles stay 1.
+     */
+    static final float CHARACTER_STRENGTH = 0.3f;
     /** Vehicle body: clearance above the ground and allowance on top of the script's body height, metres. */
     static final float VEHICLE_CLEARANCE = 0.15f, VEHICLE_ROOF_EXTRA = 0.4f;
     /** Air wash: range and strength (fraction of the body's speed). */
     static final float VEHICLE_WASH_RANGE = 3f, VEHICLE_WASH = 0.6f, VEHICLE_BOW = 0.25f;
-    static final float RUN_WASH_RANGE = 1.2f, RUN_WASH = 0.35f, RUN_SPEED = 2.5f;
+    /** A runner moves air only right next to the cloth, and little of it (D88: passing by barely stirs fabric). */
+    static final float RUN_WASH_RANGE = 0.6f, RUN_WASH = 0.08f, RUN_SPEED = 3.0f;
     static final float MAX_BODY_SPEED = 25f, MAX_WASH = 20f;
 
     private static final float[] tmp3 = new float[3];
@@ -68,7 +74,10 @@ final class Interactions {
         if (!inst.placed) {
             IsoGridSquare sq = obj.getSquare();
             if (sq == null) return false;
-            Projection.clothOrigin(inst.def, sq.getX(), sq.getY(), sq.getZ(), tmp3);
+            // a multi-tile cloth is placed from its anchor square, whichever of its tiles is drawn first (D87)
+            int sx = inst.anchored ? inst.anchorX : sq.getX(), sy = inst.anchored ? inst.anchorY : sq.getY();
+            int sz = inst.anchored ? inst.anchorZ : sq.getZ();
+            Projection.clothOrigin(inst.def, sx, sy, sz, tmp3);
             inst.ox = tmp3[0]; inst.oy = tmp3[1]; inst.oz = tmp3[2];
             if (inst.def.kind == FlagDef.Kind.WALL) inst.cloth.setWallStandoff(wallStandoff(sq, inst.def));
             inst.placed = true;
@@ -80,6 +89,7 @@ final class Interactions {
             // curtains are never blocked: furniture under a window is normal; it is scenery to drape over (D68)
             // free-hanging cloths neither: there is no wall for furniture to stand against, only scenery around (D77)
             inst.blocked = inst.def.kind == FlagDef.Kind.WALL && !inst.def.curtain && !inst.def.facing.flipped() && !inst.def.freeHanging() && !inst.def.drape
+                    && !inst.def.isGroupPiece()
                     && RealFlags.blockHeight > 0f && isBlocked(obj, inst.def);
             if (inst.blocked != wasBlocked) {
                 if (inst.blocked) RealFlags.stats.blockedEvents++;
@@ -314,7 +324,8 @@ final class Interactions {
         float invDt = dt > 1e-4f ? 1f / dt : 0f;
         float washX = 0f, washY = 0f;
 
-        // players and zombies, from the moving-object lists of the squares around the cloth
+        // players and zombies, from the moving-object lists of the squares around the cloth: soft bodies (D88)
+        col.setNextStrength(CHARACTER_STRENGTH);
         float rr = r + BODY_RADIUS + 0.1f;
         int x0 = (int) Math.floor(inst.ox - rr), x1 = (int) Math.floor(inst.ox + rr);
         int y0 = (int) Math.floor(inst.oy - rr), y1 = (int) Math.floor(inst.oy + rr);
@@ -360,7 +371,8 @@ final class Interactions {
             }
         }
 
-        // vehicles: each is listed in the chunk of its centre, so search a few tiles beyond the reach
+        // vehicles: each is listed in the chunk of its centre, so search a few tiles beyond the reach; firm bodies
+        col.setNextStrength(1f);
         float vr = r + 5f;
         int cx0 = (int) Math.floor((inst.ox - vr) / 8f), cx1 = (int) Math.floor((inst.ox + vr) / 8f);
         int cy0 = (int) Math.floor((inst.oy - vr) / 8f), cy1 = (int) Math.floor((inst.oy + vr) / 8f);

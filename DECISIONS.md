@@ -778,6 +778,69 @@ previous ones still apply (`verifyPatches`).
 0.5.0: 92 unit tests pass (23 new), `verifyPatches` applies all advices, deployed to `mods/RealFlags` (jar SHA-256
 `67c0c5a45c72888548b2ef210261fa6414e980bc3d9413c47e9b1b3ae87acb32`). **Not yet tested in-game.**
 
+## Phase 10 — flutter, multi-tile cloths, banners, soft contacts, detail (2026-11-11)
+
+Request (user, 2026-11-11): floppier canopies and small fabric with continuous high-frequency flapping in strong wind;
+the three-tile flag as one object with no gaps; much weaker player collisions; fabric physics for
+`lighting_outdoor_01_4` (flags on light poles) and `signs_one-off_09` (a long multi-tile banner over the road);
+a simulation-detail mod setting from 0.5× to 4×.
+
+**D86 · Flutter instead of leaning.** A damped oscillator driven by mean pressure settles into a static deflection —
+what the user saw ("pushed aside into a static inclined position"). Slack fabric in a strong wind flutters because the
+air feeds energy into it (negative aerodynamic damping) until large-deflection stiffening limits it. Model: each canopy
+membrane mode gets a Van der Pol term 2ζω·(1 − μ(U)(1 − a²/A(U)²)): μ = 0 below 4 m/s, rising to 1.6 at 8 m/s, so a
+limit cycle exists from ≈6.5 m/s (μ > 1) with amplitude ≈ 1.2·A, A = 1 mm/Pa of dynamic pressure (≈ 6 cm at 10 m/s,
+25 cm cap); the cubic stiffening κ (now set for 15 cm at 15 m/s, was 6 cm) raises the flapping frequency with amplitude.
+Six modes (m = 1..3 across, n = 1..2 down; Γ_mn = 16/(π²mn) for odd m, n) with independent turbulence whose frequency
+rises with U/width give local ripples rather than one bulge. Valance: flaps coupled by the hem's tension
+(160 s⁻², a discrete wave equation), bending stiffness 60 → 15 s⁻², cap 0.8 → 1.1 rad, the same Van der Pol term, and
+vortex shedding at f = St·U/L (St = 0.14: ≈ 7 Hz at 10 m/s for a 0.2 m valance) as a wave of 0.7 m running along the
+hem. Pennants: shedding force 0.45 q at St·U/c along a 0.9 m wave, damping 0.25 → 0.12 /s. Stability: the stiffest mode
+at the cap stays at ω·h ≈ 0.85 (tested); strings got unilateral tethers to both ends (the flutter stretched a 16-
+iteration chain by 20 %). Tests: a 16 m/s gale has ≥ 2.5× the breeze's standard deviation, > 3 mean-crossings/s and
+std > ½|mean|; the valance at 12 m/s flutters at > 4 crossings/s with neighbouring flaps correlated > 0.5.
+
+**D87 · Multi-tile cloths share one simulation.** Tiles name a `group` and their offset from the anchor tile; the cloth
+fields are in the anchor's 2× frame (a tile (dx, dy) away is shifted by (64(dx − dy), 32(dx + dy)) px). Instances are
+keyed by (group, anchor square); each tile's mesh samples the same cloth through the shifted frame, so the field is
+continuous across seams. Knox: `_8/_9/_10` at (0..2, 0) (SpriteGridPos) → one 2.5 m cloth (12×6); `_13/_12/_11` at
+(0, 0..2). Street banner (`signs_one-off_09_312..327`, no tile-definition properties; `Translucent` in tileGeometry):
+every tile's art lies on its west edge (frame x 0–64, top rising right → E); the right end of tile k meets the left end
+of tile k+1 exactly after the shift for (0, −1) (e.g. 312's top at x 64 = 59; 313's at x 0 = 91 − 32), so they run north
+from 312 — one 16 m × 1.2 m cloth (48×5) hung from a cable that sags ≈ 0.55 m (`topCurve`, 65 points from the art),
+lashed to a pole at each end (`top_sides`), free in the air (`free`: inset-0 free-hanging, no wall plane). The cable
+wires `328..335` are not fabric. Placement uses the anchor square whichever tile is drawn first; group pieces are never
+blocked. Residual: the vanilla art of adjacent Knox tiles is offset by ≈ 5 px, which no shared simulation can hide.
+
+**D88 · Soft contacts.** `Colliders` gained a per-body strength: a character resolves 30 % of its penetration per step
+(friction scaled the same), so fabric dents where touched and slips past (test: a body inside a wall flag moves it
+< 0.6× as far as a firm one); radius 0.25 → 0.2 m; a runner's wash 0.35 → 0.08 of its speed and 1.2 → 0.6 m range,
+from 3 m/s. Vehicles keep full strength and their wash.
+
+**D89 · Simulation detail 0.5×–4×.** One factor scales cloth grids (2..64 per side, far LOD too), iterations
+(× √factor above 1×, never fewer), string segments (4..64, pendant mass and area per metre kept), valance flaps
+(3..64) and render meshes (1..32). Pin layouts are defined by edges, so attachment points hold at any size; groups keep
+one simulation at any size. A change is requested from any thread and applied at the next frame rollover on the render
+thread (drop prototypes, instances, decorations, curtain lights; all rebuilt from rest). UI: PZAPI.ModOptions slider
+(vanilla `media/lua/client/PZAPI/ModOptions.lua`: `create`, `addSlider`, `options:apply()` called by
+MainOptions on Accept); vanilla only reads ModOptions.ini when the options screen opens
+(`MainOptions:addModOptionsPanel`), so the file also loads and applies the value on `OnGameStart`. Strings in
+`Translate/EN/UI.json`.
+
+**D90 · Banners on light poles; cloths on attached sprites.** `lighting_outdoor_01_4` is a bare pole (no lamp, no
+light; no `_on_` sprite in Tiles2x). The flags seen on Riverside's light poles are the pole banners
+`signs_one-off_09_336/337` (blue Riverside County banners on a top arm, grommets at the lower corners) — a wall cloth
+each, `free`, `top_and_bottom_corners`. A map can place them as separate objects (then they are flags like any other)
+or as attached sprites of the pole object: `IsoObject.attachedAnimSprite` is drawn by
+`renderAttachedAndOverlaySpritesInternal` through `IsoSprite.render → performRenderFrame(…, obj)` (jar), which our hooks
+see with the pole as the object; `onCalculateLayer` now also reclassifies an object whose attached sprites include a
+cloth, and `Instances` chains one instance per definition on an object (a pole may carry two banners). Not yet
+observed in-game which way Riverside's map places them.
+
+### Phase 10 status
+0.6.0: 103 unit tests pass (11 new), `verifyPatches` applies all advices, deployed to `mods/RealFlags` (jar SHA-256
+`58e6295c5f56e52c5fb56951629b729c756c294e24ec12fef4e57d2bb2771f18`). **Not yet tested in-game.**
+
 ## Acceptance status (MVP)
 | Criterion | Status |
 |---|---|

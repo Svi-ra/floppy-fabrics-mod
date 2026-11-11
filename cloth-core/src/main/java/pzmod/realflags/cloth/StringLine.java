@@ -61,6 +61,17 @@ public final class StringLine {
             this.turbulenceFrequency = turbulenceFrequency; this.sleepWindSpeed = sleepWindSpeed;
         }
 
+        /**
+         * Same string with {@code n} segments (the detail setting, D89): line mass per metre, pendant mass and drag area per
+         * metre are kept, so the physics is the same and only its resolution changes.
+         */
+        public Profile withSegments(int n) {
+            n = Math.max(4, Math.min(64, n));
+            float k = (float) (segments - 1) / Math.max(1, n - 1); // pendants per model pendant
+            return new Profile(name, n, lineMassPerMetre, lineDiameter, shape, pendantLength, pendantMass * k, pendantArea * k,
+                    pendantDrag, damping, iterations, gustAmount, gustFrequency, turbulence, turbulenceFrequency, sleepWindSpeed);
+        }
+
         /** Same profile with another pendant hang length (measured from the art). */
         public Profile withPendantLength(float l) {
             return new Profile(name, segments, lineMassPerMetre, lineDiameter, shape, l, pendantMass, pendantArea, pendantDrag,
@@ -73,7 +84,7 @@ public final class StringLine {
      * string; a light cord.
      */
     public static final Profile BUNTING = new Profile("bunting", 12, 0.012f, 0.003f, PendantShape.PLATE,
-            0.15f, 0.0033f, 0.012f, 1.2f, 0.25f, 16, 0.45f, 0.35f, 0.35f, 1.6f, 0.3f);
+            0.15f, 0.0033f, 0.012f, 1.2f, 0.12f, 16, 0.5f, 0.35f, 0.45f, 2.2f, 0.3f);
     /** Large-bulb festoon lights: a heavy cable, ≈ 25 g bulbs on 8 cm sockets every 0.25 m. */
     public static final Profile BULBS = new Profile("bulbs", 12, 0.06f, 0.008f, PendantShape.SPHERE,
             0.08f, 0.02f, 0.0028f, 0.5f, 0.35f, 16, 0.4f, 0.35f, 0.25f, 1.6f, 0.3f);
@@ -99,6 +110,8 @@ public final class StringLine {
     private static final float SETTLE_SECONDS = 4f;
     /** Asleep when calm for this long with every particle within {@link #SLEEP_DIST} of its reference. */
     private static final float SLEEP_AFTER = 1.5f, SLEEP_DIST = 0.003f;
+    /** Pennant flutter (D86): Strouhal number, share of the dynamic pressure, wavelength along the string (m). */
+    private static final float FLUTTER_ST = 0.15f, FLUTTER_SHARE = 0.45f, FLUTTER_WAVELENGTH = 0.9f;
     /** Pull toward the reference while calm (1/s): the line settles back onto the exact picture. */
     private static final float CALM_RESTORE = 1.5f;
 
@@ -106,6 +119,8 @@ public final class StringLine {
     private final int nodes, pendants, n;
     private final float[] pos, prev, ref, invMass, mass, force;
     private final float[] segRest;
+    /** Per node: string length to end A and to end B (long-range tethers: a node never gets farther away than that). */
+    private final float[] reachA, reachB;
     private final float pendRest;
     private final float health;
 
@@ -134,6 +149,8 @@ public final class StringLine {
         pos = new float[3 * n]; prev = new float[3 * n]; ref = new float[3 * n];
         invMass = new float[n]; mass = new float[n]; force = new float[3 * n];
         segRest = new float[p.segments];
+        reachA = new float[p.segments + 1];
+        reachB = new float[p.segments + 1];
         pendRest = p.pendantLength;
         health = 4f * span + 2f;
 
@@ -150,6 +167,8 @@ public final class StringLine {
             segRest[i] = dist(3 * i, 3 * (i + 1));
             segLen += segRest[i];
         }
+        for (int i = 1; i <= p.segments; i++) reachA[i] = reachA[i - 1] + segRest[i - 1];
+        for (int i = p.segments - 1; i >= 0; i--) reachB[i] = reachB[i + 1] + segRest[i];
         float nodeMass = p.lineMassPerMetre * segLen / p.segments;
         for (int i = 0; i < nodes; i++) {
             boolean pinned = i == 0 || i == nodes - 1;
@@ -321,6 +340,14 @@ public final class StringLine {
                 nx /= nl; ny /= nl; nz /= nl;
                 float vn = ux * nx + uy * ny + uz * nz;
                 float fn = kp * vn * Math.abs(vn);
+                // flutter: vortices shed off the pennant at the Strouhal frequency f = St·U/c push it to and fro, a wave
+                // running along the string with the wind (D86); a pennant in a strong wind never just leans, it flaps
+                float u2 = ux * ux + uy * uy + uz * uz;
+                if (u2 > 1f) {
+                    float fs = FLUTTER_ST * (float) Math.sqrt(u2) / pendRest;
+                    float ph = (float) (2 * Math.PI) * (fs * clock - (wx * 0.9f + wy * 1.3f) / FLUTTER_WAVELENGTH);
+                    fn += kp * FLUTTER_SHARE * u2 * (float) Math.sin(ph);
+                }
                 float ft = 0.5f * rho * 0.06f * p.pendantArea; // skin friction on the tangential part
                 float vtx = ux - vn * nx, vty = uy - vn * ny, vtz = uz - vn * nz;
                 float vt = (float) Math.sqrt(vtx * vtx + vty * vty + vtz * vtz);
@@ -364,6 +391,28 @@ public final class StringLine {
             if (p.shape == PendantShape.PLATE) hinge(node, pi);
             distance(node, pi, pendRest);
         }
+        tethers();
+    }
+
+    /** Unilateral tethers to both pinned ends: the string as a whole cannot stretch, whatever the iteration count. */
+    private void tethers() {
+        int last = 3 * (nodes - 1);
+        for (int i = 1; i < nodes - 1; i++) {
+            if (invMass[i] == 0f) continue;
+            int o = 3 * i;
+            tether(o, 0, reachA[i]);
+            tether(o, last, reachB[i]);
+        }
+    }
+
+    private void tether(int o, int end, float reach) {
+        float dx = pos[o] - pos[end], dy = pos[o + 1] - pos[end + 1], dz = pos[o + 2] - pos[end + 2];
+        float l = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (l <= reach || l < 1e-9f) return;
+        float k = reach / l;
+        pos[o] = pos[end] + dx * k;
+        pos[o + 1] = pos[end + 1] + dy * k;
+        pos[o + 2] = pos[end + 2] + dz * k;
     }
 
     private void distance(int a, int b, float rest) {

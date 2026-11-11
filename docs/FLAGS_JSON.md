@@ -18,7 +18,7 @@ in mod load order, files sorted by name; for the same sprite a later file wins. 
 | `sprite` | string | — (required) | Sprite name, e.g. `walls_decoration_01_16` |
 | `kind` | `"wall"` / `"pole"` / `"drape"` / `"line"` / `"canopy"` | `"wall"` | Wall-mounted cloth, flag on a pole, cloth over furniture, string with pennants or bulbs, fabric over a frame |
 | `profile` | `"wall"` / `"pole"` | = kind | Built-in physics profile (`ClothProfiles`) |
-| `physics` | object | — | Overrides: `grid` [cols, rows] (defaults wall 5×8, pole 8×5), `mass` kg, `drag` (Cd), `friction` (Cf), `damping`, `stiffness` [stretch, shear, bend], `iterations` (default 4), `pin` (`top`, `left`, `right`, `top_corners`, `left_corners`), `restore` (pose memory 1/s; pole default 5), `lodGrid` [cols, rows] for the far LOD (defaults wall 4×6, pole 6×4) |
+| `physics` | object | — | Overrides: `grid` [cols, rows] (defaults wall 5×8, pole 8×5), `mass` kg, `drag` (Cd), `friction` (Cf), `damping`, `stiffness` [stretch, shear, bend], `iterations` (default 4), `pin` (`top`, `left`, `right`, `top_corners`, `left_corners`, `top_sides`, `top_and_bottom_corners`), `restore` (pose memory 1/s; pole default 5), `lodGrid` [cols, rows] for the far LOD (defaults wall 4×6, pole 6×4) |
 | `exposure` | number 0–4 | wall 0.35, pole 1 | Fraction of the climate wind the flag feels |
 | `timeScale` | number (0–4] | 1 | Simulation seconds per real second |
 
@@ -29,6 +29,9 @@ The vanilla sprite stays the image; the cloth bends it. At zero wind it is pixel
 | `facing` | `"S"` / `"E"` / `"N"` / `"W"` | Which way the flag faces: S lies along the north wall (top edge slopes **down** to the right), E along the west wall (top edge slopes **up** to the right). N/W lie on the square's south/east edge facing into the square (used for curtains) |
 | `cloth` | `{x, y, w, h}` px | Top-left corner of the pinned top edge, horizontal span `w`, vertical height `h` (measured at the left edge) |
 | `mesh` | [cols, rows] | Render mesh over the sprite rectangle; default [5, 8] (halved at far LOD) |
+| `free` | bool | Default false. A cloth hanging in free air on its line (a street or pole banner): no wall plane, touched from both sides, never blocked — as an inset cloth, without moving the line |
+| `group` | `{"id": string, "offset": [dx, dy]}` | One tile of a **multi-tile cloth**: every tile names the same id and its offset in squares from the anchor tile; `cloth` (and `topCurve`) are given in the **anchor tile's** frame and must be identical in every tile. All tiles draw one shared simulation, so the cloth cannot come apart at the seams |
+| `topCurve` | [[x, y], ...] px | Optional top edge as a curve (x ascending, anchor frame): a banner hung from a sagging cable. Pixels hang below the curve instead of the straight iso top edge |
 | `inset` | metres, 0 ≤ inset < 1 | Default 0 (on the wall). Distance of the cloth's line from the facing's edge into the square: S at y = inset, E at x = inset, N at y = 1 − inset, W at x = 1 − inset. Above 0 the cloth hangs **free** (e.g. a hospital curtain on a rail across the middle of its square, 0.5): it is not clamped to a wall plane, bodies on both sides touch it, and it is never blocked by furniture |
 
 Wall flags only feel the wind on an **outside** square (vanilla's `exterior` flag); indoors they still move when people,

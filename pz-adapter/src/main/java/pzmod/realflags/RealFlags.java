@@ -14,7 +14,7 @@ import zombie.iso.IsoObject;
  * invalidated so the chunk re-bakes it in its vanilla layer. While disabled every hook returns "do vanilla" at once.
  */
 public final class RealFlags {
-    public static final String VERSION = "0.5.0";
+    public static final String VERSION = "0.6.0";
     static final String TAG = "[RealFlags] ";
 
     /** User toggle (Lua: RealFlags_setEnabled). */

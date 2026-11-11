@@ -82,7 +82,23 @@ public final class FlagJson {
             float[] mesh = nums(e, "mesh", 2);
             if (mesh != null) { b.meshCols = (int) mesh[0]; b.meshRows = (int) mesh[1]; }
             b.inset = num(e, "inset", 0f);
-            if (b.inset > 0f && !b.drape) { // free-hanging: no wall plane to keep the cloth in front of (D77)
+            Object free = e.get("free");
+            if (free != null && !(free instanceof Boolean)) throw new IllegalArgumentException(b.sprite + ": \"free\" must be true or false");
+            b.free = Boolean.TRUE.equals(free);
+            Map<String, Object> group = map(e, "group");
+            if (group != null) { // one tile of a multi-tile cloth (D87)
+                b.groupId = str(group, "id", null);
+                if (b.groupId == null) throw new IllegalArgumentException(b.sprite + ": group needs an \"id\"");
+                float[] off = nums(group, "offset", 2);
+                if (off != null) {
+                    if (off[0] != Math.rint(off[0]) || off[1] != Math.rint(off[1]) || Math.abs(off[0]) > 64 || Math.abs(off[1]) > 64)
+                        throw new IllegalArgumentException(b.sprite + ": group offset must be whole squares within 64");
+                    b.groupDx = (int) off[0];
+                    b.groupDy = (int) off[1];
+                }
+            }
+            b.topCurve = pointList(e, "topCurve", b.sprite);
+            if ((b.inset > 0f || b.free) && !b.drape) { // free-hanging: no wall plane to keep the cloth in front of (D77)
                 b.profile = b.profile.toBuilder().clampToAnchorPlane(false).build();
                 b.profileFar = b.profileFar.toBuilder().clampToAnchorPlane(false).build();
             }
@@ -259,6 +275,23 @@ public final class FlagJson {
         if (v == null) return null;
         if (!(v instanceof Map)) throw new IllegalArgumentException("\"" + k + "\" must be an object");
         return (Map<String, Object>) v;
+    }
+
+    /** [[x, y], ...] flattened, or null. */
+    private static float[] pointList(Map<String, Object> m, String k, String sprite) {
+        Object v = m.get(k);
+        if (v == null) return null;
+        if (!(v instanceof List<?> list)) throw new IllegalArgumentException(sprite + ": \"" + k + "\" must be an array of [x, y]");
+        float[] out = new float[2 * list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            if (!(list.get(i) instanceof List<?> q) || q.size() != 2 || !(q.get(0) instanceof Double a) || !(q.get(1) instanceof Double c)
+                    || !Double.isFinite(a) || !Double.isFinite(c)) {
+                throw new IllegalArgumentException(sprite + ": \"" + k + "\" point " + i + " must be [x, y]");
+            }
+            out[2 * i] = a.floatValue();
+            out[2 * i + 1] = c.floatValue();
+        }
+        return out;
     }
 
     private static FlagDef.Point point(Map<String, Object> m, String k) {

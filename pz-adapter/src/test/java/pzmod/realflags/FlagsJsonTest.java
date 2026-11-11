@@ -42,8 +42,8 @@ class FlagsJsonTest {
         Path p = Path.of(System.getProperty("realflags.modDir", "../mod"), "42", "media", "realflags", "flags.json");
         FlagJson.Parsed parsed = FlagJson.parse(Files.readString(p, StandardCharsets.UTF_8), p.toString());
         assertEquals(List.of(), parsed.errors());
-        assertEquals(36, parsed.flags().size());
-        assertEquals(36, parsed.flags().stream().map(f -> f.sprite).distinct().count(), "one entry per sprite");
+        assertEquals(54, parsed.flags().size());
+        assertEquals(54, parsed.flags().stream().map(f -> f.sprite).distinct().count(), "one entry per sprite");
         FlagDef pole = parsed.flags().stream().filter(f -> f.kind == FlagDef.Kind.POLE).findFirst().orElseThrow();
         assertEquals("street_decoration_01_16", pole.sprite);
         assertEquals("media/dgv_flags/UnitedStates_0_0_256x143.png", pole.canvasTexture);

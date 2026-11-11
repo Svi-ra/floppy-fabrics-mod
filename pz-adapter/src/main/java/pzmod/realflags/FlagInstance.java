@@ -34,6 +34,12 @@ final class FlagInstance {
     /** Set by the scheduler from the previous frame's distance ranking (cap). */
     boolean allowed = true;
     float lastWindSpeed;
+    /** Next instance on the same object (another cloth it draws, D90); see {@link Instances}. */
+    FlagInstance next;
+    /** Multi-tile cloth (D87): the anchor square the cloth's fields are relative to, fixed at creation. */
+    boolean anchored;
+    int anchorX, anchorY, anchorZ;
+
     /** Stress-test copies (dev only, RealFlags_stress). */
     FlagInstance[] ghosts;
 
@@ -68,6 +74,11 @@ final class FlagInstance {
         this.seed = seed;
         this.lod = lod;
         setCloth(new Cloth(Prototypes.get(def, lod)));
+    }
+
+    void setAnchor(int x, int y, int z) {
+        anchored = true;
+        anchorX = x; anchorY = y; anchorZ = z;
     }
 
     private void setCloth(Cloth c) {

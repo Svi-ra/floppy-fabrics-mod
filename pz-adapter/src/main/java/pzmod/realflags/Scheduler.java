@@ -39,6 +39,10 @@ final class Scheduler {
         if (frameNo == frame) return;
         if (frame != Integer.MIN_VALUE) endFrame();
         frame = frameNo;
+        if (Detail.apply()) { // the detail setting changed: every simulation was dropped (D89)
+            for (int i = 0; i < drawnCount; i++) drawn[i] = null;
+            drawnCount = 0;
+        }
         rank();
         if ((frameNo & 127) == 0) evict(frameNo);
     }

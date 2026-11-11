@@ -14,7 +14,11 @@ public enum PinLayout {
     /** Only the two top corners (a cloth hung from two nails). */
     TOP_CORNERS,
     /** Only the two left corners (a flag tied to a pole at top and bottom). */
-    LEFT_CORNERS;
+    LEFT_CORNERS,
+    /** Top edge and both side edges (a street banner hung from a cable and lashed to a pole at each end). */
+    TOP_SIDES,
+    /** Top edge and both bottom corners (a pole banner on a top arm, tied down at its lower corners). */
+    TOP_AND_BOTTOM_CORNERS;
 
     public boolean isPinned(int i, int j, int cols, int rows) {
         return switch (this) {
@@ -23,6 +27,8 @@ public enum PinLayout {
             case RIGHT_EDGE -> i == cols - 1;
             case TOP_CORNERS -> j == 0 && (i == 0 || i == cols - 1);
             case LEFT_CORNERS -> i == 0 && (j == 0 || j == rows - 1);
+            case TOP_SIDES -> j == 0 || i == 0 || i == cols - 1;
+            case TOP_AND_BOTTOM_CORNERS -> j == 0 || (j == rows - 1 && (i == 0 || i == cols - 1));
         };
     }
 
@@ -35,6 +41,8 @@ public enum PinLayout {
             case "RIGHT", "RIGHT_EDGE" -> RIGHT_EDGE;
             case "TOP_CORNERS" -> TOP_CORNERS;
             case "LEFT_CORNERS" -> LEFT_CORNERS;
+            case "TOP_SIDES", "TOP_AND_SIDES" -> TOP_SIDES;
+            case "TOP_AND_BOTTOM_CORNERS" -> TOP_AND_BOTTOM_CORNERS;
             default -> throw new IllegalArgumentException("unknown pin layout: " + s);
         };
     }

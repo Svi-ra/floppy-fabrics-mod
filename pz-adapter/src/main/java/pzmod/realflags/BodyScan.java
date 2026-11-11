@@ -46,7 +46,8 @@ final class BodyScan {
         float invDt = dt > 1e-4f ? 1f / dt : 0f;
         float wx = 0f, wy = 0f;
 
-        // characters: squares around the box, levels from (bottom − body height) to the top
+        // characters: squares around the box, levels from (bottom − body height) to the top; soft bodies (D88)
+        if (col != null) col.setNextStrength(Interactions.CHARACTER_STRENGTH);
         float m = Interactions.BODY_RADIUS + Interactions.RUN_WASH_RANGE;
         int sx0 = (int) Math.floor(x0 - m), sx1 = (int) Math.floor(x1 + m);
         int sy0 = (int) Math.floor(y0 - m), sy1 = (int) Math.floor(y1 + m);
@@ -94,7 +95,8 @@ final class BodyScan {
             }
         }
 
-        // vehicles: listed in the chunk of their centre
+        // vehicles: listed in the chunk of their centre; firm bodies
+        if (col != null) col.setNextStrength(1f);
         float vr = Interactions.VEHICLE_WASH_RANGE + 3f;
         int cx0 = (int) Math.floor((x0 - vr) / 8f), cx1 = (int) Math.floor((x1 + vr) / 8f);
         int cy0 = (int) Math.floor((y0 - vr) / 8f), cy1 = (int) Math.floor((y1 + vr) / 8f);

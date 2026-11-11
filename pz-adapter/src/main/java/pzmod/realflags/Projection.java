@@ -72,6 +72,15 @@ public final class Projection {
         out[2] = sz * LEVEL_M + (floorY - py) / PX_PER_M_Z_2X;
     }
 
+    /**
+     * Multi-tile cloth (D87): the 2x frame of a tile {@code (dx, dy)} squares from the anchor tile is shifted on screen by
+     * (64·(dx − dy), 32·(dx + dy)) px; so anchor-frame coordinate = tile-frame coordinate + that shift.
+     */
+    static void groupShift(int dx, int dy, float[] out) {
+        out[0] = 64f * (dx - dy);
+        out[1] = 32f * (dx + dy);
+    }
+
     /** World "blows toward" unit vector for a ClimateManager wind angle in degrees (DECISIONS D32): (sin θ, cos θ). */
     public static void windToward(float angleDegrees, float[] out) {
         double t = Math.toRadians(angleDegrees);

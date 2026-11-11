@@ -191,11 +191,18 @@ final class SpriteMesh {
     private static boolean drawWall(FlagDef def, FlagInstance inst, Texture tex, float r, float g, float b, float a) {
         // far LOD also halves the render mesh (fewer quads to submit); the pole canvas follows its coarser cloth grid
         boolean far = inst.lod == Prototypes.FAR;
-        int mc = far ? Math.max(2, def.meshCols / 2) : def.meshCols;
-        int mr = far ? Math.max(2, def.meshRows / 2) : def.meshRows;
+        int mc0 = Detail.mesh(def.meshCols), mr0 = Detail.mesh(def.meshRows); // simulation detail setting (D89)
+        int mc = far ? Math.max(2, mc0 / 2) : mc0;
+        int mr = far ? Math.max(2, mr0 / 2) : mr0;
         if ((mc + 1) * (mr + 1) > MAX_V) return false;
         int ts = Core.tileScale;
-        float tlx = frameX + def.clothX * frameK, tly = frameY + def.clothY * frameK;
+        // a tile of a multi-tile cloth: the cloth's fields are in its anchor tile's frame, `groupD*` squares away (D87)
+        Projection.groupShift(def.groupDx, def.groupDy, tmp);
+        float fX = frameX - tmp[0] * frameK;
+        float fY = frameY - tmp[1] * frameK;
+        float tlx = fX + def.clothX * frameK, tly = fY + def.clothY * frameK;
+        boolean curve = def.topCurve != null;
+        float clothWpx = def.clothW * frameK, clothHpx = def.clothH * frameK;
         float widthM = def.wallWidthMetres(), heightM = def.wallHeightMetres();
         int cols = inst.cloth.cols(), rows = inst.cloth.rows();
         boolean moving = !inst.cloth.isSleeping();
@@ -222,14 +229,21 @@ final class SpriteMesh {
                 v2u[k] = bilerp(c2u, s, t); v2v[k] = bilerp(c2v, s, t);
                 float shade = 1f;
                 if (moving && !still) {
-                    Projection.wallScreenToUv(def.facing, tlx, tly, widthM, heightM, ts, px, py, tmp, 0);
+                    float topPx = 0f;
+                    if (curve) { // banner on a sagging cable: rows hang below the curve, columns run along it
+                        topPx = fY + def.topCurveAt((px - fX) / frameK) * frameK;
+                        tmp[0] = Math.max(0f, Math.min(1f, (px - tlx) / clothWpx));
+                        tmp[1] = Math.max(0f, Math.min(1f, (py - topPx) / clothHpx));
+                    } else {
+                        Projection.wallScreenToUv(def.facing, tlx, tly, widthM, heightM, ts, px, py, tmp, 0);
+                    }
                     Projection.sampleGrid2(inst.screen, cols, rows, tmp[0], tmp[1], tmp, 2);
                     float dxs = tmp[2], dys = tmp[3];
                     shade = sampleGrid1(inst.shade, cols, rows, tmp[0], tmp[1]);
                     // depth: never behind the wall surface the vertex is now drawn over (D61)
                     float lift = WallDepth.liftPx(def.facing, ts, dxs, dys);
                     if (lift > 0f) {
-                        float top = tly + (px - tlx) * (def.facing.alongX() ? 0.5f : -0.5f) + 0.5f;
+                        float top = curve ? topPx + 0.5f : tly + (px - tlx) * (def.facing.alongX() ? 0.5f : -0.5f) + 0.5f;
                         float sy = py - lift;
                         if (sy < top) {
                             deficit = Math.max(deficit, WallDepth.depthOfPx(ts, top - sy));

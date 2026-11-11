@@ -30,6 +30,7 @@ import zombie.iso.weather.ClimateManager;
  *   RealFlags_curtainLight(bool)  -> daylight flickers in past a closed curtain the wind lifts (default on)
  *   RealFlags_curtainLightGain(x) -> strength of that light at a fully lifted curtain (default 0.12)
  *   RealFlags_decorations(bool)   -> bunting, string lights and canopies move (default on)
+ *   RealFlags_setDetail(x)        -> simulation detail 0.5..4 (x the shipped resolution; mod options set it too)
  * </pre>
  * Note: Lua needs the parentheses — {@code RealFlags_status} alone is a syntax error in the console.
  */
@@ -43,6 +44,7 @@ public final class LuaApi {
                 + " flagsDefined=" + FlagRegistry.size()
                 + " curtains=" + RealFlags.curtains + "@" + RealFlags.curtainExposure
                 + " curtainLight=" + RealFlags.curtainLight + "@" + RealFlags.curtainLightGain
+                + " detail=" + Detail.factor() + "x"
                 + " decorations=" + RealFlags.decorations
                 + String.format(java.util.Locale.ROOT, "{drawn=%d awake=%d stepped=%d bodies=%d}", Decorations.lastDrawn,
                         Decorations.lastAwake, Decorations.lastStepped, Decorations.lastBodies)
@@ -61,6 +63,16 @@ public final class LuaApi {
                 + " | " + RealFlags.stats;
         RealFlags.log(s);
         return s;
+    }
+
+    /**
+     * Simulation detail, 0.5 to 4 times the shipped resolution of every cloth grid, string, valance and render mesh (D89).
+     * Applied at the start of the next frame; simulations restart from rest at the new resolution.
+     */
+    @LuaMethod(name = "RealFlags_setDetail", global = true)
+    public static String setDetail(double factor) {
+        Detail.request((float) factor);
+        return "RealFlags detail " + Math.max(Detail.MIN, Math.min(Detail.MAX, factor)) + "x requested";
     }
 
     /** Strings (bunting, string lights) and canopies move (default on). Off: drawn as vanilla. */

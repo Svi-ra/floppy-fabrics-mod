@@ -28,7 +28,7 @@ final class LineInstance {
     LineInstance(FlagDef def, float ax, float ay, float az, float bx, float by, float bz) {
         this.def = def;
         this.ax = ax; this.ay = ay; this.az = az;
-        line = new StringLine(def.lineProfile, bx - ax, by - ay, bz - az, def.lineSag);
+        line = new StringLine(Detail.line(def.lineProfile), bx - ax, by - ay, bz - az, def.lineSag); // detail setting (D89)
         line.setWorldOrigin(ax, ay, az);
         line.setColliders(colliders);
         int n = line.particleCount();

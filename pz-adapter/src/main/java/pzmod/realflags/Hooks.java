@@ -42,6 +42,9 @@ public final class Hooks {
         try {
             if (layer != ObjectRenderLayer.MinusFloor && layer != ObjectRenderLayer.MinusFloorSE) return layer;
             FlagDef def = FlagRegistry.forSprite(obj.getSprite());
+            // a cloth drawn as an attached sprite of another object (a banner on a light pole, D90): the object must be
+            // drawn every frame too, or the banner is baked into the cached chunk with it
+            if (def == null) def = attachedDef(obj);
             if (def == null) return layer;
             if (def.curtain) {
                 // a curtain behind a closed window stays in the cached layer at zero cost (D65); hand it back (D75)
@@ -92,7 +95,7 @@ public final class Hooks {
             if (sprite == lastBiasedSprite && z2 == lastBiasedZ2) return z2;
             float bias = RealFlags.depthBiasAmount;
             // a moved flag whose top vertices could not lift their depth sample far enough (D61): bias the rest
-            FlagInstance inst = obj != null ? Instances.peek(obj) : null;
+            FlagInstance inst = obj != null ? Instances.peek(obj, def) : null;
             if (inst != null && inst.depthDeficit > 0f) bias += Math.min(MAX_EXTRA_BIAS, inst.depthDeficit);
             float biased = z2 + bias / DEPTH_PER_Z2;
             lastBiasedSprite = sprite;
@@ -103,6 +106,18 @@ public final class Hooks {
             RealFlags.fail("startTileDepthShader", t);
             return z2;
         }
+    }
+
+    /** The definition of the first attached sprite of {@code obj} that has one (D90), or null. Not for curtains. */
+    private static FlagDef attachedDef(IsoObject obj) {
+        java.util.ArrayList<zombie.iso.sprite.IsoSpriteInstance> att = obj.getAttachedAnimSprite();
+        if (att == null || att.isEmpty()) return null;
+        for (int i = 0; i < att.size(); i++) {
+            zombie.iso.sprite.IsoSpriteInstance si = att.get(i);
+            FlagDef d = si != null ? FlagRegistry.forSprite(si.getParentSprite()) : null;
+            if (d != null && !d.curtain) return d;
+        }
+        return null;
     }
 
     /** A tile attached to a wall (vanilla's attachedN/attachedW), drawn against that wall's depth like an overlay (D78). */

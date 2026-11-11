@@ -11,7 +11,10 @@ they only sway when someone walks into them; hospital and theatre curtains hang 
 and can be pushed from either side. **Strings, awnings and drapes** (0.5.0) have simulations of their own: bunting
 sways and its pennants swing about the string, string lights swing on their sockets (the glow of lit bulbs follows
 them), awnings and market canopies breathe in the wind while their valance flutters, and the altar cloths move when
-someone brushes past. It is visual only and
+someone brushes past. **0.6.0:** awnings and pennants flap continuously in strong wind instead of leaning into the
+wind; multi-tile flags (the Fort Knox flags, the 16-tile Riverside street banner) are one cloth across their tiles;
+the banners on Riverside's light poles move; walking past fabric barely stirs it and touching it only dents it locally;
+and the simulation detail is a setting (Options > Mods > Real Flags, 0.5× to 4×). It is visual only and
 client-side: no new objects, no mod data, no save changes. With no wind, wall flags are pixel-identical to vanilla. Removing the mod
 restores vanilla.
 
@@ -145,6 +148,15 @@ longer matches.
 - **Gusts (D83):** strings and canopies share one gust field that travels downwind with the wind, so neighbouring
   decorations (and both tiles of one string) are hit by the same gust a moment apart. Vehicles and runners move air
   around them as for flags; vehicles can push strings.
+- **Flutter (D86):** slack fabric in a strong wind does not settle into one bulge; the air pumps energy into it. The
+  canopy panel keeps six membrane modes with a Van der Pol term (above a flutter speed it flaps continuously at an
+  amplitude that grows with the dynamic pressure, faster as it stiffens); the valance's flaps are coupled along the hem
+  and driven by vortex shedding at the Strouhal frequency, so waves run along it; pennants are shed off the same way.
+- **Multi-tile cloths (D87):** the tiles of one cloth share one simulation (keyed by its anchor square); each tile draws
+  its part of it, so there are no seams. A street banner hangs from a sagging cable (`topCurve`) and is lashed to a pole
+  at each end.
+- **Soft contacts (D88):** characters push fabric only 30 % of the way out per step (vehicles fully), so a body
+  dents cloth locally and slips past; a runner stirs only the air right next to it.
 - **Drapes (D82):** the altar cloths are wall cloths hanging down the altar's face (clamped to it); only the cloth's own
   columns of the sprite move.
 - **Instances:** created lazily from a shared settled prototype; far LOD by distance × zoom (continuous motion across
@@ -225,6 +237,7 @@ enabled) makes that flag draw as vanilla.
 | `RealFlags_curtainLight(bool)` | Daylight flickers into the room past a closed curtain the wind lifts (default on) |
 | `RealFlags_curtainLightGain(x)` | Strength of that light at a fully lifted curtain in full daylight (default 0.12; max 0.5) |
 | `RealFlags_decorations(bool)` | Strings (bunting, string lights) and canopies move (default on); off draws them as vanilla |
+| `RealFlags_setDetail(x)` | Simulation detail 0.5–4× (also Options > Mods > Real Flags); every simulation restarts from rest at the new resolution |
 
 Lua needs the parentheses: `RealFlags_status()`, not `RealFlags_status`.
 
@@ -288,8 +301,11 @@ reach ~2 ms (seen in the first run); the average is the acceptance metric.
   depth bias (same 2e-4 as wall flags) is applied as a precaution and has not been tuned.
 - Wall flags stored as an *attached sprite* of a wall object (rather than a separate object) are not animated. None were
   found in testing.
-- The Fort Knox flags are drawn over 3 tiles, and each tile is its own cloth: when one part is pushed, a gap can open
-  at the seam to the next part until it settles (a cloth spanning several objects is future work).
+- Multi-tile cloths (0.6.0) are one simulation, but each tile still draws its own picture: where the vanilla art of two
+  tiles does not line up exactly (the Knox flag's tiles differ by ≈5 px), that step stays visible.
+- 0.6.0 (flutter, multi-tile cloths, street and pole banners, soft contacts, detail setting) is verified by unit tests
+  only, not yet in-game. The pole banners are assumed to be drawn on (or attached to) Riverside's light poles; if a map
+  places them differently, they still move as their own objects.
 - Strings, canopies and drapes (0.5.0) are verified by unit tests only, not yet in-game; their physical constants
   (fabric densities, drag, valance stiffness) are estimates and untuned. Canopy geometry is approximate: the panel
   normal, the hem's outward direction and the 2.0 m hem height used to place flaps in the gust field come from the

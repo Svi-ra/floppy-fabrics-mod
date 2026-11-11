@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
+import pzmod.realflags.cloth.Canopy;
 import zombie.GameTime;
 import zombie.core.Core;
 import zombie.iso.IsoCamera;
@@ -113,7 +114,7 @@ final class Decorations {
         inst.project(frame);
         inst.placeFor(sx, sy, sz);
         lineField.inst = inst;
-        boolean drew = SpriteMesh.drawField(lineField, cells(def.meshCols), cells(def.meshRows), tex, x, y, w, h, r, g, b, a, modifier);
+        boolean drew = SpriteMesh.drawField(lineField, cells(Detail.mesh(def.meshCols)), cells(Detail.mesh(def.meshRows)), tex, x, y, w, h, r, g, b, a, modifier);
         lineField.inst = null;
         return drew;
     }
@@ -193,14 +194,14 @@ final class Decorations {
         cAwake++;
         inst.project();
         canopyField.inst = inst;
-        boolean drew = SpriteMesh.drawField(canopyField, cells(def.meshCols), cells(def.meshRows), tex, x, y, w, h, r, g, b, a, modifier);
+        boolean drew = SpriteMesh.drawField(canopyField, cells(Detail.mesh(def.meshCols)), cells(Detail.mesh(def.meshRows)), tex, x, y, w, h, r, g, b, a, modifier);
         canopyField.inst = null;
         return drew;
     }
 
     /**
-     * The canopy's motion over its picture. Inside the panel (top..pivot) the two membrane modes, sin(πs)·sin(πt) and
-     * sin(2πs)·sin(πt), move pixels along the panel normal (zero on every edge: the frame holds them). Below the pivot,
+     * The canopy's motion over its picture. Inside the panel (top..pivot) the six membrane modes sin(mπs)·sin(nπt)
+     * (m = 1..3, n = 1..2) move pixels along the panel normal (zero on every edge: the frame holds them). Below the pivot,
      * the valance swings about it: a pixel d metres below the pivot moves d·(sinθ·o + (1 − cosθ)·up). Below the hem the
      * motion fades out over a few pixels (the frame's legs stand there and stay still).
      */
@@ -221,8 +222,15 @@ final class Decorations {
             float s = (fx - x0) / (x1 - x0);
             if (fy <= piv) {
                 float t = piv - top > 0.5f ? (fy - top) / (piv - top) : 1f;
-                float st = (float) Math.sin(Math.PI * t);
-                float amp = (ci.canopy.mode(0) * (float) Math.sin(Math.PI * s) + ci.canopy.mode(1) * (float) Math.sin(2 * Math.PI * s)) * st;
+                // Σ a_mn·sin(mπs)·sin(nπt): six membrane modes, so the panel ripples locally (D86)
+                float s1 = (float) Math.sin(Math.PI * s), s2 = (float) Math.sin(2 * Math.PI * s), s3 = (float) Math.sin(3 * Math.PI * s);
+                float t1 = (float) Math.sin(Math.PI * t), t2 = (float) Math.sin(2 * Math.PI * t);
+                float amp = 0f;
+                for (int n = 1; n <= Canopy.MODES_N; n++) {
+                    float tn = n == 1 ? t1 : t2;
+                    amp += tn * (ci.canopy.mode(Canopy.index(1, n)) * s1 + ci.canopy.mode(Canopy.index(2, n)) * s2
+                            + ci.canopy.mode(Canopy.index(3, n)) * s3);
+                }
                 out[0] = ci.nsx * amp;
                 out[1] = ci.nsy * amp;
                 return;
