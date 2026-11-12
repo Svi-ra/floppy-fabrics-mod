@@ -6,12 +6,15 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 Decisions D86–D90. Unit-tested (103 tests) and patch-verified offline; not yet tested in-game.
 
+### Added
+- Empty `common/` folder (with a README.txt so it survives git and Workshop uploads), as Build 42 expects.
+
 ### Changed
-- **Renamed to Floppy Fabrics.** The mod now presents itself as general dynamic physics for all fabrics, not just flags
-  (README, `mod.info` name and description, Options > Mods entry). Internal ids are unchanged: mod id `RealFlags`, jar,
-  package `pzmod.realflags`, `media/realflags/`, `RealFlags_*` console commands. Planned: garments on clothing racks
-  (docs/HANGING_CLOTHES_FUTURE.md).
-- **No more Any Wall Flags 3D dependency** (D91): the pole flag canvas is now `media/realflags/pole_flag.png`, shipped
+- **Renamed to Floppy Fabrics** (D92), everywhere: display name, mod id and folder `FloppyFabrics`, jar
+  `FloppyFabrics.jar`, package `pzmod.floppyfabrics`, data folder `media/floppyfabrics/`, Lua commands
+  `FloppyFabrics_*`, Options > Mods key and log tag `[FloppyFabrics]`. The mod now presents itself as general dynamic
+  physics for all fabrics, not just flags. Planned: garments on clothing racks (docs/HANGING_CLOTHES_FUTURE.md).
+- **No more Any Wall Flags 3D dependency** (D91): the pole flag canvas is now `media/floppyfabrics/pole_flag.png`, shipped
   with the mod (generated with Magnific, creation `YMjQSixWeC`, downscaled to 512×286); `mod.info` is
   `require=\ZombieBuddy` only. Pole physics is unchanged. The texture is full-bleed, so `canvas.uv` is `[0,0,1,1]`.
 - **Floppier fabric** (D86): canopies keep six membrane modes (local ripples) with a Van der Pol flutter term, much
@@ -30,8 +33,8 @@ Decisions D86–D90. Unit-tested (103 tests) and patch-verified offline; not yet
 - **Pole banners** `signs_one-off_09_336..337` on the `lighting_outdoor_01_4` light poles (D90), tied down at their
   lower corners (`top_and_bottom_corners`); drawn as their own objects or as attached sprites of the pole (an object
   with a cloth among its attached sprites is drawn every frame).
-- **Simulation detail** (D89): 0.5×–4× of every cloth grid, string, valance and render mesh; Options > Mods > Real Flags
-  (`media/lua/client/RealFlags/RealFlagsOptions.lua`, PZAPI.ModOptions) and `RealFlags_setDetail(x)`.
+- **Simulation detail** (D89): 0.5×–4× of every cloth grid, string, valance and render mesh; Options > Mods > Floppy Fabrics
+  (`media/lua/client/FloppyFabrics/FloppyFabricsOptions.lua`, PZAPI.ModOptions) and `FloppyFabrics_setDetail(x)`.
 - One object may carry several cloths (instances chained per definition).
 - 11 tests (`SoftContactTest`, `GroupsAndDetailTest`, new `CanopyTest` cases).
 
@@ -53,8 +56,8 @@ Decisions D80–D85. Unit-tested (92 tests) and patch-verified offline; not yet 
   when bodies brush them; only the cloth's columns of the sprite move.
 - **Shared, advected gust field** (`GustField`, D83) for strings and canopies; vehicles and runners move air around
   them; vehicles push strings (`BodyScan`).
-- `tools/decotool.py` generates `media/realflags/decorations.json` (116 entries) from `Tiles2x.pack`.
-- `flags.json`: kinds `line`, `canopy`, `drape`. Lua `RealFlags_decorations(bool)`; status and overlay counters.
+- `tools/decotool.py` generates `media/floppyfabrics/decorations.json` (116 entries) from `Tiles2x.pack`.
+- `flags.json`: kinds `line`, `canopy`, `drape`. Lua `FloppyFabrics_decorations(bool)`; status and overlay counters.
 - 23 tests (`StringLineTest`, `CanopyTest`, `DecorationsTest`).
 
 ### Changed
@@ -108,8 +111,8 @@ Decisions D63–D76. Verified in-game by user report (2026-11-09); per-step resu
   4×/s, so it ramps rather than flickers; nothing at night or when the curtain hangs still.
 - **Metal-sheet barricades seal the window** (D74): the curtain behaves as behind a closed window. Planks let less air
   through per plank (×0.2 at four), metal bars do not slow the air.
-- Lua: `RealFlags_curtains(bool)`, `RealFlags_curtainExposure(x)`, `RealFlags_curtainLight(bool)`,
-  `RealFlags_curtainLightGain(x)`; curtain, sheet and light counters in `RealFlags_status()`.
+- Lua: `FloppyFabrics_curtains(bool)`, `FloppyFabrics_curtainExposure(x)`, `FloppyFabrics_curtainLight(bool)`,
+  `FloppyFabrics_curtainLightGain(x)`; curtain, sheet and light counters in `FloppyFabrics_status()`.
 - `cloth-core`: `ClothProfiles.CURTAIN`, `AnchorFrame.flipNormal`, `StaticAnchor.of(…, flipNormal)`.
 - Wall facings `N`/`W` (cloth on the square's south/east edge, facing into it). 9 tests (`CurtainsTest`,
   `CurtainLightTest`).
@@ -151,7 +154,7 @@ too quickly, wall too thin); fixed in 0.2.1.
   `Cloth.resetToReference`, `Cloth.referenceBounds`; 7 tests.
 - Adapter: `Interactions`, `Scenery`, `Projection.clothOrigin`; 5 tests (placement against the measured pixels, real
   geometry bounds, the blocking rule with the real fridge geometry).
-- Lua: `RealFlags_interactions(bool)`, `RealFlags_blockHeight(m)`. Status and overlay show blocked flags, flags in
+- Lua: `FloppyFabrics_interactions(bool)`, `FloppyFabrics_blockHeight(m)`. Status and overlay show blocked flags, flags in
   contact, nearby bodies, scenery boxes and geometry cache counts.
 
 ### Changed
@@ -169,7 +172,7 @@ Build 42.21.0 via ZombieBuddy 2.3.4. Acceptance status: DECISIONS.md "Acceptance
 - `docs/FLAGS_JSON.md` updated for the current schema (`lodGrid`, defaults, multi-file merge).
 
 ### Fixed — Phase 5
-- Other mods can now add or override flags by shipping `media/realflags/*.json` (any file name, merged across all
+- Other mods can now add or override flags by shipping `media/floppyfabrics/*.json` (any file name, merged across all
   active mods in load order). Previously only one `flags.json` path was read, so another mod's file would have
   replaced ours (D52). New test `FlagMergeTest`.
 
@@ -179,10 +182,10 @@ Build 42.21.0 via ZombieBuddy 2.3.4. Acceptance status: DECISIONS.md "Acceptance
 - Adapter: `Prototypes` (one settle per flag type and LOD), far LOD profiles (wall 4×6, pole 6×4, 4 iterations; halved
   wall render mesh), distance × zoom LOD with hysteresis, `Scheduler` (nearest-64 cap, per-frame stats, 60-frame
   CPU window, eviction), calm wall flags drawn by vanilla, `simDistance` gate.
-- Debug overlay (`RealFlags_overlay`) via a new `UIManager.render` patch: flags drawn/awake/stepped/far/frozen,
+- Debug overlay (`FloppyFabrics_overlay`) via a new `UIManager.render` patch: flags drawn/awake/stepped/far/frozen,
   CPU ms last/avg/max, wind.
-- Lua: `RealFlags_overlay`, `RealFlags_stress` (ghost copies for the 50-flag measurement), `RealFlags_setCap`,
-  `RealFlags_lodDistance`, `RealFlags_testFailure`.
+- Lua: `FloppyFabrics_overlay`, `FloppyFabrics_stress` (ghost copies for the 50-flag measurement), `FloppyFabrics_setCap`,
+  `FloppyFabrics_lodDistance`, `FloppyFabrics_testFailure`.
 - 4 adapter tests (far profiles, shared prototype, LOD switch keeps motion, cap ranks the nearest).
 - `docs/PHASE4_TEST.md` (measurement protocol).
 - `cloth-demo --mode calm` (time-to-rest probe after storms from 12 directions).
@@ -212,7 +215,7 @@ Build 42.21.0 via ZombieBuddy 2.3.4. Acceptance status: DECISIONS.md "Acceptance
   lazy), `Canvases` (cached textures, missing mod → vanilla + one WARN).
 - `SpriteMesh` now renders wall flags as the vanilla image bent by the cloth (identical at zero wind) and pole flags
   as rebuilt pole + simulated canvas.
-- Lua: `RealFlags_forceWind(kph, deg)`, `RealFlags_forceWindOff()`; status shows instances and wind.
+- Lua: `FloppyFabrics_forceWind(kph, deg)`, `FloppyFabrics_forceWindOff()`; status shows instances and wind.
 - 11 adapter tests (projection vs IsoUtils, rain-sample wind direction, wall mapping round trip, schema, overrides).
 - `docs/PHASE3_TEST.md`.
 
@@ -225,7 +228,7 @@ Build 42.21.0 via ZombieBuddy 2.3.4. Acceptance status: DECISIONS.md "Acceptance
   vanilla; pause freezes; indoor flags stay still; picking works. Wind convention (D32) confirmed for both directions.
 
 ### Added — Phase 2 (adapter hello-jar)
-- `pz-adapter` module (package `pzmod.realflags`), compile-only against `projectzomboid.jar` 42.21.0 and
+- `pz-adapter` module (package `pzmod.floppyfabrics`), compile-only against `projectzomboid.jar` 42.21.0 and
   ZombieBuddy 2.3.4; ships as one jar with cloth-core bundled.
 - Patches: `FBORenderCell.calculateObjectRenderLayer` (flags → per-frame layer), `IsoSprite.performRenderFrame`
   (draw context), `Texture.render(float×8, Consumer)` (replace the flag's quad).
@@ -233,13 +236,13 @@ Build 42.21.0 via ZombieBuddy 2.3.4. Acceptance status: DECISIONS.md "Acceptance
   bilinearly interpolated attributes (identity → looks like vanilla) plus a pulsing magenta debug overlay.
 - Failure isolation: every hook catches everything; the first error logs once, disables the mod for the session and
   invalidates reclassified flags so they re-bake as vanilla. Fallback counters per reason.
-- `flags.json` (`media/realflags/`) with the 5 starter sprites; strict `MiniJson` reader with line/column errors.
-- Lua debug globals: `RealFlags_status`, `RealFlags_debug`, `RealFlags_setEnabled`, `RealFlags_wind`, plus A/B
-  toggles `RealFlags_mesh` (sub-quads vs vanilla quad) and `RealFlags_depthBias`.
+- `flags.json` (`media/floppyfabrics/`) with the 5 starter sprites; strict `MiniJson` reader with line/column errors.
+- Lua debug globals: `FloppyFabrics_status`, `FloppyFabrics_debug`, `FloppyFabrics_setEnabled`, `FloppyFabrics_wind`, plus A/B
+  toggles `FloppyFabrics_mesh` (sub-quads vs vanilla quad) and `FloppyFabrics_depthBias`.
 - In-game confirmed (2026-11-06): loads clean; pole flag redrawn every frame by our mesh with the debug overlay
   (2.0 s pulse measured from the user's video); pole halves aligned; Lua API works.
-- Mod template `mod/42/mod.info` (`require=\ZombieBuddy,\DGVFlags`, `javaJarFile=media/java/client/RealFlags.jar`).
-- Gradle tasks: `:pz-adapter:deployMod` (→ `mods/RealFlags`), `:pz-adapter:verifyPatches` (offline ZombieBuddy
+- Mod template `mod/42/mod.info` (`require=\ZombieBuddy,\DGVFlags`, `javaJarFile=media/java/client/FloppyFabrics.jar`).
+- Gradle tasks: `:pz-adapter:deployMod` (→ `mods/FloppyFabrics`), `:pz-adapter:verifyPatches` (offline ZombieBuddy
   patch-application probe against the real game classes).
 - 5 adapter unit tests (JSON parsing, shipped flags.json, bad-entry tolerance).
 - `docs/PHASE2_TEST.md`: in-game test checklist.
@@ -248,14 +251,14 @@ Build 42.21.0 via ZombieBuddy 2.3.4. Acceptance status: DECISIONS.md "Acceptance
 - Wall flags z-fought with their wall in the per-frame pass (stipple, seen in-game). Cause: wall overlays use the
   wall's own depth preset, compared `GL_LEQUAL` against the cached chunk depth. New patch
   `IsoSprite.startTileDepthShader` applies a toward-viewer depth bias to wall-overlay flags (DECISIONS D30).
-  Vanilla's 5e-5 left edge bands in-game; the default is now 2e-4, tunable via `RealFlags_depthBiasAmount` (D33).
+  Vanilla's 5e-5 left edge bands in-game; the default is now 2e-4, tunable via `FloppyFabrics_depthBiasAmount` (D33).
 - Wind direction convention adopted: blows toward `(sin θ, cos θ)`, matching the in-game rain direction (D32).
-- Patch classes moved from `pzmod.realflags.patches` to `pzmod.realflags`: ZombieBuddy only collects patches from the
+- Patch classes moved from `pzmod.floppyfabrics.patches` to `pzmod.floppyfabrics`: ZombieBuddy only collects patches from the
   exact `javaPkgName` package (found by the offline probe before any game launch).
 
 ### Added — Phase 1 (cloth-core, tests, demo)
 - Gradle 9.5.0 multi-module build (`cloth-core`, `cloth-demo`), Java release 25, `-Werror`; `checkNoPzImports` guard.
-- `cloth-core` (package `pzmod.realflags.cloth`, zero dependencies):
+- `cloth-core` (package `pzmod.floppyfabrics.cloth`, zero dependencies):
   - `Cloth`: Verlet + PBD particle grid; structural, shear and bend distance constraints; long-range tethers; pinned
     particles following a `ClothAnchor`; fixed 1/60 s step with accumulator, substep cap and backlog drop; damping;
     gravity-settled reference pose; sleep with exact snap to the reference; pose memory fading with wind; health
@@ -279,6 +282,6 @@ Build 42.21.0 via ZombieBuddy 2.3.4. Acceptance status: DECISIONS.md "Acceptance
   loading path, rod-strip UV, `require=` syntax, and pole/cloth pixel split of `street_decoration_01_16`.
 
 ### Changed
-- Project renamed to **RealFlags**. The docs moved from `mods/ClothFlags` to `D:\Real-flags`, and the old folder was
-  removed. The mod folder `mods/RealFlags` will be generated by the build.
+- Project named **FloppyFabrics**. The docs moved from `mods/ClothFlags` to `D:\Floppy-Fabrics`, and the old folder was
+  removed. The mod folder `mods/FloppyFabrics` will be generated by the build.
 - No code yet.

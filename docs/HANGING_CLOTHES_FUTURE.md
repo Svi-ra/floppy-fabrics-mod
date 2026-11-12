@@ -1,4 +1,4 @@
-# RealFlags hanging clothes: future work
+# FloppyFabrics hanging clothes: future work
 
 The **garments that hang on clothing racks**. They are not part of the rack sprites: the racks are drawn bare, and the clothes are separate overlay sprites (tilesets `clothing_01` and `clothing_02`, 8x8 tiles each) that the game stacks on the rack tile. **None of this is implemented.** Same layout as [TILE_REGISTRY.md](TILE_REGISTRY.md); move sprites there (with a `flags.json` / `decorations.json` entry) once done. Source: Project Zomboid 42.21.0, `media/lua/server/Items/WorldFiller.lua` (`overlayMap`, the rack tile to garment sprite mapping) and `media/tile_definitions/newtiledefinitions.tiles.txt`. Previews: `registry/previews/<sprite>.png` (PZ art, documentation only). The host rack tiles are listed in [CLOTHING_RACKS_FUTURE.md](CLOTHING_RACKS_FUTURE.md).
 

@@ -3,8 +3,8 @@
  "textures": [
   {
    "id": "pole_flag",
-   "file": "mod/42/media/realflags/pole_flag.png",
-   "runtimePath": "media/realflags/pole_flag.png",
+   "file": "mod/42/media/floppyfabrics/pole_flag.png",
+   "runtimePath": "media/floppyfabrics/pole_flag.png",
    "size": [
     512,
     286
@@ -15,7 +15,7 @@
     "street_decoration_01_16"
    ],
    "config": "flags.json canvas.texture, uv [0,0,1,1]",
-   "source": "realflags",
+   "source": "floppyfabrics",
    "origin": "Magnific creation YMjQSixWeC, downscaled from 2752x1536 (D91)"
   }
  ],
@@ -28,7 +28,7 @@
    "kind": "vanilla"
   },
   {
-   "id": "realflags",
+   "id": "floppyfabrics",
    "name": "Floppy Fabrics (custom textures)",
    "version": "0.6.0",
    "kind": "mod"
@@ -1036,7 +1036,7 @@
    "config": "flags.json",
    "group": null,
    "role": "primary",
-   "notes": "Upper tile of the vanilla American Flag pole. The painted furled cloth is replaced by a canvas shipped with this mod (media/realflags/pole_flag.png); the pole is rebuilt from the finial of this sprite and a clean shaft slice of the lower tile street_decoration_01_24.",
+   "notes": "Upper tile of the vanilla American Flag pole. The painted furled cloth is replaced by a canvas shipped with this mod (media/floppyfabrics/pole_flag.png); the pole is rebuilt from the finial of this sprite and a clean shaft slice of the lower tile street_decoration_01_24.",
    "source": "vanilla",
    "state": "shipped"
   },

@@ -9,7 +9,7 @@ org.gradle.java.home=C:/Program Files/JetBrains/IntelliJ IDEA/jbr
 pzInstallDir=C:/Program Files (x86)/Steam/steamapps/common/ProjectZomboid
 # ZombieBuddy API jar (compile-only). Workshop item 3619862853.
 zombieBuddyJar=C:/Program Files (x86)/Steam/steamapps/workshop/content/108600/3619862853/mods/ZombieBuddy/libs/ZombieBuddy.jar
-# Where :pz-adapter:deployMod writes the mod folder (<modsDir>/RealFlags). Usually <user home>/Zomboid/mods.
+# Where :pz-adapter:deployMod writes the mod folder (<modsDir>/FloppyFabrics). Usually <user home>/Zomboid/mods.
 modsDir=C:/Users/<you>/Zomboid/mods
 
 org.gradle.caching=true

@@ -1,10 +1,10 @@
 # flags.json reference (schema v2)
 
-Location: `media/realflags/*.json` in **any active mod** (its `common/` or version folder). Floppy Fabrics ships
-`42/media/realflags/flags.json`; other mods add or override flags by shipping their own files. All files are merged
+Location: `media/floppyfabrics/*.json` in **any active mod** (its `common/` or version folder). Floppy Fabrics ships
+`42/media/floppyfabrics/flags.json`; other mods add or override flags by shipping their own files. All files are merged
 in mod load order, files sorted by name; for the same sprite a later file wins. Each file is one object with a
 `"flags"` array, each entry describing one **sprite** (tile). Unknown keys are ignored; a bad entry is logged
-(`[RealFlags] WARN …`) and skipped, and the rest load.
+(`[FloppyFabrics] WARN …`) and skipped, and the rest load.
 
 ## Units
 - **Pixels**: the **2× tile frame** — 128 × 256 px, origin top-left, exactly as Tiles2x sprites are laid out — whatever
@@ -46,14 +46,14 @@ opaque column's top pixel → `x, y`; `w` = opaque column span; `h` = left colum
 slope ±0.5 (iso wall): down to the right = S, up to the right = E.
 
 ## Pole flags (`"kind": "pole"`)
-The pole is rebuilt from static quads; the cloth is a separate canvas texture (e.g. this mod's `media/realflags/pole_flag.png`) simulated hanging
+The pole is rebuilt from static quads; the cloth is a separate canvas texture (e.g. this mod's `media/floppyfabrics/pole_flag.png`) simulated hanging
 from the pole.
 | Key | Type | Meaning |
 |---|---|---|
 | `anchor` | `{x, y}` px | Top of the hoist on the pole axis |
 | `depthPoint` | `{x, y}` px | A point on the shaft whose depth the canvas uses (default = anchor) |
 | `size` | [fly, hoist] m | Canvas size: fly length × hoist height |
-| `canvas.texture` | string | Path of a PNG in any active mod, e.g. `media/realflags/pole_flag.png` (no `..`) |
+| `canvas.texture` | string | Path of a PNG in any active mod, e.g. `media/floppyfabrics/pole_flag.png` (no `..`) |
 | `canvas.uv` | [u0, v0, u1, v1] | Part of the texture that is cloth (e.g. exclude a rod strip) |
 | `staticQuads` | array | Unanimated art: `{ "sprite"?: name, "src": [x0,y0,x1,y1], "dst": [x0,y0,x1,y1] }` — `src` of `sprite`'s texture (default: this flag's own sprite) drawn at `dst` of this frame. Keep `src` inside the sprite's opaque bounds. |
 

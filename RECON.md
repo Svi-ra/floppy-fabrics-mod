@@ -2,8 +2,8 @@
 
 Status: **Phase 0 complete; Q1–Q4 answered (see DECISIONS.md D11–D15). Phase 1 not started.**
 
-Project: Gradle source in `D:\Real-flags`; the build copies a clean mod folder to
-`C:\Users\user\Zomboid\mods\RealFlags`. Mod id `RealFlags`, package `pzmod.realflags`, log tag `[RealFlags]`.
+Project: Gradle source in `D:\Floppy-Fabrics`; the build copies a clean mod folder to
+`C:\Users\user\Zomboid\mods\FloppyFabrics`. Mod id `FloppyFabrics`, package `pzmod.floppyfabrics`, log tag `[FloppyFabrics]`.
 Dependencies: `\ZombieBuddy` (DGVFlags was dropped, D91; see §3b for history).
 Date: 2026-11-05. All class/method names below were read from the installed game,
 decompiled locally with IntelliJ's Fernflower into a scratch directory (reference only, **not
@@ -29,7 +29,7 @@ the install (`media/`) and the decompiled `projectzomboid.jar` directly.
 | console.txt baseline | 16,901 lines, **6,406 `ERROR` lines already present** from other mods | grep |
 
 Because the log is already noisy, the acceptance criterion "no errors in console.txt" will be
-measured as **zero lines tagged by this mod** (all our logging uses a `[RealFlags]` prefix).
+measured as **zero lines tagged by this mod** (all our logging uses a `[FloppyFabrics]` prefix).
 
 ## 2. ZombieBuddy
 
@@ -48,7 +48,7 @@ package are discovered automatically.
 
 **Client/server split** (ModdingGuide.md "Client/server JAR paths"): a `javaJarFile` path containing
 `media/java/client/` is **skipped on a dedicated server**. → Our jar goes in
-`42/media/java/client/RealFlags.jar`, which makes it a guaranteed no-op server-side.
+`42/media/java/client/FloppyFabrics.jar`, which makes it a guaranteed no-op server-side.
 
 **Patch API** (`me.zed_0xff.zombie_buddy.Patch`):
 - `@Patch(className, methodName, isAdvice=true, warmUp=false, strictMatch=false)`
@@ -149,7 +149,7 @@ int entryCount, int hasAlpha, entries `{string name, int x,y,w,h, offX,offY, fra
   would tear at the seams; doing it properly needs a cross-object instance. → proposed for **post-MVP**.
 - Many wall flags are on **interior** walls. → Wind must be zero indoors (see §6).
 
-## 3b. DGVFlags — cloth textures for the pole flag (your Q1 answer) — HISTORICAL: dependency removed in D91; texture now ships as media/realflags/pole_flag.png
+## 3b. DGVFlags — cloth textures for the pole flag (your Q1 answer) — HISTORICAL: dependency removed in D91; texture now ships as media/floppyfabrics/pole_flag.png
 
 | Item | Value | Evidence |
 |---|---|---|

@@ -4,7 +4,7 @@
 subprojects {
     apply plugin: 'java'
 
-    group = 'pzmod.realflags'
+    group = 'pzmod.floppyfabrics'
     version = '0.3.0-SNAPSHOT'
 
     repositories {

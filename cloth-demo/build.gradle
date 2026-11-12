@@ -10,7 +10,7 @@ dependencies {
 }
 
 application {
-    mainClass = 'pzmod.realflags.demo.ClothDemo'
+    mainClass = 'pzmod.floppyfabrics.demo.ClothDemo'
     applicationDefaultJvmArgs = ['-Djava.awt.headless=true']
 }
 

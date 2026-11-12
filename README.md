@@ -25,13 +25,10 @@ The simulation detail is a setting (Options > Mods > Floppy Fabrics, 0.5× to 4�
 client-side: no new objects, no mod data, no save changes. With no wind, fabric is pixel-identical to vanilla, and
 removing the mod restores vanilla.
 
-> **Name.** The mod was called *Real Flags* until 0.6.0. Only the display name changed: the mod id (`RealFlags`), the
-> jar, the Java package (`pzmod.realflags`), the `media/realflags/` data folder, the Lua console commands
-> (`RealFlags_*`) and the log tag `[RealFlags]` are unchanged, so existing installs, saves and data files keep working.
 
 - **Game:** Build **42.21.0** (built and tested against revision `4a0e9546ec`).
 - **Java mod** loaded by [ZombieBuddy](https://github.com/zed-0xff/ZombieBuddy) ≥ 2.3.4.
-- **Pole canvas texture** ships with the mod (`media/realflags/pole_flag.png`); no other mod is needed for it.
+- **Pole canvas texture** ships with the mod (`media/floppyfabrics/pole_flag.png`); no other mod is needed for it.
 
 ---
 
@@ -51,7 +48,7 @@ removing the mod restores vanilla.
    Note the spaces around `--`: it separates Java options from game options. `-agentlib:zbNative --debug` (no
    space) passes an unknown option and debug mode stays off (`console.txt`: `unknown option "--debug"`).
 
-**Uninstall:** disable Floppy Fabrics (or remove `mods/RealFlags`). Nothing is stored in saves or mod data.
+**Uninstall:** disable Floppy Fabrics (or remove `mods/FloppyFabrics`). Nothing is stored in saves or mod data.
 
 **Multiplayer / dedicated server:** the jar lives in `42/media/java/client/`, which ZombieBuddy never loads on a
 dedicated server. Wind visuals are client-only in vanilla too. Nothing is synced or needed server-side. This is by
@@ -72,7 +69,7 @@ or pass them as `-P<name>=<value>`:
 | `org.gradle.java.home` | JDK 25 used by Gradle (here: IntelliJ's bundled JBR 25.0.3) |
 | `pzInstallDir` | Project Zomboid install (for `projectzomboid.jar`) |
 | `zombieBuddyJar` | `ZombieBuddy.jar` (Workshop `…/3619862853/mods/ZombieBuddy/libs/ZombieBuddy.jar`) |
-| `modsDir` | Where `deployMod` writes `RealFlags/` (normally `~/Zomboid/mods`) |
+| `modsDir` | Where `deployMod` writes `FloppyFabrics/` (normally `~/Zomboid/mods`) |
 
 ```bash
 ./gradlew check                      # all unit tests + "cloth-core has no PZ imports" guard
@@ -81,7 +78,7 @@ or pass them as `-P<name>=<value>`:
 ./gradlew :pz-adapter:verifyPatches  # offline: apply our ZombieBuddy patches to the real game classes
 ```
 ```bash
-./gradlew :pz-adapter:deployMod      # build the mod folder and copy it to <modsDir>/RealFlags
+./gradlew :pz-adapter:deployMod      # build the mod folder and copy it to <modsDir>/FloppyFabrics
 ```
 On Windows use `gradlew.bat`. Run `verifyPatches` after every game update: it fails if a hooked method no
 longer matches.
@@ -92,7 +89,7 @@ longer matches.
 | `cloth-core/` | Pure-Java cloth physics (Verlet + PBD) and colliders, no game dependency, 28 JUnit tests |
 | `cloth-demo/` | Dev harness: PNG/ASCII renders of a scripted gust, wind sweep, time-to-rest probe, benchmark |
 | `pz-adapter/` | ZombieBuddy patches, renderer, wind, world interactions, instance manager, Lua debug API; 21 tests |
-| `mod/42/` | Mod template: `mod.info`, `media/realflags/flags.json` |
+| `mod/42/` | Mod template: `mod.info`, `media/floppyfabrics/flags.json` |
 | `tools/flagtool.py` | Extract sprites from `.pack` files; measure a wall flag for `flags.json` |
 | `docs/` | `FLAGS_JSON.md` (data reference) and the in-game test sheets for phases 2–4, 6 and 7 |
 | `RECON.md`, `DECISIONS.md`, `CHANGELOG.md` | Engine reconnaissance with evidence, decision log, changelog |
@@ -101,7 +98,7 @@ longer matches.
 
 ## 3. ZombieBuddy setup: what this mod relies on (verified)
 
-- `mod.info`: `javaJarFile=media/java/client/RealFlags.jar`, `javaPkgName=pzmod.realflags`, `ZBVersionMin=2.3.4`.
+- `mod.info`: `javaJarFile=media/java/client/FloppyFabrics.jar`, `javaPkgName=pzmod.floppyfabrics`, `ZBVersionMin=2.3.4`.
   The vanilla parser ignores the ZombieBuddy keys (expected warnings in mod checkers).
 - **Patch classes must be in exactly `javaPkgName`.** ZombieBuddy skips subpackages (`PatchEngine.java:706`),
   although its guide shows a `.patches` subpackage. The same applies to global `@LuaMethod` classes.
@@ -177,7 +174,7 @@ longer matches.
 ## 5. Adding a flag via flags.json
 
 Any mod (yours or a third party's) can add or override flags **by data only**. Ship one or more
-`media/realflags/*.json` files in the mod's `common/` or version folder. Floppy Fabrics merges every active mod's files in
+`media/floppyfabrics/*.json` files in the mod's `common/` or version folder. Floppy Fabrics merges every active mod's files in
 mod load order (files sorted by name); for the same sprite a later file wins. Full field reference:
 [`docs/FLAGS_JSON.md`](docs/FLAGS_JSON.md).
 
@@ -191,15 +188,15 @@ mod load order (files sorted by name); for the same sprite a later file wins. Fu
    ```bash
    python tools/flagtool.py measure out/walls_decoration_01_16.png
    ```
-3. Put the entry in your mod's `media/realflags/myflags.json`:
+3. Put the entry in your mod's `media/floppyfabrics/myflags.json`:
    ```json
    { "version": 2, "flags": [
      { "sprite": "walls_decoration_01_16", "kind": "wall", "facing": "S",
        "cloth": { "x": 66, "y": 35, "w": 52, "h": 90 }, "exposure": 0.35 }
    ]}
    ```
-4. In-game: `RealFlags_status()` should count it under `flagsDefined`; `RealFlags_forceWind(40, 135)` and
-   `RealFlags_forceWind(40, 308)` should each make it billow on one of the two directions (it only moves when the wind
+4. In-game: `FloppyFabrics_status()` should count it under `flagsDefined`; `FloppyFabrics_forceWind(40, 135)` and
+   `FloppyFabrics_forceWind(40, 308)` should each make it billow on one of the two directions (it only moves when the wind
    blows off its wall, and only on an outside square).
 
 ### A cloth hanging inside its square
@@ -215,11 +212,11 @@ entry gives the fabric outline per column (panel top, valance top, hem), the pan
 and how far it turns along a round hem; a `drape` is a wall cloth over furniture.
 
 ### A pole flag
-See the `street_decoration_01_16` entry in `mod/42/media/realflags/flags.json`: `anchor` (top of the hoist on the pole
+See the `street_decoration_01_16` entry in `mod/42/media/floppyfabrics/flags.json`: `anchor` (top of the hoist on the pole
 axis), `depthPoint` (a point on the shaft), `size` [fly, hoist] in metres, a `canvas` texture + `uv` (exclude rods or
 hems), and `staticQuads` that rebuild the pole without its painted cloth. Measure in the 2× frame with the extracted PNG.
 
-A bad entry is logged as `[RealFlags] WARN … entry skipped`; the rest still load. A missing canvas texture (mod not
+A bad entry is logged as `[FloppyFabrics] WARN … entry skipped`; the rest still load. A missing canvas texture (mod not
 enabled) makes that flag draw as vanilla.
 
 ---
@@ -229,27 +226,27 @@ enabled) makes that flag draw as vanilla.
 ### In-game (Lua console, debug mode; settings last for the session)
 | Command | Effect |
 |---|---|
-| `RealFlags_status()` | One line: state, flags, wind, last-frame counters, CPU ms, fallbacks |
-| `RealFlags_overlay(true)` | On-screen stats: flags drawn/awake/stepped/far-LOD/frozen, calm→vanilla, CPU last/avg/max ms, wind |
-| `RealFlags_forceWind(kph, deg)` / `RealFlags_forceWindOff()` | Override the climate wind (deg = the game's own angle, as `RealFlags_wind()` prints) |
-| `RealFlags_wind()` | Current climate wind values |
-| `RealFlags_setCap(n)` | Max flags simulated per frame (default 64; nearest win) |
-| `RealFlags_lodDistance(tiles)` | Coarse LOD beyond this distance × zoom-out (default 12; 0 = all coarse, 100 = all full) |
-| `RealFlags_stress(n)` | Draw every flag n× (ghost copies with their own cloth) to measure cost; 1 = off |
-| `RealFlags_depthBiasAmount(x)` | Wall-flag depth bias (default 2e-4); raise if wall flags show stippled edges |
-| `RealFlags_debug(bool)` / `RealFlags_mesh(bool)` / `RealFlags_depthBias(bool)` | Diagnostics: tint overlay; vanilla quad vs our mesh; depth bias on/off |
-| `RealFlags_setEnabled(bool)` | Turn the mod off/on for the session (off = flags re-baked as vanilla) |
-| `RealFlags_testFailure()` | Make the next flag draw throw, to see the fail-once → vanilla path (restart afterwards) |
-| `RealFlags_interactions(bool)` | Players, zombies, vehicles and scenery act on flags (default on; off = wind only) |
-| `RealFlags_blockHeight(m)` | Wall flags with an object taller than this in front stay vanilla (default 1.5 m; 0 = never) |
-| `RealFlags_curtains(bool)` | Window curtains move while their window is open or broken (default on; off = all vanilla) |
-| `RealFlags_curtainExposure(x)` | Fraction of the outside wind reaching a curtain through a fully open window (default 0.5) |
-| `RealFlags_curtainLight(bool)` | Daylight flickers into the room past a closed curtain the wind lifts (default on) |
-| `RealFlags_curtainLightGain(x)` | Strength of that light at a fully lifted curtain in full daylight (default 0.12; max 0.5) |
-| `RealFlags_decorations(bool)` | Strings (bunting, string lights) and canopies move (default on); off draws them as vanilla |
-| `RealFlags_setDetail(x)` | Simulation detail 0.5–4× (also Options > Mods > Floppy Fabrics); every simulation restarts from rest at the new resolution |
+| `FloppyFabrics_status()` | One line: state, flags, wind, last-frame counters, CPU ms, fallbacks |
+| `FloppyFabrics_overlay(true)` | On-screen stats: flags drawn/awake/stepped/far-LOD/frozen, calm→vanilla, CPU last/avg/max ms, wind |
+| `FloppyFabrics_forceWind(kph, deg)` / `FloppyFabrics_forceWindOff()` | Override the climate wind (deg = the game's own angle, as `FloppyFabrics_wind()` prints) |
+| `FloppyFabrics_wind()` | Current climate wind values |
+| `FloppyFabrics_setCap(n)` | Max flags simulated per frame (default 64; nearest win) |
+| `FloppyFabrics_lodDistance(tiles)` | Coarse LOD beyond this distance × zoom-out (default 12; 0 = all coarse, 100 = all full) |
+| `FloppyFabrics_stress(n)` | Draw every flag n× (ghost copies with their own cloth) to measure cost; 1 = off |
+| `FloppyFabrics_depthBiasAmount(x)` | Wall-flag depth bias (default 2e-4); raise if wall flags show stippled edges |
+| `FloppyFabrics_debug(bool)` / `FloppyFabrics_mesh(bool)` / `FloppyFabrics_depthBias(bool)` | Diagnostics: tint overlay; vanilla quad vs our mesh; depth bias on/off |
+| `FloppyFabrics_setEnabled(bool)` | Turn the mod off/on for the session (off = flags re-baked as vanilla) |
+| `FloppyFabrics_testFailure()` | Make the next flag draw throw, to see the fail-once → vanilla path (restart afterwards) |
+| `FloppyFabrics_interactions(bool)` | Players, zombies, vehicles and scenery act on flags (default on; off = wind only) |
+| `FloppyFabrics_blockHeight(m)` | Wall flags with an object taller than this in front stay vanilla (default 1.5 m; 0 = never) |
+| `FloppyFabrics_curtains(bool)` | Window curtains move while their window is open or broken (default on; off = all vanilla) |
+| `FloppyFabrics_curtainExposure(x)` | Fraction of the outside wind reaching a curtain through a fully open window (default 0.5) |
+| `FloppyFabrics_curtainLight(bool)` | Daylight flickers into the room past a closed curtain the wind lifts (default on) |
+| `FloppyFabrics_curtainLightGain(x)` | Strength of that light at a fully lifted curtain in full daylight (default 0.12; max 0.5) |
+| `FloppyFabrics_decorations(bool)` | Strings (bunting, string lights) and canopies move (default on); off draws them as vanilla |
+| `FloppyFabrics_setDetail(x)` | Simulation detail 0.5–4× (also Options > Mods > Floppy Fabrics); every simulation restarts from rest at the new resolution |
 
-Lua needs the parentheses: `RealFlags_status()`, not `RealFlags_status`.
+Lua needs the parentheses: `FloppyFabrics_status()`, not `FloppyFabrics_status`.
 
 ### Per flag (flags.json)
 | Want | Change |

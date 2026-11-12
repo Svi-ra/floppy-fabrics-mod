@@ -1,6 +1,6 @@
-# RealFlags tile registry
+# FloppyFabrics tile registry
 
-Every tile RealFlags reads or animates, with its exact sprite name. Machine-readable twin: [`registry/tiles.json`](registry/tiles.json). Custom textures are registered separately in [CUSTOM_TEXTURES.md](CUSTOM_TEXTURES.md).
+Every tile FloppyFabrics reads or animates, with its exact sprite name. Machine-readable twin: [`registry/tiles.json`](registry/tiles.json). Custom textures are registered separately in [CUSTOM_TEXTURES.md](CUSTOM_TEXTURES.md).
 
 Regenerate with `python tools/genregistry.py` (sprite lists come from `flags.json` / `decorations.json`; names are curated in the script).
 
@@ -11,13 +11,13 @@ Regenerate with `python tools/genregistry.py` (sprite lists come from `flags.jso
 | Source id | Name | Version | Kind |
 |---|---|---|---|
 | `vanilla` | Project Zomboid | 42.21.0 | vanilla |
-| `realflags` | Floppy Fabrics (custom textures) | 0.6.0 | mod |
+| `floppyfabrics` | Floppy Fabrics (custom textures) | 0.6.0 | mod |
 
 ### Adding a third-party mod
 
 1. Add a row to `sources` (`id` = the mod's id, name, version, `kind: "mod"`).
 2. Add its tiles to `tiles` with `"source": "<id>"`; keep the sprite name exact.
-3. The mod itself ships `media/realflags/*.json` (see [FLAGS_JSON.md](FLAGS_JSON.md)); registry entries should name that file in `config`.
+3. The mod itself ships `media/floppyfabrics/*.json` (see [FLAGS_JSON.md](FLAGS_JSON.md)); registry entries should name that file in `config`.
 
 Sprite names are globally unique, so `source` is informational, not a namespace.
 
@@ -285,16 +285,16 @@ Notes:
 | <img src="registry/previews/street_decoration_01_24.png" width="48" alt="street_decoration_01_24"> | `street_decoration_01_24` | American flag pole, lower tile (shaft source) | — | — | — | flags.json | reference |
 
 Notes:
-- `street_decoration_01_16`: Upper tile of the vanilla American Flag pole. The painted furled cloth is replaced by a canvas shipped with this mod (media/realflags/pole_flag.png); the pole is rebuilt from the finial of this sprite and a clean shaft slice of the lower tile street_decoration_01_24.
+- `street_decoration_01_16`: Upper tile of the vanilla American Flag pole. The painted furled cloth is replaced by a canvas shipped with this mod (media/floppyfabrics/pole_flag.png); the pole is rebuilt from the finial of this sprite and a clean shaft slice of the lower tile street_decoration_01_24.
 - `street_decoration_01_24`: Clean shaft slice (src 60,100-68,164) copied by flags.json staticQuads onto the upper tile.
 
-## Custom textures (created for RealFlags)
+## Custom textures (created for FloppyFabrics)
 
 Details and notes: [CUSTOM_TEXTURES.md](CUSTOM_TEXTURES.md).
 
 | Preview | ID | File | Size | Used by | Config | Origin |
 |---|---|---|---|---|---|---|
-| <img src="../mod/42/media/realflags/pole_flag.png" width="96" alt="pole_flag"> | `pole_flag` | `mod/42/media/realflags/pole_flag.png` | 512x286 | `street_decoration_01_16` | flags.json canvas.texture, uv [0,0,1,1] | Magnific creation YMjQSixWeC, downscaled from 2752x1536 (D91) |
+| <img src="../mod/42/media/floppyfabrics/pole_flag.png" width="96" alt="pole_flag"> | `pole_flag` | `mod/42/media/floppyfabrics/pole_flag.png` | 512x286 | `street_decoration_01_16` | flags.json canvas.texture, uv [0,0,1,1] | Magnific creation YMjQSixWeC, downscaled from 2752x1536 (D91) |
 
 ## Pattern-based entries (no per-sprite JSON entry)
 

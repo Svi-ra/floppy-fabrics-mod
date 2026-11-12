@@ -4,20 +4,20 @@ Goal: prove in the real game that (1) the jar loads and the patches apply, (2) f
 (3) our sub-quad renderer reproduces the vanilla flag exactly (depth, lighting, position), (4) the debug quad
 appears over flag sprites, (5) the fallback/disable paths restore vanilla. No wind/cloth yet: that's Phase 3.
 
-Build deployed to `C:\Users\user\Zomboid\mods\RealFlags` (jar SHA-256 in CHANGELOG / chat).
+Build deployed to `C:\Users\user\Zomboid\mods\FloppyFabrics` (jar SHA-256 in CHANGELOG / chat).
 
 ## 0. Setup (once)
 1. Mod manager: enable **ZombieBuddy** and **Floppy Fabrics**.
    Floppy Fabrics declares `require=\ZombieBuddy`.
 2. Launch with **`-debug`** (Steam → Properties → Launch options) so the Lua console and Brush Tool are available.
-3. ZombieBuddy shows an approval dialog for `RealFlags.jar` (new, unsigned). Check the SHA-256 matches the one I
+3. ZombieBuddy shows an approval dialog for `FloppyFabrics.jar` (new, unsigned). Check the SHA-256 matches the one I
    gave you, then approve (session-only is fine while iterating: every rebuild changes the hash).
 
 ## 1. Load (main menu is enough)
 In `C:\Users\user\Zomboid\console.txt` expect:
-- `[ZB] Found patch class: pzmod.realflags.Patch_CalculateObjectRenderLayer` (and `Patch_PerformRenderFrame`, `Patch_TextureRender`)
-- `[RealFlags] v0.1.0 loaded (ZombieBuddy 2.3.4, game 42.21.0 ...)`
-- no `[RealFlags] ERROR` / `WARN`.
+- `[ZB] Found patch class: pzmod.floppyfabrics.Patch_CalculateObjectRenderLayer` (and `Patch_PerformRenderFrame`, `Patch_TextureRender`)
+- `[FloppyFabrics] v0.1.0 loaded (ZombieBuddy 2.3.4, game 42.21.0 ...)`
+- no `[FloppyFabrics] ERROR` / `WARN`.
 
 ## 2. Put flags in front of you (new sandbox game or a test save)
 Right-click ground → **Debug → Brush Tool → Brush Tool Manager**, pick and place:
@@ -32,25 +32,25 @@ Right-click ground → **Debug → Brush Tool → Brush Tool Manager**, pick and
 | 3.2 | Walk behind/in front of the flag, near walls | Depth order identical to vanilla: you're hidden behind it / it's hidden behind walls as before. No tint "floating" in front of walls |
 | 3.3 | Day/night or a light source | Flag lit exactly like before (tint aside) |
 | 3.4 | Hover/right-click the flag | Still selectable (object picker works); context menu as vanilla |
-| 3.5 | Lua console: `RealFlags_status()` | `drawsReplaced` and `subQuads` grow every frame; `layerOverrides` > 0; fallbacks ~0 |
-| 3.6 | `RealFlags_debug(false)` | Tint gone, flag **pixel-identical** to vanilla (compare with a screenshot with the mod disabled if you can) |
-| 3.7 | `RealFlags_setEnabled(false)` | Flags drawn by vanilla (status: counters stop growing) |
+| 3.5 | Lua console: `FloppyFabrics_status()` | `drawsReplaced` and `subQuads` grow every frame; `layerOverrides` > 0; fallbacks ~0 |
+| 3.6 | `FloppyFabrics_debug(false)` | Tint gone, flag **pixel-identical** to vanilla (compare with a screenshot with the mod disabled if you can) |
+| 3.7 | `FloppyFabrics_setEnabled(false)` | Flags drawn by vanilla (status: counters stop growing) |
 | 3.8 | Pole flag | Tint appears on the upper tile; the two pole halves still line up |
 | 3.9 | Trees/grass (WindSway is enabled) | Still sway as before — no interaction |
-| 3.10 | Wall flags after the D30 fix (`RealFlags_debug(false)`) | **No stipple**: solid flag on the wall, as vanilla |
-| 3.11 | `RealFlags_depthBias(false)` then `(true)` | `false` brings the stipple back, `true` removes it (proves the cause) |
-| 3.12 | `RealFlags_mesh(false)` then `(true)` | No visible difference (our sub-quads = vanilla's single quad) |
+| 3.10 | Wall flags after the D30 fix (`FloppyFabrics_debug(false)`) | **No stipple**: solid flag on the wall, as vanilla |
+| 3.11 | `FloppyFabrics_depthBias(false)` then `(true)` | `false` brings the stipple back, `true` removes it (proves the cause) |
+| 3.12 | `FloppyFabrics_mesh(false)` then `(true)` | No visible difference (our sub-quads = vanilla's single quad) |
 
-| 3.13 | `RealFlags_depthBiasAmount(0.00005)`, `(0.0001)`, `(0.0002)`, `(0.0004)` with `RealFlags_debug(false)` | Find the smallest value where the thin stippled bands at the flag edges are gone |
+| 3.13 | `FloppyFabrics_depthBiasAmount(0.00005)`, `(0.0001)`, `(0.0002)`, `(0.0004)` with `FloppyFabrics_debug(false)` | Find the smallest value where the thin stippled bands at the flag edges are gone |
 | 3.14 | At that value, stand right in front of the flag (and/or put a crate/fridge against that wall) | The character/object still covers the flag (bias not too large) |
 
-Lua needs the parentheses: `RealFlags_status()`, not `RealFlags_status`.
+Lua needs the parentheses: `FloppyFabrics_status()`, not `FloppyFabrics_status`.
 
 ## 4. Wind direction convention (open item, RECON §6)
-On a rainy/windy day: run `RealFlags_wind()` and note **which way the rain slants on screen** (left/right, up/down
+On a rainy/windy day: run `FloppyFabrics_wind()` and note **which way the rain slants on screen** (left/right, up/down
 the screen) and the compass string it prints. Two or three samples on different days are ideal.
 
 ## 5. Send back
-- `console.txt` (or just the lines containing `RealFlags` / `[ZB]` / `ERROR`),
-- the `RealFlags_status()` line,
+- `console.txt` (or just the lines containing `FloppyFabrics` / `[ZB]` / `ERROR`),
+- the `FloppyFabrics_status()` line,
 - screenshots of 3.1 / 3.6 / 3.8 if possible, and the §4 notes.

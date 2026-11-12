@@ -1,4 +1,4 @@
-# RealFlags clothing racks: future work
+# FloppyFabrics clothing racks: future work
 
 Sprites that show a clothing rack and could get simulated, swaying garments. **None of these is implemented.** Same layout as [TILE_REGISTRY.md](TILE_REGISTRY.md): move a sprite there (with a `flags.json` / `decorations.json` entry) once it is done. Source: Project Zomboid 42.21.0, `media/tile_definitions/*.tiles.txt`. Previews: `registry/previews/<sprite>.png` (PZ art, documentation only).
 

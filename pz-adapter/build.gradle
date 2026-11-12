@@ -4,7 +4,7 @@
 def pzInstallDir = file(project.findProperty('pzInstallDir') ?: 'D:/Program Files/Steam/steamapps/common/ProjectZomboid')
 def zombieBuddyJar = file(project.findProperty('zombieBuddyJar') ?: "${pzInstallDir}/ZombieBuddy.jar")
 def modsDir = file(project.findProperty('modsDir') ?: "${System.getProperty('user.home')}/Zomboid/mods")
-def modId = 'RealFlags'
+def modId = 'FloppyFabrics'
 
 dependencies {
     implementation project(':cloth-core')
@@ -33,7 +33,7 @@ tasks.named('compileJava', JavaCompile) {
 }
 
 tasks.named('test', Test) {
-    systemProperty 'realflags.modDir', rootProject.file('mod').absolutePath
+    systemProperty 'floppyfabrics.modDir', rootProject.file('mod').absolutePath
 }
 
 jar {
@@ -61,12 +61,12 @@ tasks.register('verifyPatches', JavaExec) {
     def jarFile = tasks.named('jar').get().archiveFile.get().asFile
     def probeDir = layout.buildDirectory.dir('verify-run').get().asFile
     def logFile = new File(probeDir, 'agent.log')
-    mainClass = 'pzmod.realflags.verify.PatchProbe'
+    mainClass = 'pzmod.floppyfabrics.verify.PatchProbe'
     // the agent's patches_jar=<path>:<pkg> splits on the first ':' → use a path relative to the working dir
     workingDir = jarFile.parentFile
     classpath = files("${pzInstallDir}/projectzomboid.jar", jarFile, sourceSets.verify.output)
     jvmArgs = [
-            "-javaagent:${zombieBuddyJar}=patches_jar=${jarFile.name}:pzmod.realflags,verbosity=2,policy=allow-all,frontend=console,config_dir=${probeDir.absolutePath.replace('\\', '/').replaceFirst(/^[A-Za-z]:/, '')}",
+            "-javaagent:${zombieBuddyJar}=patches_jar=${jarFile.name}:pzmod.floppyfabrics,verbosity=2,policy=allow-all,frontend=console,config_dir=${probeDir.absolutePath.replace('\\', '/').replaceFirst(/^[A-Za-z]:/, '')}",
             '-Djava.awt.headless=true',
             '--enable-native-access=ALL-UNNAMED',
             '-XX:+EnableDynamicAgentLoading',
@@ -78,17 +78,17 @@ tasks.register('verifyPatches', JavaExec) {
     }
     doLast {
         def log = logFile.getText('UTF-8')
-        def relevant = log.readLines().findAll { it =~ /(?i)realflags|PatchProbe|error|exception|Applied advice|hasMultipleSignatures/ }
+        def relevant = log.readLines().findAll { it =~ /(?i)floppyfabrics|PatchProbe|error|exception|Applied advice|hasMultipleSignatures/ }
         println relevant.join('\n')
         if (!log.contains('[PatchProbe] done')) throw new GradleException("probe did not finish; see ${logFile}")
-        def errors = log.readLines().findAll { it =~ /(?i)\bERROR\b|Exception/ && it =~ /(?i)realflags|Patch_/ }
+        def errors = log.readLines().findAll { it =~ /(?i)\bERROR\b|Exception/ && it =~ /(?i)floppyfabrics|Patch_/ }
         if (!errors.isEmpty()) throw new GradleException("ZombieBuddy reported errors for our patches; see ${logFile}")
     }
 }
 
-// Assembles the clean mod folder in build/mod/RealFlags (no sources, no build files).
+// Assembles the clean mod folder in build/mod/${modId} (no sources, no build files).
 tasks.register('assembleMod', Sync) {
-    description = 'Builds the mod folder (mod.info, media, jar) under build/mod/RealFlags.'
+    description = "Builds the mod folder (mod.info, media, jar) under build/mod/${modId}."
     group = 'build'
     dependsOn tasks.named('jar')
     into layout.buildDirectory.dir("mod/${modId}")
@@ -100,7 +100,7 @@ tasks.register('assembleMod', Sync) {
     }
 }
 
-// Copies the assembled folder into the game's mods directory. Sync only touches <modsDir>/RealFlags.
+// Copies the assembled folder into the game's mods directory. Sync only touches <modsDir>/${modId}.
 tasks.register('deployMod', Sync) {
     description = "Copies the mod folder to ${modsDir}/${modId}."
     group = 'distribution'

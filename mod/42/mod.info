@@ -1,10 +1,10 @@
 name=Floppy Fabrics
-id=RealFlags
+id=FloppyFabrics
 author=Svi-ra
 modversion=0.6.0
 versionMin=42.21
 description=Floppy Fabrics gives the fabric in the world real, dynamic physics. Flags, window curtains, hospital and theatre curtains, church banners, bunting, string lights, awnings, market canopies, altar cloths and street banners stop being static pictures: they billow in the wind, swing and flutter, and react to players, zombies and passing vehicles, drape over furniture and stop at walls. Each kind of fabric has its own tuned simulation, and multi-tile cloths move as one. More fabrics (clothes on racks) are planned. Simulation detail is adjustable in Options > Mods. Visual only and client-side: no new objects, no save data, removing the mod restores vanilla. Needs ZombieBuddy (Java mods).
 require=\ZombieBuddy
-javaJarFile=media/java/client/RealFlags.jar
-javaPkgName=pzmod.realflags
+javaJarFile=media/java/client/FloppyFabrics.jar
+javaPkgName=pzmod.floppyfabrics
 ZBVersionMin=2.3.4

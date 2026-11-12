@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""decotool.py - generates mod/42/media/realflags/decorations.json (strings, canopies, drapes) from the game's sprites.
+"""decotool.py - generates mod/42/media/floppyfabrics/decorations.json (strings, canopies, drapes) from the game's sprites.
 Dev tool, never shipped with the mod. Requires Pillow and numpy.
 
-    python tools/decotool.py "<PZ>/media/texturepacks/Tiles2x.pack" mod/42/media/realflags/decorations.json [--png out/]
+    python tools/decotool.py "<PZ>/media/texturepacks/Tiles2x.pack" mod/42/media/floppyfabrics/decorations.json [--png out/]
 
 Everything is measured in the 2x tile frame (128x256), the coordinate system of flags.json (docs/FLAGS_JSON.md):
 

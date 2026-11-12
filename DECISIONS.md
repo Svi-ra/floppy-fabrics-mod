@@ -5,7 +5,7 @@ Format: ID · decision · why · evidence. D1–D10 were decided from evidence; 
 ## Decided (from evidence, Phase 0)
 
 **D1 · 2026-11-05 · decided — Client-only jar path.**
-`42/media/java/client/RealFlags.jar`. ZombieBuddy skips `media/java/client/` jars on a dedicated server, so the
+`42/media/java/client/FloppyFabrics.jar`. ZombieBuddy skips `media/java/client/` jars on a dedicated server, so the
 mod is a guaranteed server no-op. *Evidence:* ZombieBuddy `doc/ModdingGuide.md` "Client/server JAR paths".
 
 **D2 · 2026-11-05 · decided — Flags are identified by sprite name.**
@@ -39,7 +39,7 @@ All advice methods declare the full un-annotated parameter list so ZombieBuddy m
 Rects are fractions of the sprite frame (`widthOrig × heightOrig`) so one entry covers Tiles1x and Tiles2x.
 
 **D10 · 2026-11-05 · decided — "No console errors" is measured by our tag.**
-console.txt already contains ~6.4k ERROR lines from other mods; the criterion becomes "0 lines tagged `[RealFlags]`
+console.txt already contains ~6.4k ERROR lines from other mods; the criterion becomes "0 lines tagged `[FloppyFabrics]`
 at ERROR/exception level".
 
 ## Decided by you (answers to Q1–Q4, 2026-11-05)
@@ -59,10 +59,10 @@ Classification change only, via `FBORenderCell.calculateObjectRenderLayer` exit 
 affected chunk levels are invalidated so the flags re-bake into the cached layer → exact vanilla.
 
 **D13 · Q3 — Project layout.**
-Gradle multi-module source at `D:\Real-flags` (`cloth-core`, `cloth-demo`, `pz-adapter`, plus a `mod/` template). A
-build task assembles a clean mod folder and copies it to `C:\Users\user\Zomboid\mods\RealFlags`
-(`42/mod.info`, `42/media/java/client/RealFlags.jar`, `42/media/realflags/flags.json`). Mod id `RealFlags`, package
-`pzmod.realflags`, log tag `[RealFlags]`. Decompiled game code stays outside the repo.
+Gradle multi-module source at `D:\Floppy-Fabrics` (`cloth-core`, `cloth-demo`, `pz-adapter`, plus a `mod/` template). A
+build task assembles a clean mod folder and copies it to `C:\Users\user\Zomboid\mods\FloppyFabrics`
+(`42/mod.info`, `42/media/java/client/FloppyFabrics.jar`, `42/media/floppyfabrics/flags.json`). Mod id `FloppyFabrics`, package
+`pzmod.floppyfabrics`, log tag `[FloppyFabrics]`. Decompiled game code stays outside the repo.
 *Replaces* the earlier proposal of `mods/ClothFlags`; the three docs were moved here and that folder was removed.
 
 **D14 · Q4 — MVP starter set.**
@@ -71,7 +71,7 @@ Indoor wall flags (square not outside) get zero wind and stay static = vanilla. 
 banner `location_restaurant_bar_smutz_23` are deferred.
 
 **D15 · Third-party flags by data only.**
-Besides our own `flags.json`, each active mod may ship `media/realflags/*.json` with the same schema (sprite name →
+Besides our own `flags.json`, each active mod may ship `media/floppyfabrics/*.json` with the same schema (sprite name →
 cloth rect, pin edge, rest size, profile, optional `staticQuads` and `canvas` texture). Entries are merged at load.
 
 ## Phase 1 — cloth-core (2026-11-05)
@@ -144,8 +144,8 @@ Machine: the user's PC, JBR 25.0.3. Bench numbers vary ±10% run to run.
 **D23 · Patch classes live in the exact `javaPkgName` package.** `PatchEngine.collectPatches` keeps a `@Patch` class
 only if `patchClass.getPackage().getName().equals(packageName)` (`PatchEngine.java:706`). ZombieBuddy's
 ModdingGuide example uses a `.patches` subpackage, which this code ignores. Our first build did exactly that, and the
-offline probe (D26) reported `no patches in package pzmod.realflags`. Patch classes are now
-`pzmod.realflags.Patch_*`. Global `@LuaMethod` classes have the same exact-package rule (`:720`).
+offline probe (D26) reported `no patches in package pzmod.floppyfabrics`. Patch classes are now
+`pzmod.floppyfabrics.Patch_*`. Global `@LuaMethod` classes have the same exact-package rule (`:720`).
 
 **D24 · Capture-and-subdivide renderer.** Instead of re-deriving depth UVs (the original plan in D4), `SpriteMesh` runs
 vanilla's own `texdModifier` once on a scratch `TextureDraw` covering the vanilla quad. It then emits sub-quads whose
@@ -163,32 +163,32 @@ only when `FBORenderCell.instance.renderTranslucentOnly` (flags are only drawn i
 read plus one identity-map probe for translucent-pass sprites only.
 
 **D26 · Offline patch verification task.** `gradlew :pz-adapter:verifyPatches` starts a throwaway JVM with the
-ZombieBuddy agent (`patches_jar=RealFlags.jar:pzmod.realflags`, `policy=allow-all`, private `config_dir` so the user's
+ZombieBuddy agent (`patches_jar=FloppyFabrics.jar:pzmod.floppyfabrics`, `policy=allow-all`, private `config_dir` so the user's
 approvals are never touched). It loads the target classes *without initialising them* and fails on agent errors.
 Confirms all three patches apply to build 42.21.0's classes with `warmUp=false`. Run it after every game update.
 Quirk: `patches_jar` is split on the first `:`, so it runs from the jar's directory with a relative path.
 
-**D27 · Lua debug API, no Lua files.** `RealFlags_status()`, `RealFlags_debug(bool)`, `RealFlags_setEnabled(bool)`,
-`RealFlags_wind()` — static `@LuaMethod(global=true)` on `LuaApi`, discovered by ZombieBuddy (D23 rule).
+**D27 · Lua debug API, no Lua files.** `FloppyFabrics_status()`, `FloppyFabrics_debug(bool)`, `FloppyFabrics_setEnabled(bool)`,
+`FloppyFabrics_wind()` — static `@LuaMethod(global=true)` on `LuaApi`, discovered by ZombieBuddy (D23 rule).
 
 **D28 · Debug overlay texture.** `Texture.getWhite()` without an `isReady()` gate: it is built by a constructor, not
 the asset manager, and vanilla draws it through the same four-corner path ungated (`AnimalZones.java:496`).
 
-**D29 · Mod packaging.** `gradlew :pz-adapter:deployMod` syncs `build/mod/RealFlags` (template `mod/` + one jar with
-cloth-core bundled) into `<modsDir>/RealFlags`; `Sync` only ever touches that folder. `check_mod.py`: 0 errors. Its
+**D29 · Mod packaging.** `gradlew :pz-adapter:deployMod` syncs `build/mod/FloppyFabrics` (template `mod/` + one jar with
+cloth-core bundled) into `<modsDir>/FloppyFabrics`; `Sync` only ever touches that folder. `check_mod.py`: 0 errors. Its
 warnings are the three ZombieBuddy keys (read by ZombieBuddy, ignored by vanilla by design) and the missing poster.
 
 ## Phase 2 in-game evidence (2026-11-06, first run)
 Source: `console.txt` (flushed up to 00:23) and the user's video `2026-11-06 00-26-37.mp4`. The video is 3.6 s,
 1920×1080; frames were extracted with Windows' WinRT `MediaComposition`, since there is no ffmpeg on the machine.
 - Load: jar approved; `Main` ran; ZombieBuddy found all 3 patch classes; `LuaApi` exposed; `FBORenderCell` patched
-  on its in-game load; `flags.json` read (5 definitions). No `[RealFlags]` ERROR/WARN. The `-debug` launch option now
+  on its in-game load; `flags.json` read (5 definitions). No `[FloppyFabrics]` ERROR/WARN. The `-debug` launch option now
   reaches the game.
 - Pole flag `street_decoration_01_16` (z+1) placed over `_24`: magenta overlay drawn exactly over the upper tile's
   trimmed sprite rectangle; sprite art inside undistorted and in place; the two pole halves line up.
 - **Per-frame redraw confirmed**: the overlay's mean colour oscillates with a 2.0 s period (peaks at 0.5/2.5 s,
   troughs at 1.5/3.5 s), matching `0.25 + 0.15·sin(πt)`. The flag is in the per-frame layer and our draw replaces it every frame.
-- Not yet covered: wall flags, picking, `RealFlags_status()` counters, overlay-off identity, WindSway trees, wind
+- Not yet covered: wall flags, picking, `FloppyFabrics_status()` counters, overlay-off identity, WindSway trees, wind
   direction. Dark outlines on grass/sidewalk seen in the video also appear far from any flag; they are presumably
   from another mod or a debug render option, but this is unverified.
 
@@ -196,9 +196,9 @@ Source: `console.txt` (flushed up to 00:23) and the user's video `2026-11-06 00-
 - Wall flags `walls_decoration_01_19` (E, `WallOverlay`+`attachedW`) and a US wall flag rendered **stippled**
   (about half the pixels missing in a regular pattern); still present with the overlay off. The pole flag (no wall
   behind it) was clean.
-- `RealFlags_debug(false)` works and printed status. `RealFlags_status` typed without `()` is a Lua syntax error
+- `FloppyFabrics_debug(false)` works and printed status. `FloppyFabrics_status` typed without `()` is a Lua syntax error
   (`console:1: '=' expected`) — not a mod issue.
-- Wind samples (`RealFlags_wind()`, rain falling): intensity 0.100 / 0.335 / 0.557, kph 12.0 / 40.2 / 66.8,
+- Wind samples (`FloppyFabrics_wind()`, rain falling): intensity 0.100 / 0.335 / 0.557, kph 12.0 / 40.2 / 66.8,
   angleDeg 341.7 ("SE") / 319.4 ("E") / 315.1 ("E"), angleIntensity −0.352 / −0.475 / −0.500. Screen slant of the rain
   not yet reported → convention still open. Note the game's own label calls 315° "E".
 - WindSway tree sway was disabled by the user for this run, so coexistence was not checked.
@@ -215,14 +215,14 @@ with `WallOverlay` in the per-frame pass. Vanilla's existing `farDepthZ/frontDep
 applies exactly vanilla's bias. Idempotent (won't re-bias its own output). Verified offline to apply; in-game
 confirmation pending.
 
-**D31 · A/B toggles for in-game diagnosis.** `RealFlags_mesh(false)` draws vanilla's single quad (still in the
-per-frame layer), isolating the mesh from the layer change. `RealFlags_depthBias(false)` reproduces the z-fighting.
+**D31 · A/B toggles for in-game diagnosis.** `FloppyFabrics_mesh(false)` draws vanilla's single quad (still in the
+per-frame layer), isolating the mesh from the layer change. `FloppyFabrics_depthBias(false)` reproduces the z-fighting.
 `depthBiased` counter added to status.
 
 ### Third run (2026-11-06, screenshots with the D30 build)
 - `depthBias=true` (5e-5): both wall flags render **solid**, except thin stippled diagonal bands at some edges (blue
   flag right edge and top-left; US flag top-left and lower right).
-- `RealFlags_depthBias(false)`: both wall flags **vanish entirely**. `RealFlags_mesh(false)` with bias off: still
+- `FloppyFabrics_depthBias(false)`: both wall flags **vanish entirely**. `FloppyFabrics_mesh(false)` with bias off: still
   invisible → the sub-quad mesh is **not** the cause; the per-frame layer + equal wall depth is (confirms D30).
 - Picking (3.4): right-click on the flag square gives the vanilla Tile Report for `walls_decoration_01_19`. ✓
 - Status: `fallbacks` all 0; `depthBiased` stops growing exactly when the bias is off; `frameContexts ≈ drawsReplaced`.
@@ -239,7 +239,7 @@ Re-check once with rain slanting right (positive `angleIntensity`, θ in 45°–
 **D33 · Wall-flag depth bias is tunable; default 2e-4.** Vanilla's 5e-5 left stippled edge bands because the flag's
 and the wall's depth texels at the same screen pixel differ more toward the flag's edges. The cached pass never sees
 this, because it draws with `GL_ALWAYS`. Default raised to 2e-4 (4× vanilla). For scale, one z-level of height is
-0.0028867 depth units, so 2e-4 is about 1/14 of a level. Lua `RealFlags_depthBiasAmount(x)`, clamped to [0, 0.003].
+0.0028867 depth units, so 2e-4 is about 1/14 of a level. Lua `FloppyFabrics_depthBiasAmount(x)`, clamped to [0, 0.003].
 **The value to ship is the smallest one that clears the bands without drawing the flag over objects just in front of
 the wall**, to be found in-game.
 
@@ -275,13 +275,13 @@ Known limitation: the flag always draws in front of its own pole, even when it s
 `getWindAngleDegrees()` to a world vector (D32). Each `FlagInstance` has its own `WindForce` seeded by square
 coordinates (gust and turbulence phases differ between flags) and scaled by `exposure` (walls 0.35, poles 1.0). Wall
 flags on non-outside squares get 0, so they never wake. Steps once per `IsoWorld.getFrameNo()` with real seconds,
-0 while paused (D7). Dev override: `RealFlags_forceWind(kph, deg)` / `RealFlags_forceWindOff()`.
+0 while paused (D7). Dev override: `FloppyFabrics_forceWind(kph, deg)` / `FloppyFabrics_forceWindOff()`.
 
 **D39 · Instances.** `WeakHashMap<IsoObject, FlagInstance>`, created lazily on first draw (the instance holds no
 reference to its object). Creation runs the cloth's settle: ≈10 ms for a pole flag, once per flag. To do in Phase 4:
 share the settled pose per FlagDef, cap, culling, LOD, eviction.
 
-**D40 · Debug overlay off by default** from Phase 3 on (`RealFlags_debug(true)` to show it).
+**D40 · Debug overlay off by default** from Phase 3 on (`FloppyFabrics_debug(true)` to show it).
 
 ### Phase 3 in-game evidence (2026-11-06)
 Source: user's screenshot plus four clips (`step-2`, `step-3`, `step-4-1`, `step-4-2`; frames extracted every 0.5 s
@@ -328,21 +328,21 @@ of unloaded objects.
 rest is identical to vanilla's single quad (Phase 2: `mesh(false)` comparison). So the real flag returns false and
 vanilla draws its one quad: the cheapest possible draw. Pole flags always draw (no vanilla equivalent).
 
-**D46 · Debug overlay** (`RealFlags_overlay`): drawn on exit of `UIManager.render()` (new patch, static, no overloads,
+**D46 · Debug overlay** (`FloppyFabrics_overlay`): drawn on exit of `UIManager.render()` (new patch, static, no overloads,
 `strictMatch`) with `TextManager.DrawString(UIFont.Small, …)`. Text is rebuilt 4×/s (no per-frame string allocation).
 CPU time = `System.nanoTime` around our whole flag hook per frame (simulation + geometry + submission), with a
 60-frame avg/max. Not included: the cheap advice checks on non-flag draws, and GPU time.
 
-**D47 · Stress mode for the 50-flag measurement** (`RealFlags_stress(n)`): each real flag is also drawn n−1 times as
+**D47 · Stress mode for the 50-flag measurement** (`FloppyFabrics_stress(n)`): each real flag is also drawn n−1 times as
 offset ghosts, each with its own cloth and seed, through the real render pipeline. This measures the true per-flag
 cost without placing objects in the user's save. Ghosts never take the calm→vanilla shortcut (they always draw).
 
-**D48 · Failure path exercisable in-game** (`RealFlags_testFailure()`): the next flag draw throws inside the hook,
+**D48 · Failure path exercisable in-game** (`FloppyFabrics_testFailure()`): the next flag draw throws inside the hook,
 exercising the real fail-once → disable → invalidate → vanilla path.
 
 ### Phase 4 in-game measurements, run 1 (2026-11-06, user's PC, overlay screenshots)
 CPU = our hook's time per frame (simulation + geometry + submission), 60-frame avg / max. Forced wind 40 km/h @135°,
-`RealFlags_stress(10)`.
+`FloppyFabrics_stress(10)`.
 | Scenario | Drawn | Simulated | Avg | Max | Per flag |
 |---|---|---|---|---|---|
 | Near LOD forced (`lodDistance(100)`) | 30 | 30 | 0.906 / 0.897 ms | 2.36 / 2.19 ms | ≈30 µs → **≈1.5 ms for 50 ✗** |
@@ -350,8 +350,8 @@ CPU = our hook's time per frame (simulation + geometry + submission), 60-frame a
 | Zoomed out, default LOD | 120 | 60 (cap) | 1.143 ms | 1.725 ms | 100 coarse, 50 frozen |
 | Calm, zoomed out | 90 | 0 | 0.339 ms | 0.642 ms | 7 handed back to vanilla |
 Behaviour: cap ✓ (`setCap(10)` → frozen = drawn − 10; at 64 only 60 stepped), eviction ✓ (`evicted=45`), shared
-prototypes ✓ (`prototypes=8` for 56 created), calm→vanilla ✓, failure path ✓ (`RealFlags_testFailure()` → exactly
-one `[RealFlags] ERROR in Texture.render … disabled for this session` + full stack, then vanilla). Found:
+prototypes ✓ (`prototypes=8` for 56 created), calm→vanilla ✓, failure path ✓ (`FloppyFabrics_testFailure()` → exactly
+one `[FloppyFabrics] ERROR in Texture.render … disabled for this session` + full stack, then vanilla). Found:
 `fallbacks canvas=21`, i.e. the pole showed its vanilla furled flag for about 20 frames on first sight while the
 DGVFlags canvas was loading.
 
@@ -378,9 +378,9 @@ plus this pass/fail statement. Expected from the offline numbers: ≈0.95 ms for
 ## Phase 5 — documentation (2026-11-06)
 
 **D52 · Data-only flags from any mod (implements D15).** Writing the README showed that D15 was never implemented: the
-registry read only the one `media/realflags/flags.json` the game resolves. A second mod shipping that path would have
+registry read only the one `media/floppyfabrics/flags.json` the game resolves. A second mod shipping that path would have
 *replaced* ours, and other file names were ignored. Now `FlagRegistry` walks `ZomboidFileSystem.getModIDs()` (load
-order) → `ChooseGameInfo.getModDetails(id).getCommonDir()/getVersionDir()` → `media/realflags/*.json` (sorted by name)
+order) → `ChooseGameInfo.getModDetails(id).getCommonDir()/getVersionDir()` → `media/floppyfabrics/*.json` (sorted by name)
 and merges them; for the same sprite a later file wins. Falls back to the resolved single file. Unit-tested with temp
 mod folders; in-game confirmation is the log line `loaded N flag definitions (M entries) from K file(s)`.
 
@@ -433,7 +433,7 @@ overlaps the cloth's span along the wall. Walls, windows, doors, other wall deco
 floors and loose items (`IsoWorldInventoryObject`) never block. A blocked flag is not simulated at all: its cloth is put
 back on the reference and vanilla draws its single quad. Fridges (1.55 m), wardrobes and tall shelves block; counters
 and tables (≈0.9 m) don't — they become scenery the flag can drape over (D59). Re-checked every ~64 frames per flag
-(staggered), so placing or picking up furniture takes effect within about a second. Tunable: `RealFlags_blockHeight(m)`,
+(staggered), so placing or picking up furniture takes effect within about a second. Tunable: `FloppyFabrics_blockHeight(m)`,
 0 = never blocked. Test: `InteractionsTest.fridgeInFrontOfAWallFlagBlocksIt` with the fridge's real geometry.
 
 **D59 · Scenery colliders.** Static AABBs from the tile geometry of objects within the cloth's reach (rectangle
@@ -457,7 +457,7 @@ building beside it; a wall flag billowing over a counter lands on top of it.
   characters running faster than 2.5 m/s within 1.2 m add 0.35·v·(1 − d/1.2)². Capped at 20 m/s. So an indoor wall flag
   (no climate wind) still stirs when someone runs past, and a car speeding past a pole flag makes it snap.
 - Bodies behind a wall flag's wall (other room, outside) are ignored.
-Animals are not included. `RealFlags_interactions(false)` restores the 0.1.0 behaviour (wind only).
+Animals are not included. `FloppyFabrics_interactions(false)` restores the 0.1.0 behaviour (wind only).
 
 ### Phase 6 status
 Built, 49 unit tests pass (12 new), `verifyPatches` applies all five patches to 42.21.0, deployed
@@ -568,8 +568,8 @@ is scenery it drapes over.
 **D69 · Depth.** Curtains get the same toward-viewer bias as wall-overlay flags in the per-frame pass (D30/D33), as a
 precaution: they are drawn with `GL_LEQUAL` against the cached wall depth at the window line. Not yet observed in-game.
 
-**D70 · Controls.** `RealFlags_curtains(bool)` (default on; off re-bakes curtains as vanilla),
-`RealFlags_curtainExposure(x)` (default 0.5); status shows `curtains{defined layer closedDraws rebakes windowEvents}`.
+**D70 · Controls.** `FloppyFabrics_curtains(bool)` (default on; off re-bakes curtains as vanilla),
+`FloppyFabrics_curtainExposure(x)` (default 0.5); status shows `curtains{defined layer closedDraws rebakes windowEvents}`.
 
 **D71 · The pz-mcp-server decompile is not build 42.21.0 (found while building).** Its source
 (`D:\ZomboidDecompiler\…\source`) has `IsoGridSquare.getWindow(boolean)`, `IsoWindow.getNorth()` and a 1-argument
@@ -611,7 +611,7 @@ outward lift of the cloth / 0.35 m. Only for a **closed** curtain (an open one a
 outdoor window and with the cloth awake. Anti-flicker: exponential smoothing (τ = 0.35 s), quantised to 1/48, pushed at
 most every 15 frames and only when the quantised value changes; faded out to 0 then removed when the cloth rests,
 the window closes, the curtain is no longer drawn (sweep every frame from the UI hook), or the mod/curtains are turned
-off. Lua: `RealFlags_curtainLight(bool)`, `RealFlags_curtainLightGain(x)`.
+off. Lua: `FloppyFabrics_curtainLight(bool)`, `FloppyFabrics_curtainLightGain(x)`.
 
 **D74 · Barricades.** `IsoBarricade` (jar): `isMetal()` = metal sheet (`getLightTransmission` 0), `isMetalBar()` = bars
 (transmission 1), `getNumPlanks()` 0–4. A window's barricades on either side (`getBarricadeOnSameSquare/OppositeSquare`)
@@ -697,7 +697,7 @@ Not added in 0.4.0 (all added by 0.5.0 with simulations of their own, D80–D82)
 
 ### Phase 8 status
 0.4.0: 69 unit tests pass (3 new: inset parsing, free-hanging placement, wall-hung placement; the origin round-trip test
-now covers all 35 wall entries), `verifyPatches` applies all advices to 42.21.0, deployed to `mods/RealFlags` (jar SHA-256
+now covers all 35 wall entries), `verifyPatches` applies all advices to 42.21.0, deployed to `mods/FloppyFabrics` (jar SHA-256
 `fcb3ac5709da7fc04bea8846cd538ccb632ab7bb97ce9acf592addd6fc14ec0f`). **Not yet tested in-game.**
 
 ## Phase 9 — strings, canopies and drapes (2026-11-10)
@@ -742,7 +742,7 @@ over ±12 px, because scallops and 4-px steps defeat a local gradient), for roun
 (within 28 px of its lowest point). Its top is a smooth line above the scallop tips. Back views of plain canopies
 (`92/93/108/109/124/125/136/137/140/141`, curved `95/111/127/139/143`) show no valance: panel only. Panel normal and hem
 direction come from the family and the tile's `Facing` (tilt 30–35° toward it; round hems turn by 90° or 180°).
-Generated by `tools/decotool.py` into `media/realflags/decorations.json`; overlays checked by eye for every shape.
+Generated by `tools/decotool.py` into `media/floppyfabrics/decorations.json`; overlays checked by eye for every shape.
 
 **D82 · Altar cloth = a drape (a wall cloth over furniture).** `location_community_church_small_01_40..43` (Altar,
 Decorated, `Surface = 34`) are one sprite each for wood and cloth. The hanging part *is* a cloth on a straight edge, so
@@ -775,7 +775,7 @@ the flags' LOD distance × zoom), sleep → vanilla quad, and `SpriteMesh.drawFi
 previous ones still apply (`verifyPatches`).
 
 ### Phase 9 status
-0.5.0: 92 unit tests pass (23 new), `verifyPatches` applies all advices, deployed to `mods/RealFlags` (jar SHA-256
+0.5.0: 92 unit tests pass (23 new), `verifyPatches` applies all advices, deployed to `mods/FloppyFabrics` (jar SHA-256
 `67c0c5a45c72888548b2ef210261fa6414e980bc3d9413c47e9b1b3ae87acb32`). **Not yet tested in-game.**
 
 ## Phase 10 — flutter, multi-tile cloths, banners, soft contacts, detail (2026-11-11)
@@ -838,7 +838,7 @@ cloth, and `Instances` chains one instance per definition on an object (a pole m
 observed in-game which way Riverside's map places them.
 
 ### Phase 10 status
-0.6.0: 103 unit tests pass (11 new), `verifyPatches` applies all advices, deployed to `mods/RealFlags` (jar SHA-256
+0.6.0: 103 unit tests pass (11 new), `verifyPatches` applies all advices, deployed to `mods/FloppyFabrics` (jar SHA-256
 `58e6295c5f56e52c5fb56951629b729c756c294e24ec12fef4e57d2bb2771f18`). **Not yet tested in-game.**
 
 ## Acceptance status (MVP)
@@ -847,8 +847,8 @@ observed in-game which way Riverside's map places them.
 | A wall flag and a pole flag visibly wave and react to wind strength and direction (B42 42.21.0) | **Verified in-game** (Phase 3 videos; both directions, 10/40/70 km/h) |
 | No wind → identical to vanilla | **Verified** for wall flags (Phase 2 A/B, Phase 3 step 6). The pole intentionally shows the DGVFlags canvas (D11) |
 | 50 flags < 1 ms/frame | Far LOD measured ≈0.47 ms; full detail **passed by user report** after D49 (figures not recorded); original defaults measured ≈1.5 ms |
-| No errors in console.txt | No `[RealFlags]` ERROR/WARN in any run except the deliberate `RealFlags_testFailure()` |
-| Disabling the mod restores vanilla; save/load unaffected | **By design** (no objects, no modData, client-only render changes); `RealFlags_setEnabled(false)` verified in-game; disabling in the mod manager + reloading a save **not explicitly tested** |
+| No errors in console.txt | No `[FloppyFabrics]` ERROR/WARN in any run except the deliberate `FloppyFabrics_testFailure()` |
+| Disabling the mod restores vanilla; save/load unaffected | **By design** (no objects, no modData, client-only render changes); `FloppyFabrics_setEnabled(false)` verified in-game; disabling in the mod manager + reloading a save **not explicitly tested** |
 | cloth-core has no PZ imports, tests pass | **Verified** (`checkNoPzImports` proven to fail on a planted import; 21 core tests) |
 | Dedicated server no-op | **By design** (client jar path skipped by ZombieBuddy on servers); not run on a server |
 
@@ -862,4 +862,12 @@ observed in-game which way Riverside's map places them.
   object's own sprite). None seen so far; the test placements were separate objects.
 - The canvas always draws in front of its own pole (D37).
 
-**D91 · Drop the Any Wall Flags 3D (DGVFlags) dependency.** The pole flag was the only feature using it. Its canvas is now `media/realflags/pole_flag.png` (Magnific creation `YMjQSixWeC`, 2752×1536 downscaled to 512×286), full-bleed so `canvas.uv` = `[0,0,1,1]`; `mod.info` is `require=\ZombieBuddy`. Pole physics and rendering code are untouched; the path is data in `flags.json`. If the PNG can't load the pole still falls back to vanilla (Canvases). Supersedes D11's source of the texture.
+**D91 · Drop the Any Wall Flags 3D (DGVFlags) dependency.** The pole flag was the only feature using it. Its canvas is now `media/floppyfabrics/pole_flag.png` (Magnific creation `YMjQSixWeC`, 2752×1536 downscaled to 512×286), full-bleed so `canvas.uv` = `[0,0,1,1]`; `mod.info` is `require=\ZombieBuddy`. Pole physics and rendering code are untouched; the path is data in `flags.json`. If the PNG can't load the pole still falls back to vanilla (Canvases). Supersedes D11's source of the texture.
+
+**D92 · One name everywhere: Floppy Fabrics; `common/` folder.** The mod is unreleased, so the old working name is
+gone from every identifier, not only the display name: mod id and folder `FloppyFabrics`, jar `FloppyFabrics.jar`,
+package `pzmod.floppyfabrics`, data folder `media/floppyfabrics/` (also where other mods put their JSON), Lua globals
+`FloppyFabrics_*`, ModOptions key `FloppyFabrics`, translation keys `UI_FloppyFabrics_*`, log tag `[FloppyFabrics]`.
+No compatibility shims: nothing was ever published under the old names. `mod/common/README.txt` keeps the Build 42
+`common/` folder present (an empty folder is not kept by git and may be dropped by Workshop uploads; `assembleMod`
+strips `.gitkeep`). Supersedes the naming in D13 and D29.

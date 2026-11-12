@@ -1,4 +1,4 @@
-rootProject.name = 'real-flags'
+rootProject.name = 'floppy-fabrics'
 
 include 'cloth-core'   // pure-Java cloth physics, no PZ dependency
 include 'cloth-demo'   // dev-only headless harness
