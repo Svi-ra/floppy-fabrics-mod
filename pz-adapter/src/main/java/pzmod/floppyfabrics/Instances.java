@@ -56,7 +56,8 @@ final class Instances {
         GroupKey key = new GroupKey(def.groupId, ax, ay, az);
         FlagInstance inst = groups.get(key);
         if (inst != null && inst.def.sameClothAs(def)) return inst;
-        inst = new FlagInstance(def, seedFor(ax, ay, az) ^ def.groupId.hashCode(), lod);
+        // created from the cloth's own definition, never from whichever piece happened to be drawn first (D99)
+        inst = new FlagInstance(def.clothDef, seedFor(ax, ay, az) ^ def.groupId.hashCode(), lod);
         inst.setAnchor(ax, ay, az);
         groups.put(key, inst);
         FloppyFabrics.stats.created++;

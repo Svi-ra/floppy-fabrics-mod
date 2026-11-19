@@ -107,6 +107,25 @@ public final class FlagDef {
      */
     public final String groupId;
     public final int groupDx, groupDy;
+    /** Role of one tile in a {@link #runId run}: the screen-left end, a repeatable middle, the screen-right end. */
+    public enum RunRole { START, MIDDLE, END }
+    /**
+     * Run (D99): one cloth over a variable number of tiles in a line — a start tile, any number of repeated middle tiles,
+     * an end tile (a volleyball net whose middle sprite a map repeats). A role definition describes only its own tile's
+     * part of the cloth; the run is found at draw time ({@link Runs}) and drawn through synthesized group pieces
+     * (D87). Null for anything else; never set on a synthesized piece.
+     */
+    public final String runId;
+    public final RunRole runRole;
+    /** Square step from one tile of a run to the next (screen-rightward: (1, 0) along x, (0, −1) along y). */
+    public final int runNextX, runNextY;
+    /** Simulation columns per tile of run width (64 px). */
+    public final int runCellsPerTile;
+    /**
+     * The definition a shared simulation is created from: itself, or for a synthesized run piece the run's first piece,
+     * so every piece of one run length shares one prototype and the instance never depends on which tile drew first.
+     */
+    public final FlagDef clothDef;
     /**
      * Optional top edge as a curve in the (anchor) 2x frame, flattened {x, y}, x ascending: a banner hung from a sagging
      * cable. Pixels are mapped onto the cloth relative to it instead of the straight iso top edge. Null = straight.
@@ -159,6 +178,8 @@ public final class FlagDef {
         drape = b.drape;
         free = b.free;
         confine = b.confine;
+        runId = b.runId; runRole = b.runRole; runNextX = b.runNextX; runNextY = b.runNextY; runCellsPerTile = b.runCellsPerTile;
+        clothDef = b.clothDef != null ? b.clothDef : this;
         groupId = b.groupId; groupDx = b.groupDx; groupDy = b.groupDy; topCurve = b.topCurve;
         lineAx = b.lineAx; lineAy = b.lineAy; lineAz = b.lineAz; lineBx = b.lineBx; lineBy = b.lineBy; lineBz = b.lineBz;
         lineSag = b.lineSag; lineProfile = b.lineProfile;
@@ -174,6 +195,11 @@ public final class FlagDef {
     /** True for a wall cloth hanging free inside its square ({@link #inset} &gt; 0): no wall behind it. */
     public boolean freeHanging() {
         return kind == Kind.WALL && (inset > 0f || free) && !drape;
+    }
+
+    /** A role definition of a run (D99): drawn only through a piece {@link Runs} synthesizes for the run found. */
+    public boolean isRunRole() {
+        return runId != null;
     }
 
     /** One tile of a multi-tile cloth (D87). */
@@ -227,6 +253,29 @@ public final class FlagDef {
         return sprite + "(" + (cover ? "COVER" : curtain ? "CURTAIN" : drape ? "DRAPE" : kind) + (kind == Kind.WALL ? "," + facing : "") + "," + prof + ")";
     }
 
+    /** A builder holding every field of {@code d} (for synthesized run pieces, D99). */
+    static Builder copyOf(FlagDef d) {
+        Builder b = new Builder();
+        b.sprite = d.sprite; b.source = d.source; b.canvasTexture = d.canvasTexture;
+        b.kind = d.kind; b.curtain = d.curtain; b.cover = d.cover; b.profile = d.profile; b.profileFar = d.profileFar;
+        b.exposure = d.exposure; b.timeScale = d.timeScale; b.facing = d.facing;
+        b.clothX = d.clothX; b.clothY = d.clothY; b.clothW = d.clothW; b.clothH = d.clothH; b.inset = d.inset;
+        b.drape = d.drape; b.free = d.free; b.confine = d.confine;
+        b.runId = d.runId; b.runRole = d.runRole; b.runNextX = d.runNextX; b.runNextY = d.runNextY; b.runCellsPerTile = d.runCellsPerTile;
+        b.groupId = d.groupId; b.groupDx = d.groupDx; b.groupDy = d.groupDy; b.topCurve = d.topCurve;
+        b.lineAx = d.lineAx; b.lineAy = d.lineAy; b.lineAz = d.lineAz; b.lineBx = d.lineBx; b.lineBy = d.lineBy; b.lineBz = d.lineBz;
+        b.lineSag = d.lineSag; b.lineProfile = d.lineProfile;
+        b.canopyColumns = d.canopyColumns; b.canopyNx = d.canopyNx; b.canopyNy = d.canopyNy; b.canopyNz = d.canopyNz;
+        b.canopyOutX = d.canopyOutX; b.canopyOutY = d.canopyOutY; b.canopySpread = d.canopySpread;
+        b.canopyWidth = d.canopyWidth; b.canopyDepth = d.canopyDepth; b.canopyValance = d.canopyValance;
+        b.canopyFlaps = d.canopyFlaps; b.canopyProfile = d.canopyProfile;
+        b.meshCols = d.meshCols; b.meshRows = d.meshRows;
+        b.anchor = d.anchor; b.depthPoint = d.depthPoint; b.sizeW = d.sizeW; b.sizeH = d.sizeH;
+        b.canvasU0 = d.canvasU0; b.canvasV0 = d.canvasV0; b.canvasU1 = d.canvasU1; b.canvasV1 = d.canvasV1;
+        b.staticQuads = d.staticQuads;
+        return b;
+    }
+
     static final class Builder {
         String sprite, source, canvasTexture;
         Kind kind = Kind.WALL;
@@ -236,6 +285,10 @@ public final class FlagDef {
         Facing facing = Facing.S;
         float clothX, clothY, clothW, clothH, inset;
         boolean drape, free, confine;
+        String runId;
+        RunRole runRole;
+        int runNextX, runNextY, runCellsPerTile = 5;
+        FlagDef clothDef;
         String groupId;
         int groupDx, groupDy;
         float[] topCurve;
@@ -303,6 +356,18 @@ public final class FlagDef {
                     for (int i = 2; i < topCurve.length; i += 2) {
                         if (!(topCurve[i] > topCurve[i - 2])) throw new IllegalArgumentException(sprite + ": topCurve x must increase");
                     }
+                }
+                if (runId != null) {
+                    if (runId.isBlank()) throw new IllegalArgumentException(sprite + ": run id must not be blank");
+                    if (runRole == null) throw new IllegalArgumentException(sprite + ": run needs a \"role\": start, middle or end");
+                    if (groupId != null) throw new IllegalArgumentException(sprite + ": a tile is in a run or a group, not both");
+                    if (topCurve != null) throw new IllegalArgumentException(sprite + ": a run needs a straight top edge (no topCurve)");
+                    if (curtain || drape) throw new IllegalArgumentException(sprite + ": a run is a plain wall cloth");
+                    // screen-rightward only, so the run's cloth grows to the right of its start tile
+                    boolean ok = facing.alongX() ? runNextX == 1 && runNextY == 0 : runNextX == 0 && runNextY == -1;
+                    if (!ok) throw new IllegalArgumentException(sprite + ": run \"next\" must be " + (facing.alongX() ? "[1, 0]" : "[0, -1]")
+                            + " for facing " + facing + " (start = the screen-left end)");
+                    if (runCellsPerTile < 1 || runCellsPerTile > 16) throw new IllegalArgumentException(sprite + ": run cellsPerTile 1..16");
                 }
                 if (confine && topCurve != null) throw new IllegalArgumentException(sprite + ": \"confine\" needs a straight top edge (no topCurve)");
                 if (groupId != null && groupId.isBlank()) throw new IllegalArgumentException(sprite + ": group id must not be blank");

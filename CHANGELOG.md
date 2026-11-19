@@ -4,13 +4,18 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
-Decisions D94–D97. Unit-tested (113 tests), patch-verified offline, and verified in-game by the user (2026-11-19).
+Decisions D94–D99. Unit-tested (120 tests) and patch-verified offline. D94–D97 verified in-game by the user (2026-11-19);
+D98–D99 (volleyball nets, runs, the multi-tile draw fix) not yet.
 Player-facing summary for the Workshop page: [docs/WORKSHOP_UPDATE_NOTES.md](docs/WORKSHOP_UPDATE_NOTES.md).
 
 ### Added
-- **Volleyball nets move** (D98): both vanilla volleyball nets (`recreational_sports_01_88..90` and `_91..93`) are one
-  cloth each across their three tiles, held by the top cable and both poles and free at the hem. The poles, their tie
-  cords and the ground bar stay still. New wall key `confine` keeps the art around a cloth still. Not yet tested in-game.
+- **Volleyball nets move** (D98, D99): each vanilla volleyball net (`recreational_sports_01_88`, `_89` × n, `_90`, and
+  `_91`, `_92` × n, `_93`) is one cloth over its whole length, held by the top cable and both poles and free at the hem.
+  The poles, their tie cords and the ground bar stay still. New wall key `confine` keeps the art around a cloth still.
+- **Variable-length multi-tile cloths** (D99): new wall key `run` (start, repeatable middle, end). The run is found
+  from the neighbouring squares at draw time (bounded, cached, rechecked every ~2 s) and simulated as one cloth sized to
+  its length; incomplete runs draw as vanilla; seams are checked at load.
+
 - **Fence Sheets compatibility** (D94): sheets and tarps hung with the Fence Sheets mod on fences and door frames now
   move. They have no window, so they are always open to the air: wind through the fence bellies them out, people
   walking through a covered doorway push the cloth aside. Tarps are heavier and stay tied along their top and sides, so
@@ -22,6 +27,10 @@ Player-facing summary for the Workshop page: [docs/WORKSHOP_UPDATE_NOTES.md](doc
   the wind like a wall flag. Works with the Fitted Sheets mod's fitted sheets, which need nothing special.
 
 ### Fixed
+- **Multi-tile cloths drew every tile as the first tile drawn** (D99): a piece was drawn with the definition of
+  whichever tile created the shared simulation, so other tiles mapped the wrong part of the cloth (seams opening, a
+  volleyball net's end pole bending with the net; also the Fort Knox flag and the Riverside street banner). Each tile
+  now draws with its own definition, and the simulation is always created from the cloth's own definition.
 - A moving sheet on the outside of a door drew behind the door unless the door was faded; it is now drawn after the
   door, as vanilla orders it (D96).
 

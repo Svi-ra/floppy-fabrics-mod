@@ -1029,164 +1029,176 @@
       "sprite": "recreational_sports_01_88",
       "kind": "wall",
       "facing": "S",
-      "comment": "Volleyball net over 3 tiles running east (_88 west pole, _89 middle, _90 east pole), on the middle line of its squares: one 2.6 m x 0.9 m net shared by its tiles (D87), held by its top cable and both poles. confine keeps the poles, cords and ground bar still (D98). Cloth in the _88 frame.",
-      "group": {
+      "comment": "Volleyball net running east: _88 (west pole), any number of _89, _90 (east pole), on the middle line of its squares. One cloth for the whole run, found at draw time (D99); held by its top cable and both poles; confine keeps the poles, cords and ground bar still (D98). Each role gives only its own tile's part of the net; mass is per tile.",
+      "run": {
         "id": "volleyball_net_s",
-        "offset": [0, 0]
+        "role": "start",
+        "next": [1, 0],
+        "cellsPerTile": 5
       },
       "inset": 0.5,
       "confine": true,
       "cloth": {
         "x": 49,
-        "y": 56,
-        "w": 164,
+        "y": 56.5,
+        "w": 47,
         "h": 70
       },
       "physics": {
-        "grid": [16, 6],
-        "lodGrid": [8, 4],
-        "mass": 0.8,
+        "grid": [5, 6],
+        "lodGrid": [3, 4],
+        "mass": 0.3,
         "drag": 0.35,
         "pin": "top_sides",
         "stiffness": [1.0, 0.8, 0.02]
       },
-      "mesh": [18, 6],
+      "mesh": [8, 6],
       "exposure": 1.0
     },
     {
       "sprite": "recreational_sports_01_89",
       "kind": "wall",
       "facing": "S",
-      "group": {
+      "run": {
         "id": "volleyball_net_s",
-        "offset": [1, 0]
+        "role": "middle",
+        "next": [1, 0],
+        "cellsPerTile": 5
       },
       "inset": 0.5,
       "confine": true,
       "cloth": {
-        "x": 49,
-        "y": 56,
-        "w": 164,
+        "x": 32,
+        "y": 48,
+        "w": 64,
         "h": 70
       },
       "physics": {
-        "grid": [16, 6],
-        "lodGrid": [8, 4],
-        "mass": 0.8,
+        "grid": [5, 6],
+        "lodGrid": [3, 4],
+        "mass": 0.3,
         "drag": 0.35,
         "pin": "top_sides",
         "stiffness": [1.0, 0.8, 0.02]
       },
-      "mesh": [18, 6],
+      "mesh": [8, 6],
       "exposure": 1.0
     },
     {
       "sprite": "recreational_sports_01_90",
       "kind": "wall",
       "facing": "S",
-      "group": {
+      "run": {
         "id": "volleyball_net_s",
-        "offset": [2, 0]
+        "role": "end",
+        "next": [1, 0],
+        "cellsPerTile": 5
       },
       "inset": 0.5,
       "confine": true,
       "cloth": {
-        "x": 49,
-        "y": 56,
-        "w": 164,
+        "x": 32,
+        "y": 48,
+        "w": 53,
         "h": 70
       },
       "physics": {
-        "grid": [16, 6],
-        "lodGrid": [8, 4],
-        "mass": 0.8,
+        "grid": [5, 6],
+        "lodGrid": [3, 4],
+        "mass": 0.3,
         "drag": 0.35,
         "pin": "top_sides",
         "stiffness": [1.0, 0.8, 0.02]
       },
-      "mesh": [18, 6],
+      "mesh": [8, 6],
       "exposure": 1.0
     },
     {
       "sprite": "recreational_sports_01_91",
       "kind": "wall",
       "facing": "E",
-      "comment": "Volleyball net over 3 tiles running north (_91 south pole, _92 middle, _93 north pole); mirror of _88.._90. Cloth in the _91 frame.",
-      "group": {
+      "comment": "Volleyball net running north: _91 (south pole), any number of _92, _93 (north pole); the _88.._90 art mirrored (x' = 125 - x).",
+      "run": {
         "id": "volleyball_net_e",
-        "offset": [0, 0]
+        "role": "start",
+        "next": [0, -1],
+        "cellsPerTile": 5
       },
       "inset": 0.5,
       "confine": true,
       "cloth": {
         "x": 40,
-        "y": 74,
-        "w": 164,
+        "y": 74.5,
+        "w": 53,
         "h": 70
       },
       "physics": {
-        "grid": [16, 6],
-        "lodGrid": [8, 4],
-        "mass": 0.8,
+        "grid": [5, 6],
+        "lodGrid": [3, 4],
+        "mass": 0.3,
         "drag": 0.35,
         "pin": "top_sides",
         "stiffness": [1.0, 0.8, 0.02]
       },
-      "mesh": [18, 6],
+      "mesh": [8, 6],
       "exposure": 1.0
     },
     {
       "sprite": "recreational_sports_01_92",
       "kind": "wall",
       "facing": "E",
-      "group": {
+      "run": {
         "id": "volleyball_net_e",
-        "offset": [0, -1]
+        "role": "middle",
+        "next": [0, -1],
+        "cellsPerTile": 5
       },
       "inset": 0.5,
       "confine": true,
       "cloth": {
-        "x": 40,
-        "y": 74,
-        "w": 164,
+        "x": 29,
+        "y": 80,
+        "w": 64,
         "h": 70
       },
       "physics": {
-        "grid": [16, 6],
-        "lodGrid": [8, 4],
-        "mass": 0.8,
+        "grid": [5, 6],
+        "lodGrid": [3, 4],
+        "mass": 0.3,
         "drag": 0.35,
         "pin": "top_sides",
         "stiffness": [1.0, 0.8, 0.02]
       },
-      "mesh": [18, 6],
+      "mesh": [8, 6],
       "exposure": 1.0
     },
     {
       "sprite": "recreational_sports_01_93",
       "kind": "wall",
       "facing": "E",
-      "group": {
+      "run": {
         "id": "volleyball_net_e",
-        "offset": [0, -2]
+        "role": "end",
+        "next": [0, -1],
+        "cellsPerTile": 5
       },
       "inset": 0.5,
       "confine": true,
       "cloth": {
-        "x": 40,
-        "y": 74,
-        "w": 164,
+        "x": 29,
+        "y": 80,
+        "w": 47,
         "h": 70
       },
       "physics": {
-        "grid": [16, 6],
-        "lodGrid": [8, 4],
-        "mass": 0.8,
+        "grid": [5, 6],
+        "lodGrid": [3, 4],
+        "mass": 0.3,
         "drag": 0.35,
         "pin": "top_sides",
         "stiffness": [1.0, 0.8, 0.02]
       },
-      "mesh": [18, 6],
+      "mesh": [8, 6],
       "exposure": 1.0
     }
   ]

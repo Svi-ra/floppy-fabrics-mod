@@ -31,7 +31,8 @@ import zombie.iso.weather.fx.WeatherFxMask;
  * Allocation-free per frame; main thread only.
  */
 final class SpriteMesh {
-    private static final int MAX_V = 33 * 33;
+    /** Vertex capacity: a 33×33 mesh, or a confined run piece's columns × rows (D99). */
+    private static final int MAX_V = 72 * 40;
 
     private static final TextureDraw scratch = new TextureDraw();
     private static final QuadModifier quad = new QuadModifier();
@@ -170,7 +171,7 @@ final class SpriteMesh {
 
     private static final float[] fieldOut = new float[3];
     /** Wall mesh column positions (fraction of the quad width); drapes insert the cloth's own edges (D82). */
-    private static final float[] colS = new float[34];
+    private static final float[] colS = new float[72];
 
     private static void capture() {
         cx[0] = scratch.x0; cx[1] = scratch.x1; cx[2] = scratch.x2; cx[3] = scratch.x3;
@@ -216,7 +217,9 @@ final class SpriteMesh {
         boolean confine = def.drape || rowsConfined;
         float clothL = tlx, clothR = tlx + def.clothW * frameK;
         if (confine) {
-            mc = drapeColumns(mc, clothL, clothR);
+            // a confined cloth may span many tiles (a run, D99): its mesh columns are per tile of cloth, not per cloth
+            int inner = rowsConfined ? Math.max(1, Math.round(mc * clothWpx / (64f * frameK))) : mc;
+            mc = drapeColumns(inner, clothL, clothR);
             if (mc < 0) return false;
         } else {
             for (int i = 0; i <= mc; i++) colS[i] = (float) i / mc;
@@ -318,14 +321,19 @@ final class SpriteMesh {
     private static int drapeColumns(int inner, float clothL, float clothR) {
         float q0 = cx[0], q1 = cx[1], qw = q1 - q0;
         if (!(qw > 0f)) return -1;
+        float l = (clothL - q0) / qw, r = (clothR - q0) / qw;
+        if (!(r > l) || inner < 1 || inner > 4096) return -1;
+        float step = (r - l) / inner;
+        // only the steps inside the quad (a run piece sees a slice of a long cloth)
+        int i0 = Math.max(0, (int) Math.ceil(-l / step)), i1 = Math.min(inner, (int) Math.floor((1f - l) / step));
         int n = 0;
         colS[n++] = 0f;
-        float l = (clothL - q0) / qw, r = (clothR - q0) / qw;
-        if (!(r > l)) return -1;
-        inner = Math.max(1, Math.min(inner, colS.length - 4));
-        for (int i = 0; i <= inner; i++) {
-            float s = l + (r - l) * i / inner;
-            if (s > colS[n - 1] + 1e-4f && s < 1f - 1e-4f) colS[n++] = s;
+        for (int i = i0; i <= i1; i++) {
+            float s = l + step * i;
+            if (s > colS[n - 1] + 1e-4f && s < 1f - 1e-4f) {
+                if (n >= colS.length - 1) return -1;
+                colS[n++] = s;
+            }
         }
         colS[n++] = 1f;
         return n - 1;

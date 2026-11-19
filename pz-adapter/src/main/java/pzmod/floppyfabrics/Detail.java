@@ -45,6 +45,7 @@ final class Detail {
         CurtainLight.removeAll();
         Prototypes.clear();
         Instances.clear();
+        Runs.clearCaches();
         Decorations.clear();
         FloppyFabrics.log("simulation detail " + p + "x");
         return true;

@@ -1006,5 +1006,51 @@ column; `tileGeometry.txt` (all six `Translucent`; `_88`'s box spans x ±0.8 m a
   and the still line holds only transparent texels and stretches with the hem. Rows of zero rest height (where the top
   edge meets the quad edge) are skipped. Not combinable with `topCurve`. Checked by drawing the layout over the six
   sprites: only net vertices move; the poles, cords and ground bar (y ≥ 200; hem + gap ≤ 161) are in still cells.
-Unit-tested (grouping, pins, still poles and bar by the measured pixels; `confine` parsing). **Not yet tested in-game.**
+Unit-tested (grouping, pins, still poles and bar by the measured pixels; `confine` parsing). The fixed 3-tile grouping
+was wrong for the map's nets and is superseded by D99; `confine` and the measurements stand.
+
+**D99 · Variable-length runs; every tile draws its own piece (in-game report 2026-11-20).**
+Report (screenshot): a net did not read as one object — a seam after its first tile and a separate bulge per tile — and
+its right pole bent with the net while its foot stayed put. Two causes:
+- **The map repeats the middle sprite.** The screenshot's net is six tiles (ground bar and pole spacing at the image's
+  zoom: `_88`, `_89` × 4, `_90`). With fixed offsets (D98) each `_89` derived a different anchor square (its square − 1),
+  so the net split into up to four unrelated simulations.
+- **A D87 bug: tiles were drawn with the creator's definition.** `Hooks.simulateAndDraw` passed `inst.def` to
+  `SpriteMesh.draw` — the definition of whichever tile created the shared instance — so every other tile mapped its
+  pixels through that tile's offset. `_90` drawn with `_89`'s offset (1 instead of 2) put the cloth one tile right,
+  over its pole: the pole sat between a moving cloth column and the still quad edge, hence the bend. The same bug
+  affected the Fort Knox flag and the street banner (D87, never verified in-game). *Fix:* each tile draws with its own
+  definition; the shared instance is created from `FlagDef.clothDef` (the cloth's own definition), never from the
+  first-drawn piece.
+**Design (`Runs`):**
+- **Data:** a wall entry may carry `run {id, role: start|middle|end, next, cellsPerTile}`. Each role describes only its
+  own tile's part of the cloth, in its own frame. `next` must be screen-rightward ((1, 0) for S/N, (0, −1) for E/W) so
+  the run's cloth always grows right of its start tile. Not combinable with `group` or `topCurve`, not for curtains or
+  drapes (validated at parse).
+- **Load-time checks:** per run id: one start, at most one middle, one end; the same facing, line, `free`, `confine`
+  and `next`; heights within 1 px; and every seam (start→middle, middle→middle, middle→end, or start→end) meets: the
+  cloth's right edge equals the next tile's left edge shifted one square (±1 px), top edges meet (±1.5 px). A failing
+  run is logged once and its tiles draw as vanilla — bad third-party data cannot produce a torn or misplaced cloth.
+- **Draw-time discovery:** a tile walks its neighbours back to the start and forward to the end
+  (`Runs.find`, through a `Grid` lookup so it is unit-tested without the game). It accepts only exactly start, middle*,
+  end of the same run id and the current definitions, within 32 tiles (a hard bound on lookups); a gap, a foreign tile,
+  a reversed order, a missing end or an unloaded square give no run → vanilla. Two nets end to end stay two nets.
+- **Caching:** per object (weak keys), rechecked every 120 frames plus a per-object stagger, 30 after a failure, so
+  picking up or building a tile is noticed within ~2 s and the cost is a handful of square lookups per tile per 2 s.
+  Cleared with prototypes and instances on a detail change; rebuilt on every definitions load.
+- **One simulation:** a run of n tiles is drawn through n synthesized group pieces (D87) of group `id#n`, offsets
+  k·next, all carrying the whole cloth in the start tile's frame: width = end's right edge + 64·(n − 1) − start's left
+  edge; columns `cellsPerTile` per 64 px + 1 (3..64; far LOD half); mass per tile × tiles. The anchor is the start
+  square whichever tile is drawn first. Pieces are made once per (run, n), so all runs of a length share one prototype
+  (no re-settling), and the length is in the key, so a run that grows or shrinks gets a fresh simulation while the old
+  one is evicted when no longer drawn.
+- **Mesh:** a confined piece gets `mesh` columns **per tile of cloth** (only those inside its quad are generated), so
+  a long run stays as fine as a short one; vertex capacity raised to 72 × 40.
+- **Nets:** start `_88 {49, 56.5, 47, 70}`, middle `_89 {32, 48, 64, 70}`, end `_90 {32, 48, 53, 70}`; E mirror
+  `_91 {40, 74.5, 53}`, `_92 {29, 80, 64}`, `_93 {29, 80, 47}`; 5 columns per tile, 6 rows, 0.3 kg per tile.
+Tests (`RunsTest`): a six-tile net found identically from every tile (one group, one anchor, one cloth definition);
+each tile's own net maps to exactly its slice of [0, 1] with top edges on the cloth's top (the reported regression);
+end poles outside the cloth; width, columns and mass scale with n; north-running E net; incomplete, reversed, mixed,
+adjacent and over-long runs; load rejection of a bad seam and duplicate roles. 120 tests pass, `verifyPatches` applies
+all advices. **Not yet tested in-game.**
 

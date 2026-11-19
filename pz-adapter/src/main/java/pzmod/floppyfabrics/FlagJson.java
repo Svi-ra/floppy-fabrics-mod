@@ -100,6 +100,26 @@ public final class FlagJson {
                     b.groupDy = (int) off[1];
                 }
             }
+            Map<String, Object> run = map(e, "run");
+            if (run != null) { // one tile role of a variable-length run (D99)
+                b.runId = str(run, "id", null);
+                if (b.runId == null) throw new IllegalArgumentException(b.sprite + ": run needs an \"id\"");
+                String role = str(run, "role", null);
+                if (role == null) throw new IllegalArgumentException(b.sprite + ": run needs a \"role\": start, middle or end");
+                try {
+                    b.runRole = FlagDef.RunRole.valueOf(role.trim().toUpperCase(Locale.ROOT));
+                } catch (IllegalArgumentException ex) {
+                    throw new IllegalArgumentException(b.sprite + ": run role must be start, middle or end, got '" + role + "'");
+                }
+                float[] next = nums(run, "next", 2);
+                if (next == null) throw new IllegalArgumentException(b.sprite + ": run needs \"next\" [dx, dy]");
+                if (next[0] != Math.rint(next[0]) || next[1] != Math.rint(next[1])) throw new IllegalArgumentException(b.sprite + ": run next must be whole squares");
+                b.runNextX = (int) next[0];
+                b.runNextY = (int) next[1];
+                float cells = num(run, "cellsPerTile", 5f);
+                if (cells != Math.rint(cells)) throw new IllegalArgumentException(b.sprite + ": run cellsPerTile must be a whole number");
+                b.runCellsPerTile = (int) cells;
+            }
             b.topCurve = pointList(e, "topCurve", b.sprite);
             if ((b.inset > 0f || b.free) && !b.drape) { // free-hanging: no wall plane to keep the cloth in front of (D77)
                 b.profile = b.profile.toBuilder().clampToAnchorPlane(false).build();

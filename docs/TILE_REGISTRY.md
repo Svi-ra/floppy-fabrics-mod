@@ -282,16 +282,16 @@ Notes:
 
 | Preview | Sprite | Name | Kind | Facing | Group | Config | Role |
 |---|---|---|---|---|---|---|---|
-| <img src="registry/previews/recreational_sports_01_88.png" width="48" alt="recreational_sports_01_88"> | `recreational_sports_01_88` | Volleyball net, 3-tile cloth (west pole), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
-| <img src="registry/previews/recreational_sports_01_89.png" width="48" alt="recreational_sports_01_89"> | `recreational_sports_01_89` | Volleyball net, 3-tile cloth (middle), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
-| <img src="registry/previews/recreational_sports_01_90.png" width="48" alt="recreational_sports_01_90"> | `recreational_sports_01_90` | Volleyball net, 3-tile cloth (east pole), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
-| <img src="registry/previews/recreational_sports_01_91.png" width="48" alt="recreational_sports_01_91"> | `recreational_sports_01_91` | Volleyball net, 3-tile cloth (south pole), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
-| <img src="registry/previews/recreational_sports_01_92.png" width="48" alt="recreational_sports_01_92"> | `recreational_sports_01_92` | Volleyball net, 3-tile cloth (middle), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
-| <img src="registry/previews/recreational_sports_01_93.png" width="48" alt="recreational_sports_01_93"> | `recreational_sports_01_93` | Volleyball net, 3-tile cloth (north pole), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_88.png" width="48" alt="recreational_sports_01_88"> | `recreational_sports_01_88` | Volleyball net, run of tiles (west pole), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_89.png" width="48" alt="recreational_sports_01_89"> | `recreational_sports_01_89` | Volleyball net, run of tiles (middle, repeats), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_90.png" width="48" alt="recreational_sports_01_90"> | `recreational_sports_01_90` | Volleyball net, run of tiles (east pole), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_91.png" width="48" alt="recreational_sports_01_91"> | `recreational_sports_01_91` | Volleyball net, run of tiles (south pole), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_92.png" width="48" alt="recreational_sports_01_92"> | `recreational_sports_01_92` | Volleyball net, run of tiles (middle, repeats), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_93.png" width="48" alt="recreational_sports_01_93"> | `recreational_sports_01_93` | Volleyball net, run of tiles (north pole), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
 
 Notes:
-- `recreational_sports_01_88`: Volleyball net over 3 tiles running east (_88 west pole, _89 middle, _90 east pole), on the middle line of its squares: one 2.6 m x 0.9 m net shared by its tiles (D87), held by its top cable and both poles. confine keeps the poles, cords and ground bar still (D98). Cloth in the _88 frame.
-- `recreational_sports_01_91`: Volleyball net over 3 tiles running north (_91 south pole, _92 middle, _93 north pole); mirror of _88.._90. Cloth in the _91 frame.
+- `recreational_sports_01_88`: Volleyball net running east: _88 (west pole), any number of _89, _90 (east pole), on the middle line of its squares. One cloth for the whole run, found at draw time (D99); held by its top cable and both poles; confine keeps the poles, cords and ground bar still (D98). Each role gives only its own tile's part of the net; mass is per tile.
+- `recreational_sports_01_91`: Volleyball net running north: _91 (south pole), any number of _92, _93 (north pole); the _88.._90 art mirrored (x' = 125 - x).
 
 ## Pole flag
 

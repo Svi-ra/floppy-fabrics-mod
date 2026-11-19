@@ -186,6 +186,10 @@ public final class Hooks {
         IsoObject obj = ctxObj;
         if (!FloppyFabrics.active() || !FloppyFabrics.useMesh || obj == null) return false;
         try {
+            if (def.isRunRole()) { // a tile of a variable-length run: draw its piece of the run found around it (D99)
+                def = Runs.piece(obj, def, IsoWorld.instance.getFrameNo());
+                if (def == null) return false; // not a complete run (yet): vanilla
+            }
             if (FloppyFabrics.injectFailure) {
                 FloppyFabrics.injectFailure = false;
                 throw new IllegalStateException("injected test failure (FloppyFabrics_testFailure)");
@@ -261,13 +265,13 @@ public final class Hooks {
                 TextureDraw.nextZ = nz;
                 TextureDraw.nextChunkDepth = ncd;
                 SpriteMesh.setOffset(((k % 8) - 3.5f) * 120f, ((k / 8) - 3f) * 110f);
-                simulateAndDraw(gi, null, frame, dt, exposure, live && bodies, distance, lodMetric, true, tex, x, y, w, h, r, g, b, a, modifier);
+                simulateAndDraw(gi, def, null, frame, dt, exposure, live && bodies, distance, lodMetric, true, tex, x, y, w, h, r, g, b, a, modifier);
             }
             SpriteMesh.setOffset(0f, 0f);
             TextureDraw.nextZ = nz;
             TextureDraw.nextChunkDepth = ncd;
 
-            boolean drew = simulateAndDraw(inst, obj, frame, dt, exposure, live && bodies, distance, lodMetric, false, tex, x, y, w, h, r, g, b, a, modifier);
+            boolean drew = simulateAndDraw(inst, def, obj, frame, dt, exposure, live && bodies, distance, lodMetric, false, tex, x, y, w, h, r, g, b, a, modifier);
             if (!drew) { // vanilla draws its own quad and needs the depth statics it set
                 TextureDraw.nextZ = nz;
                 TextureDraw.nextChunkDepth = ncd;
@@ -293,7 +297,7 @@ public final class Hooks {
      * @param live false for a curtain whose window has closed: it only settles (no bodies; its wind is already 0)
      * @return true if we drew; false = let vanilla draw its quad (only for the real flag, never for ghosts)
      */
-    private static boolean simulateAndDraw(FlagInstance inst, IsoObject obj, int frame, float dt, float exposure,
+    private static boolean simulateAndDraw(FlagInstance inst, FlagDef def, IsoObject obj, int frame, float dt, float exposure,
                                            boolean live, float distance, float lodMetric, boolean ghost, Texture tex, float x, float y,
                                            float w, float h, float r, float g, float b, float a,
                                            Consumer<TextureDraw> modifier) {
@@ -331,7 +335,9 @@ public final class Hooks {
             return false;
         }
         inst.project(frame, Core.tileScale);
-        return SpriteMesh.draw(inst.def, inst, tex, x, y, w, h, r, g, b, a, modifier);
+        // the tile's own definition: a piece of a multi-tile cloth is drawn through its own offset into the shared
+        // simulation (inst.def is the cloth's, D87/D99)
+        return SpriteMesh.draw(def, inst, tex, x, y, w, h, r, g, b, a, modifier);
     }
 
     /** Planar distance from the camera character in tiles, plus 2 tiles per level of height difference. */

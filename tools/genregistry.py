@@ -29,6 +29,7 @@ def describe(e, fname):
     s, kind, face = e["sprite"], e["kind"], e.get("facing")
     ts, i = split(s)
     g = e.get("group")
+    run = e.get("run")
     cat, role, name, notes = None, "primary", None, e.get("comment", "")
     if kind == "pole":
         cat, name = "pole flag", "American flag pole, upper tile (replaced furled cloth)"
@@ -47,9 +48,8 @@ def describe(e, fname):
         elif "knox" in ts:
             cat, name = "wall flag", f"Fort Knox flag, 3-tile cloth, {FACE[face]}"
         elif ts == "recreational_sports_01":
-            pos = ["west pole", "middle", "east pole"] if face == "S" else ["south pole", "middle", "north pole"]
-            k = abs(g["offset"][0] or g["offset"][1])
-            cat, name = "net", f"Volleyball net, 3-tile cloth ({pos[k]}), {FACE[face]}"
+            pos = {"start": "west pole", "middle": "middle, repeats", "end": "east pole"} if face == "S" else                 {"start": "south pole", "middle": "middle, repeats", "end": "north pole"}
+            cat, name = "net", f"Volleyball net, run of tiles ({pos[run['role']]}), {FACE[face]}"
         elif ts == "signs_one-off_09":
             if i <= 327:
                 cat, name = "banner", f"Riverside street banner segment {g['offset'] and (-g['offset'][1] if g['offset'][1] else g['offset'][0]) + 1}/16, {FACE[face]}"
@@ -73,7 +73,7 @@ def describe(e, fname):
     elif kind == "drape":
         cat, name = "drape", f"Church altar cloth, {FACE[face]}"
     return dict(sprite=s, tileset=ts, index=i, name=name, category=cat, kind=kind,
-                facing=face, config=fname, group=(g["id"] if g else None), role=role, notes=notes)
+                facing=face, config=fname, group=(g["id"] if g else run["id"] if run else None), role=role, notes=notes)
 
 
 tiles = []

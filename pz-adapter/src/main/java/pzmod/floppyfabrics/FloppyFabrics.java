@@ -139,7 +139,7 @@ public final class FloppyFabrics {
         long fallbackFlip, fallbackState, fallbackNotReady, fallbackColors, fallbackPath, fallbackCanvas, fallbackStatic;
         long frameContexts;
         long depthBiased;
-        long created, evicted, lodSwitches;
+        long created, evicted, lodSwitches, runChanges;
         long blockedEvents, unblockedEvents, blockedBySpriteEstimate, sceneryBoxes;
         long doorSheets, curtainLayer, curtainClosedDraws, curtainRebakes, windowEvents, sheetModelsSuppressed;
         long lightsCreated, lightsRemoved, lightUpdates;

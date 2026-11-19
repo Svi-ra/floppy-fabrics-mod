@@ -142,6 +142,8 @@ public final class FlagRegistry {
                         + " — its tiles will not share a simulation");
             }
         }
+        // variable-length runs (D99): roles checked once here, runs found at draw time
+        for (String err : Runs.rebuild(byName.values())) FloppyFabrics.warn(err);
         bySprite.clear();
         return parsed.flags().size();
     }

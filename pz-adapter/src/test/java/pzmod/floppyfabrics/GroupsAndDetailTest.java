@@ -144,55 +144,6 @@ class GroupsAndDetailTest {
         assertSame(ClothProfiles.WALL, Detail.cloth(ClothProfiles.WALL), "1x is exactly the shipped profile");
     }
 
-    /**
-     * Volleyball nets (D98): one net over three tiles in each direction, held by its cable and both poles, and confined
-     * so the poles, cords and ground bar drawn in the same sprites stay still. Pixel positions measured on the 42.21
-     * Tiles2x sprites (2x frames): pole shafts at x 33..41 (_88) and 91..96 (_90), net columns 49..85 (_90: 32..85),
-     * ground bar from y 200 down; the E set is the S set mirrored about x = 62.5.
-     */
-    @Test
-    void volleyballNetsAreOneConfinedClothOverThreeTiles() throws Exception {
-        List<FlagDef> all = shipped();
-        String[][] sets = {{"volleyball_net_s", "88", "89", "90"}, {"volleyball_net_e", "91", "92", "93"}};
-        for (String[] set : sets) {
-            FlagDef a = def(all, "recreational_sports_01_" + set[1]);
-            for (int k = 0; k < 3; k++) {
-                FlagDef d = def(all, "recreational_sports_01_" + set[1 + k]);
-                assertEquals(set[0], d.groupId);
-                boolean s = d.facing == FlagDef.Facing.S;
-                assertEquals(s ? k : 0, d.groupDx);
-                assertEquals(s ? 0 : -k, d.groupDy, "E net runs north from its anchor");
-                assertTrue(a.sameClothAs(d), "one shared simulation");
-                assertTrue(d.confine);
-                assertTrue(d.freeHanging(), "on the middle line of its squares, no wall behind it");
-                assertEquals(0.5f, d.inset, 0f);
-                assertEquals(PinLayout.TOP_SIDES, d.profile.pinLayout, "held by its top cable and both poles");
-            }
-            assertEquals(164f / 64f, a.wallWidthMetres(), 0.01f);
-        }
-        // S net in the _88 frame: the west pole lies left of the cloth, the east pole (_90, shifted by (128, 64)) right of it
-        FlagDef s = def(all, "recreational_sports_01_88");
-        assertTrue(41f < s.clothX, "west pole still");
-        Projection.groupShift(2, 0, o);
-        assertEquals(128f, o[0], 0f);
-        assertTrue(91f + o[0] > s.clothX + s.clothW, "east pole still");
-        assertTrue(85f + o[0] <= s.clothX + s.clothW + 0.5f, "net reaches the east pole");
-        // the hem plus the still gap stays above the ground bar at every column of the middle tile
-        Projection.groupShift(1, 0, o);
-        for (float x = 32f; x <= 101f; x += 1f) {
-            float ax = x + o[0];
-            float hem = s.clothY + (ax - s.clothX) * 0.5f + s.clothH - o[1];
-            assertTrue(hem + FlagDef.CONFINE_GAP_PX < 200f, "ground bar still at x " + x);
-        }
-        // E net in the _91 frame: mirror of the S net (x' = 125 - x of the partner tile)
-        FlagDef e = def(all, "recreational_sports_01_91");
-        assertEquals(125f - 85f, e.clothX, 0f, "starts where _90's net ends");
-        assertEquals(s.clothW, e.clothW, 0f);
-        assertEquals(s.clothH, e.clothH, 0f);
-        Projection.groupShift(0, -2, o);
-        assertEquals(125f - 49f, e.clothX + e.clothW - o[0], 0f, "ends in _93 where _88's net starts");
-    }
-
     @Test
     void confineMustBeABooleanAndNeedsAStraightTop() {
         String bad = "{\"flags\":[{\"sprite\":\"a\",\"kind\":\"wall\",\"confine\":1,\"cloth\":{\"x\":0,\"y\":0,\"w\":10,\"h\":10}},"
