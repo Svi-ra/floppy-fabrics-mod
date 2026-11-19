@@ -1055,3 +1055,23 @@ adjacent and over-long runs; load rejection of a bad seam and duplicate roles. 1
 all advices. **Verified in-game by the user (2026-11-20):** the volleyball net moves as one piece, poles still. The Fort
 Knox flag and the street banner (same draw fix) not yet re-checked.
 
+## Car-wash entrance covers (2026-11-20)
+
+Request: cloth simulation for the car-wash entrance covers `location_business_machinery_01_36` and `_37`.
+Evidence: both sprites extracted from Tiles2x.pack (42.21) with `tools/flagtool.py extract` and classified column by
+column (rail grey, strips yellow); `tileGeometry.txt` (each a thin vertical slab through the square's centre, rotated
+for its facing, rail box ~2.2 m up); `newtiledefinitions.tiles` (only `Material = Fabric`, `AluminumScrap`, `CanScrap`:
+not solid, so vehicles and people drive and walk through it).
+
+**D100 · A car-wash entrance cover is a free-hanging curtain under its rail.**
+- `_36` faces S (top edge slopes down to the right), `_37` faces E; the art is the same strip curtain mirrored. Five
+  vertical strips hang from a grey rail across the middle of the square with a short mount post on top: the same
+  geometry as the hospital and theatre curtains (D77), so `inset` 0.5 and the `curtain` profile.
+- Cloth from the strips' first to last column, starting directly under the rail: S `{32, 34, 64, 159}`, E
+  `{30, 65, 64, 158}`. The rail's lowest row lies one pixel above the top edge in every column and the mount post ends
+  above it, so both stay still; `h` reaches the longest strip end (the strips hang unevenly, ±3 px). Checked by drawing
+  the parallelograms over the sprites.
+- The strips move as one cloth (the gaps between them stay as drawn); being free-hanging, it is pushed from both sides
+  by people, zombies and vehicles passing through, and feels the wind on outside squares (exposure 0.35).
+Unit tests unchanged in substance (`FlagsJsonTest` counts 62 entries); 120 tests pass. **Not yet verified in-game.**
+

@@ -10,7 +10,7 @@ hanging coat do not move alike), and the mod is built so new kinds of fabric are
 - **Flags:** wall flags, the American Flag pole flag (a shipped canvas that turns with the wind and droops when calm),
   the Fort Knox flags and the white bar banner. Multi-tile flags are one cloth across their tiles.
 - **Curtains:** window curtains and player-hung sheets (they move while the window is open or broken; sheets on doors while they face the outdoors, and any sheet hung on the outside of a window — also the Fitted Sheets mod's), hospital
-  privacy curtains and theatre stage curtains (they hang free across the middle of their square and can be pushed from
+  privacy curtains, theatre stage curtains and car-wash entrance covers (they hang free across the middle of their square and can be pushed from
   either side).
 - **Banners and cloths:** church banners, the Riverside street banner (16 tiles, hung from a sagging cable) and the
   banners on its light poles, altar cloths.

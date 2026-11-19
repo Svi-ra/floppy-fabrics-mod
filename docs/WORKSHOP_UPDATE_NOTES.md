@@ -11,6 +11,7 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
 ## Pending (next upload)
 
 **New**
+- **Car-wash entrance covers** now swing aside when you drive or walk through them, and sway in the wind outdoors.
 - **Volleyball nets** now sway in the wind and give when you walk into them. Each net moves as one piece across its
   whole length, however long the map made it; the poles stay put.
 - Compatibility with **Fence Sheets**: sheets and tarps hung on fences and empty door frames now move. Wind through the

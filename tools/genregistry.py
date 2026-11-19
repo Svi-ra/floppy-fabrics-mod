@@ -45,6 +45,8 @@ def describe(e, fname):
             name = f"Hospital privacy curtain ({'white' if i >= 144 else 'blue'}), {FACE[face]}"
         elif "theatre" in ts:
             cat, name = "curtain", f"Theatre stage curtain, {FACE[face]}"
+        elif ts == "location_business_machinery_01":
+            cat, name = "curtain", f"Car-wash entrance strip cover, {FACE[face]}"
         elif "knox" in ts:
             cat, name = "wall flag", f"Fort Knox flag, 3-tile cloth, {FACE[face]}"
         elif ts == "recreational_sports_01":

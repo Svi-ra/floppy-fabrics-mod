@@ -25,13 +25,13 @@ Previews (`registry/previews/<sprite>.png`, full 128x256 2x tile frames) are ext
 
 ## Summary
 
-178 sprites registered (176 configured entries, 2 reference/host tiles) plus pattern-based entries.
+180 sprites registered (178 configured entries, 2 reference/host tiles) plus pattern-based entries.
 
 | Category | Sprites |
 |---|---|
 | banner | 24 |
 | canopy | 84 |
-| curtain | 18 |
+| curtain | 20 |
 | drape | 4 |
 | net | 6 |
 | pole flag | 1 |
@@ -74,22 +74,12 @@ Notes:
 - `signs_one-off_09_312`: Riverside street banner: 16 tiles running north from _312 (each the next square north), hung from a sagging cable and lashed to a pole at each end (D87). One cloth; topCurve is its cable in the _312 frame.
 - `signs_one-off_09_336`: Riverside pole banner on a street light pole (lighting_outdoor_01_4): hangs from its top arm, tied down at its lower corners (D90). Works as its own object or as an attached sprite of the pole.
 
-## Drape
-
-| Preview | Sprite | Name | Kind | Facing | Group | Config | Role |
-|---|---|---|---|---|---|---|---|
-| <img src="registry/previews/location_community_church_small_01_40.png" width="48" alt="location_community_church_small_01_40"> | `location_community_church_small_01_40` | Church altar cloth, east-facing (lies along the west wall) | drape | E | — | decorations.json | primary |
-| <img src="registry/previews/location_community_church_small_01_41.png" width="48" alt="location_community_church_small_01_41"> | `location_community_church_small_01_41` | Church altar cloth, east-facing (lies along the west wall) | drape | E | — | decorations.json | primary |
-| <img src="registry/previews/location_community_church_small_01_42.png" width="48" alt="location_community_church_small_01_42"> | `location_community_church_small_01_42` | Church altar cloth, south-facing (lies along the north wall) | drape | S | — | decorations.json | primary |
-| <img src="registry/previews/location_community_church_small_01_43.png" width="48" alt="location_community_church_small_01_43"> | `location_community_church_small_01_43` | Church altar cloth, south-facing (lies along the north wall) | drape | S | — | decorations.json | primary |
-
-Notes:
-- `location_community_church_small_01_40`: Altar cloth hanging down the altar face; only the cloth columns move (D82).
-
 ## Curtain
 
 | Preview | Sprite | Name | Kind | Facing | Group | Config | Role |
 |---|---|---|---|---|---|---|---|
+| <img src="registry/previews/location_business_machinery_01_36.png" width="48" alt="location_business_machinery_01_36"> | `location_business_machinery_01_36` | Car-wash entrance strip cover, south-facing (lies along the north wall) | wall | S | — | flags.json | primary |
+| <img src="registry/previews/location_business_machinery_01_37.png" width="48" alt="location_business_machinery_01_37"> | `location_business_machinery_01_37` | Car-wash entrance strip cover, east-facing (lies along the west wall) | wall | E | — | flags.json | primary |
 | <img src="registry/previews/location_community_medical_01_41.png" width="48" alt="location_community_medical_01_41"> | `location_community_medical_01_41` | Hospital privacy curtain (blue), south-facing (lies along the north wall) | wall | S | — | flags.json | primary |
 | <img src="registry/previews/location_community_medical_01_42.png" width="48" alt="location_community_medical_01_42"> | `location_community_medical_01_42` | Hospital privacy curtain (blue), south-facing (lies along the north wall) | wall | S | — | flags.json | primary |
 | <img src="registry/previews/location_community_medical_01_43.png" width="48" alt="location_community_medical_01_43"> | `location_community_medical_01_43` | Hospital privacy curtain (blue), south-facing (lies along the north wall) | wall | S | — | flags.json | primary |
@@ -110,8 +100,21 @@ Notes:
 | <img src="registry/previews/location_entertainment_theatre_01_103.png" width="48" alt="location_entertainment_theatre_01_103"> | `location_entertainment_theatre_01_103` | Theatre stage curtain, east-facing (lies along the west wall) | wall | E | — | flags.json | primary |
 
 Notes:
+- `location_business_machinery_01_36`: Car-wash entrance covers: strips hanging from a rail across the middle of the square (inset 0.5, tileGeometry slab at the centre, rail ~2.2 m up). The cloth starts under the rail, so the rail and its mount stay still (D100).
 - `location_community_medical_01_41`: Hospital privacy curtains (blue 41-47; white 144-149 have the same shapes) hang from a rail across the middle of their square: inset 0.5. The cloth starts under the rail, so the rail stays still. Rails 40/44 have no cloth.
 - `location_entertainment_theatre_01_92`: Theatre stage curtains: same rail geometry as the hospital curtains (inset 0.5). Rods 95/100 have no cloth.
+
+## Drape
+
+| Preview | Sprite | Name | Kind | Facing | Group | Config | Role |
+|---|---|---|---|---|---|---|---|
+| <img src="registry/previews/location_community_church_small_01_40.png" width="48" alt="location_community_church_small_01_40"> | `location_community_church_small_01_40` | Church altar cloth, east-facing (lies along the west wall) | drape | E | — | decorations.json | primary |
+| <img src="registry/previews/location_community_church_small_01_41.png" width="48" alt="location_community_church_small_01_41"> | `location_community_church_small_01_41` | Church altar cloth, east-facing (lies along the west wall) | drape | E | — | decorations.json | primary |
+| <img src="registry/previews/location_community_church_small_01_42.png" width="48" alt="location_community_church_small_01_42"> | `location_community_church_small_01_42` | Church altar cloth, south-facing (lies along the north wall) | drape | S | — | decorations.json | primary |
+| <img src="registry/previews/location_community_church_small_01_43.png" width="48" alt="location_community_church_small_01_43"> | `location_community_church_small_01_43` | Church altar cloth, south-facing (lies along the north wall) | drape | S | — | decorations.json | primary |
+
+Notes:
+- `location_community_church_small_01_40`: Altar cloth hanging down the altar face; only the cloth columns move (D82).
 
 ## Wall flag
 

@@ -446,6 +446,35 @@
       "exposure": 0.35
     },
     {
+      "comment": "Car-wash entrance covers: strips hanging from a rail across the middle of the square (inset 0.5, tileGeometry slab at the centre, rail ~2.2 m up). The cloth starts under the rail, so the rail and its mount stay still (D100).",
+      "sprite": "location_business_machinery_01_36",
+      "kind": "wall",
+      "facing": "S",
+      "profile": "curtain",
+      "inset": 0.5,
+      "cloth": {
+        "x": 32,
+        "y": 34,
+        "w": 64,
+        "h": 159
+      },
+      "exposure": 0.35
+    },
+    {
+      "sprite": "location_business_machinery_01_37",
+      "kind": "wall",
+      "facing": "E",
+      "profile": "curtain",
+      "inset": 0.5,
+      "cloth": {
+        "x": 30,
+        "y": 65,
+        "w": 64,
+        "h": 158
+      },
+      "exposure": 0.35
+    },
+    {
       "sprite": "location_military_knox_01_8",
       "kind": "wall",
       "facing": "S",

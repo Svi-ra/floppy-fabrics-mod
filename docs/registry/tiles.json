@@ -51,6 +51,36 @@
    "state": "shipped"
   },
   {
+   "sprite": "location_business_machinery_01_36",
+   "tileset": "location_business_machinery_01",
+   "index": 36,
+   "name": "Car-wash entrance strip cover, south-facing (lies along the north wall)",
+   "category": "curtain",
+   "kind": "wall",
+   "facing": "S",
+   "config": "flags.json",
+   "group": null,
+   "role": "primary",
+   "notes": "Car-wash entrance covers: strips hanging from a rail across the middle of the square (inset 0.5, tileGeometry slab at the centre, rail ~2.2 m up). The cloth starts under the rail, so the rail and its mount stay still (D100).",
+   "source": "vanilla",
+   "state": "shipped"
+  },
+  {
+   "sprite": "location_business_machinery_01_37",
+   "tileset": "location_business_machinery_01",
+   "index": 37,
+   "name": "Car-wash entrance strip cover, east-facing (lies along the west wall)",
+   "category": "curtain",
+   "kind": "wall",
+   "facing": "E",
+   "config": "flags.json",
+   "group": null,
+   "role": "primary",
+   "notes": "",
+   "source": "vanilla",
+   "state": "shipped"
+  },
+  {
    "sprite": "location_community_church_small_01_40",
    "tileset": "location_community_church_small_01",
    "index": 40,
