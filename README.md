@@ -9,11 +9,13 @@ hanging coat do not move alike), and the mod is built so new kinds of fabric are
 **Fabrics covered today:**
 - **Flags:** wall flags, the American Flag pole flag (a shipped canvas that turns with the wind and droops when calm),
   the Fort Knox flags and the white bar banner. Multi-tile flags are one cloth across their tiles.
-- **Curtains:** window curtains and player-hung sheets (they move while the window is open or broken), hospital
+- **Curtains:** window curtains and player-hung sheets (they move while the window is open or broken; sheets on doors while they face the outdoors, and any sheet hung on the outside of a window — also the Fitted Sheets mod's), hospital
   privacy curtains and theatre stage curtains (they hang free across the middle of their square and can be pushed from
   either side).
 - **Banners and cloths:** church banners, the Riverside street banner (16 tiles, hung from a sagging cable) and the
   banners on its light poles, altar cloths.
+- **Fence and doorway covers** from the [Fence Sheets](https://steamcommunity.com/sharedfiles/filedetails/?id=3785740658)
+  mod: hung sheets sway and billow in the wind through the fence; tarps belly out between their tied sides.
 - **Strings, awnings and canopies:** bunting and string lights swing on their strings (the glow of lit bulbs follows
   them); awnings and market canopies billow and flap in strong wind while their valances flutter.
 
@@ -92,7 +94,7 @@ longer matches.
 | `pz-adapter/` | ZombieBuddy patches, renderer, wind, world interactions, instance manager, Lua debug API; 21 tests |
 | `mod/42/` | Mod template: `mod.info`, `media/floppyfabrics/flags.json` |
 | `tools/flagtool.py` | Extract sprites from `.pack` files; measure a wall flag for `flags.json` |
-| `docs/` | `FLAGS_JSON.md` (data reference) and the in-game test sheets for phases 2–4, 6 and 7 |
+| `docs/` | `FLAGS_JSON.md` (data reference), the in-game test sheets for phases 2–4, 6 and 7, and `WORKSHOP_UPDATE_NOTES.md` (player-facing notes pending for the next Workshop upload) |
 | `RECON.md`, `DECISIONS.md`, `CHANGELOG.md` | Engine reconnaissance with evidence, decision log, changelog |
 
 ---
@@ -114,6 +116,8 @@ longer matches.
 | `Texture.render(float×8, Consumer)` (enter, skip) | Replace the flag's single quad with cloth geometry |
 | `IsoSprite.startTileDepthShader` (enter) | Small toward-viewer depth bias for wall flags (they share the wall's depth preset) |
 | `UIManager.render` (exit) | Debug overlay |
+| `IsoDoor.render`, `IsoDoor.renderWallTile` (enter/exit) | Remember the door whose sheet sprite is drawn with no object (D95) |
+| `IsoDoor.renderCurtainModel` (enter, skip) | A door sheet open to the air is drawn as its 2D sprite so the cloth can bend it (D95) |
 
 ---
 

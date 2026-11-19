@@ -110,13 +110,19 @@ final class FlagInstance {
         FloppyFabrics.stats.lodSwitches++;
     }
 
+    /**
+     * Set per draw: a curtain on the outdoor face of its window (D97) feels the wind as a wall flag does, not through the
+     * window.
+     */
+    boolean openAir;
+
     /** Advances the cloth once per game frame. {@code exposure} already includes indoor = 0. */
     void update(int frameNo, float dt, float exposure) {
         if (frameNo == lastFrame) return;
         lastFrame = frameNo;
         float bx = WindProvider.x() * exposure, by = WindProvider.y() * exposure;
-        if (def.curtain && (bx != 0f || by != 0f)) { // only what comes through the window (D67)
-            Curtains.throughWindow(def.facing, bx, by, air);
+        if (def.curtain && (bx != 0f || by != 0f)) { // through the window (D67), or the open air outside it (D97)
+            Curtains.airOn(def.facing, openAir, bx, by, air);
             bx = air[0];
             by = air[1];
         }

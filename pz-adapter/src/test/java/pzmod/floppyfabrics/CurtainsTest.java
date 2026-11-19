@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import pzmod.floppyfabrics.cloth.AnchorFrame;
 import pzmod.floppyfabrics.cloth.Cloth;
+import pzmod.floppyfabrics.cloth.ClothProfiles;
+import pzmod.floppyfabrics.cloth.PinLayout;
 import pzmod.floppyfabrics.cloth.WindForce;
 
 /**
@@ -94,6 +96,20 @@ class CurtainsTest {
     }
 
     @Test
+    void aCurtainHungOutsideFeelsTheWindItself() {
+        // D97: no draft, no damping of the sideways component — the wind as on a wall flag
+        Curtains.airOn(FlagDef.Facing.S, true, 3f, -4f, o);
+        assertEquals(3f, o[0], 0f);
+        assertEquals(-4f, o[1], 0f);
+        // inside the window: the window model
+        float[] w = new float[2];
+        Curtains.throughWindow(FlagDef.Facing.S, 3f, -4f, w);
+        Curtains.airOn(FlagDef.Facing.S, false, 3f, -4f, o);
+        assertEquals(w[0], o[0], 0f);
+        assertEquals(w[1], o[1], 0f);
+    }
+
+    @Test
     void calmCurtainStaysExactlyOnItsReference() {
         for (FlagDef d : all()) {
             Cloth c = new Cloth(Prototypes.get(d, Prototypes.NEAR));
@@ -113,6 +129,83 @@ class CurtainsTest {
             // straight out of the room (no draft here: raw cloth physics): stays on the window plane, never through it
             float out = meanAlongNormal(d, -nx * 6f, -ny * 6f);
             assertTrue(out >= -1e-4f && out < 0.02f, d + " pressed flat: " + out);
+        }
+    }
+
+    // ---- Fence Sheets covers (D94); trims measured from FenceSheets.pack v1.4.2 with tools/flagtool.py extract ----
+
+    @Test
+    void fenceSheetsSpritesAreSortedIntoSheetsAndTarps() {
+        assertEquals(Curtains.Cover.NONE, Curtains.coverOf("fixtures_windows_curtains_01_0"));
+        assertEquals(Curtains.Cover.NONE, Curtains.coverOf(null));
+        assertEquals(Curtains.Cover.NONE, Curtains.coverOf("fencesheets_"));
+        assertEquals(Curtains.Cover.NONE, Curtains.coverOf("fencesheets_xx_3"));
+        assertEquals(Curtains.Cover.SHEET, Curtains.coverOf("fencesheets_01_0"));   // fence sheet
+        assertEquals(Curtains.Cover.SHEET, Curtains.coverOf("fencesheets_01_11"));  // doorway sheet
+        assertEquals(Curtains.Cover.TARP, Curtains.coverOf("fencesheets_02_0"));    // fence tarp, single
+        assertEquals(Curtains.Cover.TARP, Curtains.coverOf("fencesheets_02_91"));   // doorway tarp block
+        assertEquals(Curtains.Cover.SHEET, Curtains.coverOf("fencesheets_03_3"));   // tall doorway sheet
+        assertEquals(Curtains.Cover.TARP, Curtains.coverOf("fencesheets_03_8"));    // tall doorway tarp
+        assertEquals(Curtains.Cover.SHEET, Curtains.coverOf("fencesheets_06_2"));   // low fence sheet
+        assertEquals(Curtains.Cover.TARP, Curtains.coverOf("fencesheets_06_55"));
+    }
+
+    private static FlagDef fsSheetW() { return Curtains.measure("fencesheets_01_0", FlagDef.Facing.E, Curtains.Cover.SHEET, 5, 19, 64, 185); }
+    private static FlagDef fsSheetS() { return Curtains.measure("fencesheets_01_3", FlagDef.Facing.N, Curtains.Cover.SHEET, 0, 51, 64, 185); }
+    private static FlagDef fsLowN() { return Curtains.measure("fencesheets_06_2", FlagDef.Facing.S, Curtains.Cover.SHEET, 59, 62, 64, 142); }
+    private static FlagDef fsTarpN() { return Curtains.measure("fencesheets_02_2", FlagDef.Facing.S, Curtains.Cover.TARP, 64, 20, 64, 197); }
+    // the middle segment of a 3-tile run reaches 34 px into the next tile, its cap 30 px wide (the run's art is cut
+    // across the posts); both still lie on the edge's wall line
+    private static FlagDef fsTarpMidW() { return Curtains.measure("fencesheets_02_16", FlagDef.Facing.E, Curtains.Cover.TARP, 34, 4, 64, 198); }
+    private static FlagDef fsTarpCapW() { return Curtains.measure("fencesheets_02_8", FlagDef.Facing.E, Curtains.Cover.TARP, 34, 20, 30, 182); }
+
+    private static FlagDef[] covers() { return new FlagDef[]{fsSheetW(), fsSheetS(), fsLowN(), fsTarpN(), fsTarpMidW(), fsTarpCapW()}; }
+
+    @Test
+    void fenceSheetsCoversAreCurtainsThatNeedNoWindow() {
+        for (FlagDef d : covers()) {
+            assertNotNull(d, "a hung cover is simulated");
+            assertTrue(d.curtain && d.cover, d + " is a cover");
+        }
+        assertSame(ClothProfiles.CURTAIN, fsSheetW().profile);
+        assertSame(ClothProfiles.TARP, fsTarpN().profile);
+        assertEquals(PinLayout.TOP_SIDES, fsTarpN().profile.pinLayout, "a tarp is tied at its sides");
+        assertFalse(curtainW().cover, "a window curtain is not a cover");
+        // rolled-up (open) covers stay vanilla, like rolled window sheets
+        assertNull(Curtains.measure("fencesheets_01_4", FlagDef.Facing.E, Curtains.Cover.SHEET, 4, 15, 63, 58), "rolled sheet");
+        assertNull(Curtains.measure("fencesheets_02_13", FlagDef.Facing.W, Curtains.Cover.TARP, 64, 57, 64, 64), "rolled tarp");
+        assertNull(Curtains.measure("fencesheets_02_12", FlagDef.Facing.E, Curtains.Cover.TARP, 34, 25, 30, 47), "rolled tarp cap");
+    }
+
+    @Test
+    void fenceSheetsCoversRestOnTheirReferenceAndMoveInWind() {
+        for (FlagDef d : covers()) {
+            Cloth c = new Cloth(Prototypes.get(d, Prototypes.NEAR));
+            for (int i = 0; i < 120; i++) c.step(1f / 60f);
+            assertTrue(c.isSleeping(), d + " asleep");
+            assertArrayEquals(c.reference(), c.positions(), 0f, d + " pixel-identical to Fence Sheets' art at rest");
+            float in = meanAlongNormal(d, d.facing.normalX() * 8f, d.facing.normalY() * 8f);
+            assertTrue(in > 0.01f, d + " wind through the fence bellies it out: " + in);
+        }
+    }
+
+    @Test
+    void tarpSidesStayTiedSoARunHasNoGaps() {
+        FlagDef d = fsTarpMidW();
+        Cloth c = new Cloth(Prototypes.get(d, Prototypes.NEAR));
+        WindForce w = new WindForce(3L);
+        c.addForceSource(w);
+        w.setWind(d.facing.normalX() * 12f, d.facing.normalY() * 12f + 5f, 0f);
+        for (int i = 0; i < 240; i++) c.step(1f / 60f);
+        float[] p = c.positions(), r = c.reference();
+        int cols = d.profile.cols, rows = d.profile.rows;
+        for (int j = 0; j < rows; j++) {
+            for (int i : new int[]{0, cols - 1}) {
+                int k = 3 * (j * cols + i);
+                assertEquals(r[k], p[k], 1e-5f, "side column " + i + " row " + j + " x");
+                assertEquals(r[k + 1], p[k + 1], 1e-5f, "side column " + i + " row " + j + " y");
+                assertEquals(r[k + 2], p[k + 2], 1e-5f, "side column " + i + " row " + j + " z");
+            }
         }
     }
 

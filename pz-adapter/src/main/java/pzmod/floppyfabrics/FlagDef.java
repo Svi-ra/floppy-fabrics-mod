@@ -60,6 +60,11 @@ public final class FlagDef {
     public final Kind kind;
     /** A window curtain (generated from the sprite, {@link Curtains}): wall cloth gated by its window's state. */
     public final boolean curtain;
+    /**
+     * A curtain hung on a see-through fence or an empty door frame (the Fence Sheets mod, DECISIONS D94) rather than in a
+     * window: there is no window to open, so it is always open to the air.
+     */
+    public final boolean cover;
     public final ClothProfile profile;
     /** Coarse level of detail used at distance / when zoomed out (same physics, fewer particles and iterations). */
     public final ClothProfile profileFar;
@@ -139,7 +144,7 @@ public final class FlagDef {
     public final String source;
 
     private FlagDef(Builder b) {
-        sprite = b.sprite; kind = b.kind; curtain = b.curtain; profile = b.profile; profileFar = b.profileFar; exposure = b.exposure; timeScale = b.timeScale;
+        sprite = b.sprite; kind = b.kind; curtain = b.curtain; cover = b.cover; profile = b.profile; profileFar = b.profileFar; exposure = b.exposure; timeScale = b.timeScale;
         facing = b.facing; clothX = b.clothX; clothY = b.clothY; clothW = b.clothW; clothH = b.clothH; inset = b.inset;
         meshCols = b.meshCols; meshRows = b.meshRows;
         anchor = b.anchor; depthPoint = b.depthPoint; sizeW = b.sizeW; sizeH = b.sizeH;
@@ -210,13 +215,13 @@ public final class FlagDef {
     @Override
     public String toString() {
         String prof = profile != null ? profile.name : kind == Kind.LINE ? lineProfile.name : canopyProfile.name;
-        return sprite + "(" + (curtain ? "CURTAIN" : drape ? "DRAPE" : kind) + (kind == Kind.WALL ? "," + facing : "") + "," + prof + ")";
+        return sprite + "(" + (cover ? "COVER" : curtain ? "CURTAIN" : drape ? "DRAPE" : kind) + (kind == Kind.WALL ? "," + facing : "") + "," + prof + ")";
     }
 
     static final class Builder {
         String sprite, source, canvasTexture;
         Kind kind = Kind.WALL;
-        boolean curtain;
+        boolean curtain, cover;
         ClothProfile profile, profileFar;
         float exposure = 1f, timeScale = 1f;
         Facing facing = Facing.S;
@@ -245,6 +250,7 @@ public final class FlagDef {
             if (!(exposure >= 0f && exposure <= 4f)) throw new IllegalArgumentException(sprite + ": exposure must be 0..4");
             if (!(timeScale > 0f && timeScale <= 4f)) throw new IllegalArgumentException(sprite + ": timeScale must be in (0,4]");
             if (curtain && kind != Kind.WALL) throw new IllegalArgumentException(sprite + ": a curtain is a wall cloth");
+            if (cover && !curtain) throw new IllegalArgumentException(sprite + ": a fence/doorway cover is a curtain");
             if (kind == Kind.LINE) {
                 if (lineProfile == null) throw new IllegalArgumentException(sprite + ": line needs a \"type\" (bunting, bulbs, fairy)");
                 float dx = lineBx - lineAx, dy = lineBy - lineAy, dz = lineBz - lineAz;

@@ -40,8 +40,20 @@ final class Curtains {
     static final float DRAFT = 0.15f;
     /** Fraction of the wind's component along the wall that sways the curtain sideways. */
     static final float TANGENT = 0.3f;
+    /**
+     * Fraction of the climate wind on a curtain hung on the outdoor face of its window (D97): the same shelter as a wall
+     * flag's (FlagJson's wall default), since it hangs outside against the wall like one.
+     */
+    static final float OUTDOOR_FACE_EXPOSURE = 0.35f;
 
     private static final ClothProfile FAR = FlagJson.farProfile(ClothProfiles.CURTAIN, FlagDef.Kind.WALL, null);
+    private static final ClothProfile TARP_FAR = FlagJson.farProfile(ClothProfiles.TARP, FlagDef.Kind.WALL, null);
+
+    /** What a curtain sprite hangs in: a window (vanilla), or a fence / empty door frame as a sheet or a tarp (D94). */
+    enum Cover { NONE, SHEET, TARP }
+
+    /** Tileset prefix of the Fence Sheets mod (Workshop 3785740658, mod id FenceSheets). */
+    static final String FENCE_SHEETS_PREFIX = "fencesheets_";
     static int defined;
 
     private Curtains() {}
@@ -68,8 +80,8 @@ final class Curtains {
         Texture tex = sprite.getTextureForCurrentFrame(IsoDirections.N);
         if (tex == null || tex.getWidthOrig() <= 0 || tex.getHeightOrig() <= 0 || tex.getWidth() <= 0) return RETRY;
         float sx = 128f / tex.getWidthOrig(), sy = 256f / tex.getHeightOrig(); // into the 2× frame
-        FlagDef def = measure(sprite.getName(), facing, tex.getOffsetX() * sx, tex.getOffsetY() * sy,
-                tex.getWidth() * sx, tex.getHeight() * sy);
+        FlagDef def = measure(sprite.getName(), facing, coverOf(sprite.getName()), tex.getOffsetX() * sx,
+                tex.getOffsetY() * sy, tex.getWidth() * sx, tex.getHeight() * sy);
         if (def != null) defined++;
         return def;
     }
@@ -81,6 +93,11 @@ final class Curtains {
      * Returns null for curtains too short to hang (rolled up).
      */
     static FlagDef measure(String sprite, FlagDef.Facing facing, float bx, float by, float bw, float bh) {
+        return measure(sprite, facing, Cover.NONE, bx, by, bw, bh);
+    }
+
+    /** {@link #measure(String, FlagDef.Facing, float, float, float, float)} for a window curtain or a fence/doorway cover. */
+    static FlagDef measure(String sprite, FlagDef.Facing facing, Cover cover, float bx, float by, float bw, float bh) {
         float h = bh - 0.5f * bw;
         if (!(bw >= 8f) || !(h >= MIN_HEIGHT_PX)) return null;
         FlagDef.Builder b = new FlagDef.Builder();
@@ -88,6 +105,7 @@ final class Curtains {
         b.source = "curtain (auto)";
         b.kind = FlagDef.Kind.WALL;
         b.curtain = true;
+        b.cover = cover != Cover.NONE;
         b.facing = facing;
         b.clothX = bx;
         b.clothY = facing.alongX() ? by : by + 0.5f * bw;
@@ -95,10 +113,33 @@ final class Curtains {
         b.clothH = h;
         b.meshCols = 5;
         b.meshRows = 9;
-        b.profile = ClothProfiles.CURTAIN;
-        b.profileFar = FAR;
+        b.profile = cover == Cover.TARP ? ClothProfiles.TARP : ClothProfiles.CURTAIN;
+        b.profileFar = cover == Cover.TARP ? TARP_FAR : FAR;
         b.exposure = 1f; // curtains use FloppyFabrics.curtainExposure × window openness (Hooks.exposureFor)
         return b.build();
+    }
+
+    /**
+     * Pure (D94): whether a curtain sprite is one of the Fence Sheets mod's covers. Its tilesets lay out 8-tile blocks
+     * (closed W/E/N/S, then open): {@code fencesheets_01} holds the fence and door sheets, {@code fencesheets_02} only tarp
+     * blocks, and every later tileset (one per cut: tall doorway, medium/short/low fence) its sheet in block 0 and tarp
+     * blocks after it. Anything else is a window curtain.
+     */
+    static Cover coverOf(String sprite) {
+        if (sprite == null || !sprite.startsWith(FENCE_SHEETS_PREFIX)) return Cover.NONE;
+        int us = sprite.lastIndexOf('_');
+        if (us <= FENCE_SHEETS_PREFIX.length()) return Cover.NONE;
+        int tileset, index;
+        try {
+            tileset = Integer.parseInt(sprite.substring(FENCE_SHEETS_PREFIX.length(), us));
+            index = Integer.parseInt(sprite.substring(us + 1));
+        } catch (NumberFormatException e) {
+            return Cover.NONE;
+        }
+        if (tileset < 1 || index < 0) return Cover.NONE;
+        if (tileset == 1) return Cover.SHEET;
+        if (tileset == 2) return Cover.TARP;
+        return index < 8 ? Cover.SHEET : Cover.TARP;
     }
 
     // ------------------------------------------------------------------ window state
@@ -106,9 +147,12 @@ final class Curtains {
     /**
      * How open the curtain's window is: 0 closed (or no window: e.g. a sheet on a door), {@link #OPEN_SASH} opened,
      * 1 smashed / glass removed / an empty window frame; × the barricades on either side ({@link #barricadeFactor}):
-     * a metal sheet makes it 0, like a closed window.
+     * a metal sheet makes it 0, like a closed window. A fence/doorway cover ({@link FlagDef#cover}, D94) is always 1.
      */
-    static float openness(IsoObject curtain, FlagDef.Facing facing) {
+    static float openness(IsoObject curtain, FlagDef def) {
+        if (def.cover) return 1f; // a fence or an empty doorway: nothing to close (D94)
+        if (outdoorFace(curtain, def)) return 1f; // hung outside: in the open air whatever the window does (D97)
+        FlagDef.Facing facing = def.facing;
         IsoGridSquare sq = curtain.getSquare();
         if (sq == null) return 0f;
         // IsoGridSquare.getWindow(GridSquareEdge): NORTH/WEST = this square's own window, SOUTH/EAST = the north/west
@@ -127,6 +171,17 @@ final class Curtains {
             return barricadeFactor(frame.getBarricadeOnSameSquare()) * barricadeFactor(frame.getBarricadeOnOppositeSquare());
         }
         return 0f;
+    }
+
+    /**
+     * A window curtain hung on the outdoor face of its window (D97): its own square is outdoors — a sheet hung from
+     * outside (vanilla's {@code IsoWindow.addSheet} hangs it on the side the player stands on), or one refitted by a mod
+     * such as Fitted Sheets. It is in the open air like a wall flag, so the window's state does not matter.
+     */
+    static boolean outdoorFace(IsoObject curtain, FlagDef def) {
+        if (def.cover) return false; // fence/doorway covers have their own rule (D94)
+        IsoGridSquare sq = curtain.getSquare();
+        return sq != null && sq.isOutside();
     }
 
     private static float barricadeFactor(IsoBarricade b) {
@@ -152,10 +207,15 @@ final class Curtains {
         };
     }
 
-    /** True if the square on the far side of the curtain's window is outdoors (only then does climate wind come in). */
-    static boolean outsideBeyond(IsoObject curtain, FlagDef.Facing facing) {
+    /**
+     * True if the square on the far side of the curtain's window is outdoors (only then does climate wind come in). A
+     * fence/doorway cover (D94) also feels the wind when its own side is outdoors: a fence stands in the open air.
+     */
+    static boolean outsideBeyond(IsoObject curtain, FlagDef def) {
         IsoGridSquare sq = curtain.getSquare();
         if (sq == null) return false;
+        if (def.cover && sq.isOutside()) return true;
+        FlagDef.Facing facing = def.facing;
         IsoGridSquare beyond = switch (facing) {
             case S -> neighbour(sq, 0, -1);
             case E -> neighbour(sq, -1, 0);
@@ -183,6 +243,20 @@ final class Curtains {
         float a = Math.max(inflow, 0f) + DRAFT * speed;
         out[0] = nx * a + TANGENT * tx;
         out[1] = ny * a + TANGENT * ty;
+    }
+
+    /**
+     * Pure: the air on a curtain from the (already scaled) wind — {@link #throughWindow} for one inside its window, the
+     * wind itself for one on the outdoor face (D97), which hangs in the open like a wall flag (wind toward the wall presses
+     * it flat against the plane clamp; wind away from it and along it lift and sway it).
+     */
+    static void airOn(FlagDef.Facing facing, boolean outdoorFace, float wx, float wy, float[] out) {
+        if (outdoorFace) {
+            out[0] = wx;
+            out[1] = wy;
+        } else {
+            throughWindow(facing, wx, wy, out);
+        }
     }
 
     // ------------------------------------------------------------------ re-classification

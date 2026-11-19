@@ -141,7 +141,7 @@ public final class FloppyFabrics {
         long depthBiased;
         long created, evicted, lodSwitches;
         long blockedEvents, unblockedEvents, blockedBySpriteEstimate, sceneryBoxes;
-        long curtainLayer, curtainClosedDraws, curtainRebakes, windowEvents, sheetModelsSuppressed;
+        long doorSheets, curtainLayer, curtainClosedDraws, curtainRebakes, windowEvents, sheetModelsSuppressed;
         long lightsCreated, lightsRemoved, lightUpdates;
         long decoCreated, decoEvicted;
 
@@ -151,7 +151,7 @@ public final class FloppyFabrics {
                     + " blocked+=" + blockedEvents + " blocked-=" + unblockedEvents + " blockedByEstimate=" + blockedBySpriteEstimate
                     + " sceneryBoxes=" + sceneryBoxes
                     + " curtains{defined=" + Curtains.defined + " layer=" + curtainLayer + " closedDraws=" + curtainClosedDraws
-                    + " rebakes=" + curtainRebakes + " windowEvents=" + windowEvents
+                    + " rebakes=" + curtainRebakes + " doorSheets=" + doorSheets + " windowEvents=" + windowEvents
                     + " sheetsAs2D=" + sheetModelsSuppressed + "}"
                     + " lights{active=" + CurtainLight.active() + " created=" + lightsCreated + " removed=" + lightsRemoved
                     + " updates=" + lightUpdates + "}" + " geometry{sprites=" + Scenery.withGeometry + " none=" + Scenery.withoutGeometry + "}"

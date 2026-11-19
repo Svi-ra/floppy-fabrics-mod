@@ -2,6 +2,26 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
 
+## [Unreleased]
+
+Decisions D94–D97. Unit-tested (113 tests), patch-verified offline, and verified in-game by the user (2026-11-19).
+Player-facing summary for the Workshop page: [docs/WORKSHOP_UPDATE_NOTES.md](docs/WORKSHOP_UPDATE_NOTES.md).
+
+### Added
+- **Fence Sheets compatibility** (D94): sheets and tarps hung with the Fence Sheets mod on fences and door frames now
+  move. They have no window, so they are always open to the air: wind through the fence bellies them out, people
+  walking through a covered doorway push the cloth aside. Tarps are heavier and stay tied along their top and sides, so
+  a run of tarp segments never opens at its seams. Rolled-up covers stay as drawn. Nothing changes without that mod.
+- **Sheets on doors move** (D95) while open to the air: hung on the outside of a door, or on an open door with outdoors
+  on either side. While they move they are drawn as the 2D sheet sprite (vanilla's model-less door path) instead of the
+  3D sheet model. Wind only; people do not push them. Player-built doors are not covered.
+- **Sheets hung on the outside of a window move** (D97) whatever the window does: they hang in the open air and feel
+  the wind like a wall flag. Works with the Fitted Sheets mod's fitted sheets, which need nothing special.
+
+### Fixed
+- A moving sheet on the outside of a door drew behind the door unless the door was faded; it is now drawn after the
+  door, as vanilla orders it (D96).
+
 ## [0.6.0] — 2026-11-19 — flutter, multi-tile cloths, banners, soft contacts, detail setting
 
 Decisions D86–D90. Unit-tested (103 tests) and patch-verified offline; not yet tested in-game.

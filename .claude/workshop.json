@@ -9,6 +9,9 @@
   "changelog": "CHANGELOG.md",
   "testCommand": ".\\gradlew.bat test",
   "buildCommand": ".\\gradlew.bat :pz-adapter:deployMod",
-  "gallery": ["Mod page/publication-template/media/*.gif"],
-  "tagPrefix": "workshop/v"
+  "gallery": [
+    "Mod page/publication-template/media/*.gif"
+  ],
+  "tagPrefix": "workshop/v",
+  "updateNotes": "docs/WORKSHOP_UPDATE_NOTES.md"
 }

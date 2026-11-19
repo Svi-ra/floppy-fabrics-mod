@@ -15,7 +15,9 @@ import zombie.iso.IsoWorld;
 import zombie.iso.SpriteDetails.IsoFlagType;
 import zombie.iso.fboRenderChunk.FBORenderCell;
 import zombie.iso.fboRenderChunk.ObjectRenderLayer;
+import zombie.core.textures.ColorInfo;
 import zombie.iso.objects.IsoCurtain;
+import zombie.iso.objects.IsoDoor;
 import zombie.iso.objects.IsoWindow;
 import zombie.iso.sprite.IsoSprite;
 
@@ -28,6 +30,12 @@ public final class Hooks {
     // per-performRenderFrame context (set on enter, cleared on exit)
     private static FlagDef ctxDef;
     private static IsoObject ctxObj;
+    /** The door whose render is in progress (D95): its sheet sprite is drawn with a null object. */
+    private static IsoDoor ctxDoor;
+    /** A door sheet to draw once its door has been drawn (D96), with the light it was handed. */
+    private static IsoDoor pendingDoor;
+    private static DoorSheets.Placement pendingPlacement;
+    private static final ColorInfo pendingColor = new ColorInfo();
     private static boolean firstUseLogged;
 
     private Hooks() {}
@@ -41,6 +49,12 @@ public final class Hooks {
         if (!FloppyFabrics.active() || obj == null) return layer;
         try {
             if (layer != ObjectRenderLayer.MinusFloor && layer != ObjectRenderLayer.MinusFloorSE) return layer;
+            if (obj instanceof IsoDoor door) {
+                // a door whose sheet can move is drawn every frame, or the sheet is baked with it (D95)
+                if (!doorSheetAnimates(door)) return layer;
+                FloppyFabrics.stats.curtainLayer++;
+                return layer == ObjectRenderLayer.MinusFloor ? ObjectRenderLayer.Translucent : ObjectRenderLayer.TranslucentSE;
+            }
             FlagDef def = FlagRegistry.forSprite(obj.getSprite());
             // a cloth drawn as an attached sprite of another object (a banner on a light pole, D90): the object must be
             // drawn every frame too, or the banner is baked into the cached chunk with it
@@ -135,12 +149,17 @@ public final class Hooks {
         ctxDef = null;
         ctxObj = null;
         lastBiasedSprite = null; // the depth shader for this draw is already set up; next draw starts fresh
-        if (!FloppyFabrics.active() || sprite == null || obj == null) return;
+        if (!FloppyFabrics.active() || sprite == null) return;
+        if (obj == null) {
+            obj = ctxDoor; // a door draws its sheet sprite with no object (D95)
+            if (obj == null) return;
+        }
         try {
             // our flags are only ever drawn in the per-frame pass; skip everything else at the cost of one field read
             if (!FBORenderCell.instance.renderTranslucentOnly) return;
             FlagDef def = FlagRegistry.forSprite(sprite);
             if (def == null) return;
+            if (obj instanceof IsoDoor && !def.curtain) return; // the door's own sprite is never a cloth
             ctxDef = def;
             ctxObj = obj;
             FloppyFabrics.stats.frameContexts++;
@@ -187,9 +206,18 @@ public final class Hooks {
                 return drew;
             }
             float open = 1f; // window openness for curtains (D65); flags are always "open"
+            boolean bodies = true;
             if (def.curtain) {
-                if (!FloppyFabrics.curtains || !(obj instanceof IsoCurtain)) return false;
-                open = Curtains.openness(obj, def.facing);
+                if (!FloppyFabrics.curtains) return false;
+                if (obj instanceof IsoCurtain) {
+                    open = Curtains.openness(obj, def);
+                } else if (obj instanceof IsoDoor door) {
+                    // a sheet on a door (D95): no bodies — the door's own square is not where the sheet is drawn
+                    open = DoorSheets.openness(door);
+                    bodies = false;
+                } else {
+                    return false;
+                }
                 if (open <= 0f) {
                     FlagInstance prev = Instances.peek(obj);
                     if (prev == null || prev.cloth.isSleeping()) {
@@ -216,8 +244,14 @@ public final class Hooks {
             // real seconds, frozen while paused (not getMultiplier(): game speed / sleep ×200 would explode the solver, D7)
             float dt = GameTime.isGamePaused() ? 0f : GameTime.getInstance().getRealworldSecondsSinceLastUpdate();
             boolean live = open > 0f;
-            boolean outdoor = def.curtain && live && Curtains.outsideBeyond(obj, def.facing);
-            float exposure = def.curtain ? (outdoor ? FloppyFabrics.curtainExposure * open : 0f) : exposureFor(obj, def);
+            // a door sheet is only open to the air when outdoors is on one of its sides (DoorSheets.openness)
+            boolean outdoor = def.curtain && live && (obj instanceof IsoDoor || Curtains.outsideBeyond(obj, def));
+            // a window curtain hung outside: plain outdoor wind, as on a wall flag (D97)
+            boolean openAir = obj instanceof IsoCurtain && Curtains.outdoorFace(obj, def);
+            float exposure = !def.curtain ? exposureFor(obj, def)
+                    : openAir ? Curtains.OUTDOOR_FACE_EXPOSURE
+                    : outdoor ? FloppyFabrics.curtainExposure * open : 0f;
+            inst.openAir = openAir;
             float nz = TextureDraw.nextZ, ncd = TextureDraw.nextChunkDepth;
 
             // stress test (dev): extra copies with their own cloth, drawn around the real flag, through the real pipeline
@@ -227,18 +261,23 @@ public final class Hooks {
                 TextureDraw.nextZ = nz;
                 TextureDraw.nextChunkDepth = ncd;
                 SpriteMesh.setOffset(((k % 8) - 3.5f) * 120f, ((k / 8) - 3f) * 110f);
-                simulateAndDraw(gi, null, frame, dt, exposure, live, distance, lodMetric, true, tex, x, y, w, h, r, g, b, a, modifier);
+                simulateAndDraw(gi, null, frame, dt, exposure, live && bodies, distance, lodMetric, true, tex, x, y, w, h, r, g, b, a, modifier);
             }
             SpriteMesh.setOffset(0f, 0f);
             TextureDraw.nextZ = nz;
             TextureDraw.nextChunkDepth = ncd;
 
-            boolean drew = simulateAndDraw(inst, obj, frame, dt, exposure, live, distance, lodMetric, false, tex, x, y, w, h, r, g, b, a, modifier);
+            boolean drew = simulateAndDraw(inst, obj, frame, dt, exposure, live && bodies, distance, lodMetric, false, tex, x, y, w, h, r, g, b, a, modifier);
             if (!drew) { // vanilla draws its own quad and needs the depth statics it set
                 TextureDraw.nextZ = nz;
                 TextureDraw.nextChunkDepth = ncd;
             }
-            if (def.curtain) CurtainLight.update(obj, inst, live, outdoor, dt, frame);
+            if (def.curtain) {
+                // daylight past a lifted curtain only matters when it hangs indoors (D73); not for a cover on a fence
+                // (D94) or a sheet hung outside a window (D97)
+                boolean daylight = outdoor && !(obj.getSquare() != null && obj.getSquare().isOutside());
+                CurtainLight.update(obj, inst, live, daylight, dt, frame);
+            }
             Scheduler.addNanos(System.nanoTime() - t0);
             return drew;
         } catch (Throwable t) {
@@ -350,9 +389,76 @@ public final class Hooks {
     /** A curtain is re-classified to the per-frame layer only while it can move: window open/broken, or still settling. */
     private static boolean curtainAnimates(IsoObject obj, FlagDef def) {
         if (!FloppyFabrics.curtains || !(obj instanceof IsoCurtain)) return false;
-        if (Curtains.openness(obj, def.facing) > 0f) return true;
+        if (Curtains.openness(obj, def) > 0f) return true;
         FlagInstance inst = Instances.peek(obj);
         return inst != null && !inst.cloth.isSleeping();
+    }
+
+    /** A door's hanging sheet can move: open to the air, or its cloth still settling (D95). */
+    private static boolean doorSheetAnimates(IsoDoor door) {
+        if (!FloppyFabrics.curtains || !DoorSheets.hanging(door)) return false;
+        if (DoorSheets.openness(door) > 0f) return true;
+        FlagInstance inst = Instances.peek(door);
+        return inst != null && !inst.cloth.isSleeping();
+    }
+
+    /** Enter of {@code IsoDoor.render} / {@code IsoDoor.renderWallTile}: the door whose sheet sprite may be drawn next. */
+    public static void onDoorRenderEnter(IsoDoor door) {
+        ctxDoor = door;
+    }
+
+    /**
+     * Exit of {@code IsoDoor.render} / {@code IsoDoor.renderWallTile} (also on exceptions). A sheet on the camera's side
+     * of the leaf, held back by {@link #onDoorCurtainModel}, is drawn now that the door model is drawn (D96).
+     */
+    public static void onDoorRenderExit() {
+        IsoDoor door = pendingDoor;
+        DoorSheets.Placement p = pendingPlacement;
+        pendingDoor = null;
+        pendingPlacement = null;
+        if (door != null && p != null) {
+            ctxDoor = door;
+            try {
+                if (DoorSheets.render2D(door, p, pendingColor)) FloppyFabrics.stats.doorSheets++;
+            } catch (Throwable t) {
+                FloppyFabrics.fail("door sheet after the door", t);
+            }
+        }
+        ctxDoor = null;
+    }
+
+    /**
+     * Enter of {@code IsoDoor.renderCurtainModel} (D95): while a door's hanging sheet can move, draw it as its 2D sprite
+     * (vanilla's model-less door path) instead of the 3D sheet model, so the cloth can bend it.
+     * @return true to skip the model
+     */
+    public static boolean onDoorCurtainModel(IsoDoor door, ColorInfo col) {
+        if (!FloppyFabrics.active() || !FloppyFabrics.useMesh || door == null || col == null) return false;
+        try {
+            if (!FBORenderCell.instance.renderTranslucentOnly || door.isAnimating()) return false;
+            if (!doorSheetAnimates(door)) return false;
+            DoorSheets.Placement p = DoorSheets.placementOf(door);
+            if (p == null) return false;
+            if (p.afterDoor()) {
+                // vanilla's order: in front of the leaf = drawn after it, at the exit of renderWallTile (D96)
+                pendingDoor = door;
+                pendingPlacement = p;
+                pendingColor.set(col);
+                return true;
+            }
+            IsoDoor saved = ctxDoor;
+            ctxDoor = door;
+            try {
+                if (!DoorSheets.render2D(door, p, col)) return false;
+            } finally {
+                ctxDoor = saved;
+            }
+            FloppyFabrics.stats.doorSheets++;
+            return true;
+        } catch (Throwable t) {
+            FloppyFabrics.fail("IsoDoor.renderCurtainModel", t);
+            return false;
+        }
     }
 
     /**

@@ -883,3 +883,97 @@ below), and instead of lifting, a vertex drawn over wall that is *farther* than 
 much lower on the cloth (`WallDepth.sinkPx`, mirror of `liftPx`; clamped to the quad's bottom, the rest goes to
 `depthDeficit`). Moves toward the camera or up land over nearer wall, which already hides them: rest depth kept.
 curtainN/curtainW (S/E, in front of their wall) are unchanged. Not yet verified in-game.
+
+## Compatibility — Fence Sheets (2026-11-19)
+
+Request: compatibility with the Fence Sheets mod (Workshop 3785740658, id `FenceSheets`, v1.4.2, author ragone).
+Evidence: its `42/media/lua/shared/FenceSheets/FS_Core.lua`, `fencesheets.tiles`, `common/media/tileGeometry.txt`, and
+every sprite of `FenceSheets.pack` extracted with `tools/flagtool.py extract` and measured.
+
+**D94 · Fence Sheets covers are curtains with no window: always open.** The mod hangs a vanilla `IsoCurtain`
+(`IsoCurtain.new(cell, square, openSprite, north)`, `FS.placeCurtain`) on tall see-through fences and empty door
+frames. Its tiles carry `curtainN/S/W/E` (`fencesheets.tiles`), `Translucent = true` (`tileGeometry.txt`) and the
+vanilla 8-tile block layout (closed W/E/N/S, then open +4), so D64 already turned them into curtain definitions, but
+D65 found no window on their edge → openness 0 → they never moved. Now:
+- `Curtains.coverOf(name)`: `fencesheets_01` = sheets (fence and doorway blocks), `fencesheets_02` = tarp blocks only,
+  `fencesheets_03..06` (tall doorway, medium/short/low fence cuts) = sheet in block 0 (tiles 0–7), tarps after it.
+  Keyed on the sprite name because a window-less curtain is otherwise ambiguous (vanilla sheets on doors, a curtain
+  left on a wall whose window was removed must stay still).
+- `FlagDef.cover`: openness is always 1 (nothing to close); wind comes in if the far side **or** its own side is
+  outdoors (a fence stands in the open), with the window model of D67 (wind through the fence bellies it out, wind
+  from its own side presses it to the fence — the mesh is still a plane behind it, so the clamp is kept). Exposure is
+  `curtainExposure` × 1, as for a smashed window. Indoor doorways get no wind but are live, so people walking through
+  push the cloth. The daylight of D73 is only added for a cover whose own square is indoors.
+- Sheets keep the curtain profile. **Tarps** get `ClothProfiles.TARP`: 0.6 kg, stiffer (bend 0.08), Cd 0.9, pinned
+  `TOP_SIDES` (the art shows grommets along both sides). A tarp run is up to three separate curtains, and its art is cut
+  across the posts (a 3-run's middle segment spans 34–98 px, its cap 34–64 px, each on the same wall line), so every
+  segment is its own cloth; with both sides pinned, the seam between two segments never moves and the run stays one
+  surface. Sharing one simulation across the run (D87 groups) was not needed for that.
+- Rolled-up (open) sheets and tarps measure < 36 px of cloth and stay vanilla, as rolled window sheets do (D64).
+- No dependency: nothing changes when Fence Sheets is absent. No patch added. **Verified in-game by the user
+  (2026-11-19):** fence sheets, tarp runs, far-side covers, doorways.
+
+## Door sheets (2026-11-19)
+
+Request (after the Fence Sheets work tested fine in-game): sheets hung on exterior doors should move too.
+Evidence: `IsoDoor`, `IsoObject`, `IsoSpriteInstance` and `FBORenderCell` of the installed 42.21.0 jar, decompiled with
+Vineflower 1.12 into the scratchpad (D71); `media/spriteModels.txt`, `media/tileGeometry.txt`.
+
+**D95 · A door sheet is drawn by the door; while it can move, draw its 2D sprite and bend that.** Not an `IsoCurtain`:
+`IsoDoor.addSheet` sets `hasCurtain`, `curtainInside` (hung from the door square's side), `curtainOpen` (rolled up);
+`HasCurtains()` returns the door itself. Drawing (`IsoDoor.renderWallTile`, the path `FBORenderCell.renderTranslucent` /
+`renderMinusFloor_DoorOrWall` takes): a door with a sprite model (`fixtures_doors_01/02` and `fixtures_doors_fences_01`
+in `spriteModels.txt` — the ordinary house doors) calls `renderCurtainModel`, the `Base.SheetDoorClosed/Open` model at the
+door's `curtain1/curtain2` attachment; a door without one draws `fixtures_windows_curtains_01_16..23` (the window-sheet
+sprites) at 0.8 scale through `prerender2x*/postrender2x*`, with `IsoSpriteInstance.render(null, …)` — a **null object**.
+Doors carry no `Translucent` in `tileGeometry.txt`, so they sit in the cached `MinusFloor` layer unless animating.
+- **When it moves** (`DoorSheets.openness`): the sheet hangs (not rolled up) and is open to the air — its own square
+  (`getSheetSquare`) is outdoors, or the door is open and outdoors is on either side. Indoors behind a closed door it
+  stays the vanilla model. Exposure = `curtainExposure`, wind through `Curtains.throughWindow` with the sprite's facing.
+- **Layer:** `onCalculateLayer` moves such a door to `Translucent` (as for flags), so the sheet is not baked.
+- **Drawing:** new advice on `IsoDoor.render` and `renderWallTile` (enter/exit) remembers the door, and
+  `onFrameEnter` takes it as the object of a null-object curtain-sprite draw — so the model-less 2D path reaches our
+  Texture.render hook as any curtain does. New advice on the private `renderCurtainModel` (enter, skip) draws, instead
+  of the model, the 2D sheet at vanilla's own 2D placement (`DoorSheets.placement`, the closed-sheet branch of
+  `prerender2xN … postrender2xE` ported as a table) through the same sprite path; not while the door itself animates
+  (`isAnimating`). Its return value is ignored by `renderWallTile`, and `renderCurtainSpriteOrModel` (which would read
+  the skipped `false` as "draw the sprite") has no caller in this build. The cloth definition is the one generated from
+  the sheet sprite (D64): the sprite's tile type gives its facing, the draw quad its 0.8 scale (`SpriteMesh.frameK`).
+- **No bodies on door sheets:** the instance belongs to the door, whose square is not always the one the sheet is drawn
+  on (S/E sprites are drawn on the neighbour), so world interactions would be a tile off. Wind only.
+- Visible consequence (as D72): an exposed sheet on a model door switches from the 3D sheet to the 2D sheet art. Whether
+  vanilla's 2D offsets line up with the 3D door's glass was the open question. **Verified in-game by the user
+  (2026-11-19):** placement over the door, closed and open; one draw-order bug found and fixed (D96).
+- Player-built doors (`IsoThumpable`) keep their own sheet code and are not handled.
+
+**D96 · A door sheet on the camera's side of the leaf is drawn after the door (in-game report 2026-11-19).** Report: a
+sheet on the outside of an exterior door, lowered and simulated, drew behind the door; it showed in front only while the
+door was faded (player nearby). Cause (jar): in the per-frame pass `IsoSprite.startTileDepthShader` sets
+`glDepthMask(false)` — 2D sprites test depth but never write it. D95 drew the 2D sheet where the 3D sheet model was drawn,
+i.e. inside `renderCurtainModel`, which `renderWallTile` calls **before** the door model; the opaque door model drawn
+afterwards then overwrote it (a faded door model blends instead, hence the report's difference). Vanilla's model-less
+path avoids this by order alone: `postrender2x*` (the curtainN/W sprites, in front of the leaf) runs after the door,
+`prerender2x*` (curtainS/E, behind it) before. *Fix:* `Placement.afterDoor()` (sprite N or W); such a sheet is held back
+from `renderCurtainModel` (model still skipped, light colour copied) and drawn at the exit of `renderWallTile`, after the
+door; S/E sheets are still drawn before it. Unit-tested against the table. **Verified in-game by the user (2026-11-19).**
+
+## Sheets on the outdoor face of windows (2026-11-19)
+
+Request (door sheets verified in-game): sheets hung on the **exterior** side of windows should move like a wall flag too.
+Hanging there is vanilla (`IsoWindow.addSheet` hangs the sheet on the side the player stands on); the Fitted Sheets mod
+(Workshop 3794207681, id `FittedSheets`, v1.0.4) keeps it and only swaps the sheet's sprite for one cut to the glass.
+Evidence: its `FT_Core.lua` (it removes the vanilla curtain and places an identical `IsoCurtain` in the same slot,
+wearing `fittedsheets_01_<class·8 + 4 + W/E/N/S>`; tile properties copied from the vanilla sheet tiles) and every sprite
+of `FittedSheets.pack` extracted with `tools/flagtool.py` and measured: all 220 closed sprites of its 55 size classes
+measure as hanging cloth (D64), all 220 rolled ones stay vanilla. So no Fitted Sheets-specific code is needed: its
+sheets are generated curtain definitions like any other.
+
+**D97 · A curtain whose own square is outdoors is in the open air.** D65 gated every window curtain on its window, so a
+sheet hung outside a closed window never moved. `Curtains.outdoorFace` (curtain's square `isOutside()`, not a cover):
+- openness is 1 whatever the window's state (also drives the per-frame layer and the 3D-sheet → 2D switch of D72/D76);
+- the air is the wind itself (`Curtains.airOn`), not the through-the-window model of D67 — wind toward the wall
+  presses it flat (plane clamp), wind away from or along the wall lifts and sways it, as on a wall flag;
+- exposure 0.35, a wall flag's default (`Curtains.OUTDOOR_FACE_EXPOSURE`), instead of `curtainExposure` × openness;
+- no curtain light (D73): there is no room on its side. Bodies act as on any live curtain.
+Applies to vanilla sheets and curtains and to any mod's curtain tiles alike. **Verified in-game by the user
+(2026-11-19)**, vanilla and Fitted Sheets sheets.

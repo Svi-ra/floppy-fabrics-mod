@@ -55,6 +55,23 @@ public final class ClothProfiles {
             .clampToAnchorPlane(true)
             .build();
 
+    /**
+     * Tarp lashed over a fence or doorway (Fence Sheets compatibility, DECISIONS D94): heavier and stiffer than a curtain,
+     * tied along its top and both sides (the grommets at the posts), so it bellies out in the middle and its hem flaps
+     * between the lower corners. Adjacent segments of a run share their pinned side, so their seam never opens.
+     */
+    public static final ClothProfile TARP = ClothProfile.builder()
+            .name("tarp")
+            .grid(5, 9)
+            .mass(0.6f)
+            .stiffness(1.0f, 0.9f, 0.08f)
+            .damping(0.03f)
+            .dragCoefficient(0.9f)
+            .pinLayout(PinLayout.TOP_SIDES)
+            .iterations(4)
+            .clampToAnchorPlane(true)
+            .build();
+
     /** Looks up a built-in profile by name, or {@code null}. */
     public static ClothProfile byName(String name) {
         if (name == null) return null;
@@ -62,6 +79,7 @@ public final class ClothProfiles {
             case "wall" -> WALL;
             case "pole" -> POLE;
             case "curtain" -> CURTAIN;
+            case "tarp" -> TARP;
             default -> null;
         };
     }
