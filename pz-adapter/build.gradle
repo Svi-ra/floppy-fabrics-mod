@@ -5,6 +5,9 @@ def pzInstallDir = file(project.findProperty('pzInstallDir') ?: 'D:/Program File
 def zombieBuddyJar = file(project.findProperty('zombieBuddyJar') ?: "${pzInstallDir}/ZombieBuddy.jar")
 def modsDir = file(project.findProperty('modsDir') ?: "${System.getProperty('user.home')}/Zomboid/mods")
 def modId = 'FloppyFabrics'
+// Workshop upload folder (<workshopDir>/Contents/mods/FloppyFabrics). The game also loads mods from there, and prefers
+// that copy over <modsDir> when both exist, so deployMod keeps it in sync too (skipped if the folder does not exist).
+def workshopDir = file(project.findProperty('workshopDir') ?: "${System.getProperty('user.home')}/Zomboid/Workshop/${modId}")
 
 dependencies {
     implementation project(':cloth-core')
@@ -107,4 +110,16 @@ tasks.register('deployMod', Sync) {
     dependsOn tasks.named('assembleMod')
     from layout.buildDirectory.dir("mod/${modId}")
     into new File(modsDir, modId)
+    finalizedBy 'deployWorkshop'
+}
+
+// Copies the same folder into the Workshop upload folder, if there is one. Sync only touches
+// <workshopDir>/Contents/mods/${modId}; workshop.txt and preview images are left alone.
+tasks.register('deployWorkshop', Sync) {
+    description = "Copies the mod folder to ${workshopDir}/Contents/mods/${modId} (if ${workshopDir} exists)."
+    group = 'distribution'
+    dependsOn tasks.named('assembleMod')
+    onlyIf { workshopDir.isDirectory() }
+    from layout.buildDirectory.dir("mod/${modId}")
+    into new File(workshopDir, "Contents/mods/${modId}")
 }

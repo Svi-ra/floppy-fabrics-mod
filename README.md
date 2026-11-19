@@ -70,6 +70,7 @@ or pass them as `-P<name>=<value>`:
 | `pzInstallDir` | Project Zomboid install (for `projectzomboid.jar`) |
 | `zombieBuddyJar` | `ZombieBuddy.jar` (Workshop `…/3619862853/mods/ZombieBuddy/libs/ZombieBuddy.jar`) |
 | `modsDir` | Where `deployMod` writes `FloppyFabrics/` (normally `~/Zomboid/mods`) |
+| `workshopDir` | Workshop upload folder (default `~/Zomboid/Workshop/FloppyFabrics`); `deployMod` also syncs its `Contents/mods/FloppyFabrics` if it exists, because the game loads that copy in preference to `modsDir` |
 
 ```bash
 ./gradlew check                      # all unit tests + "cloth-core has no PZ imports" guard

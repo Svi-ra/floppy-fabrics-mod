@@ -9,6 +9,10 @@ Decisions D86–D90. Unit-tested (103 tests) and patch-verified offline; not yet
 ### Added
 - Empty `common/` folder (with a README.txt so it survives git and Workshop uploads), as Build 42 expects.
 
+### Fixed
+- Curtains hanging on the far side of a wall (seen from outside, behind the window) no longer draw over the wall
+  around the window; they stay hidden behind it as in vanilla (D93).
+
 ### Changed
 - **Renamed to Floppy Fabrics** (D92), everywhere: display name, mod id and folder `FloppyFabrics`, jar
   `FloppyFabrics.jar`, package `pzmod.floppyfabrics`, data folder `media/floppyfabrics/`, Lua commands

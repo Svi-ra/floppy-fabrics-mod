@@ -56,6 +56,24 @@ class WallDepthTest {
     }
 
     @Test
+    void aCurtainBehindItsWallSinksInsteadOfLifting() {
+        int ts = 2;
+        // W-facing (curtainE) sways 20 cm toward -y: the wall drawn there is farther, so it must sample farther too
+        Projection.worldToScreen(0f, -0.2f, 0f, ts, o, 0);
+        float sink = WallDepth.sinkPx(FlagDef.Facing.W, ts, o[0], o[1]);
+        assertTrue(sink > 0f);
+        assertEquals(WallDepth.wallDepthChange(FlagDef.Facing.W, ts, o[0], o[1]), WallDepth.depthOfPx(ts, sink), 1e-8f);
+        // swaying toward the camera / up: the wall there is nearer and already hides it, rest depth kept
+        Projection.worldToScreen(0f, 0.2f, 0f, ts, o, 0);
+        assertEquals(0f, WallDepth.sinkPx(FlagDef.Facing.W, ts, o[0], o[1]));
+        Projection.worldToScreen(0f, 0f, 0.3f, ts, o, 0);
+        assertEquals(0f, WallDepth.sinkPx(FlagDef.Facing.N, ts, o[0], o[1]));
+        // hanging lower (N-facing, curtainS): farther wall, sink by exactly that height
+        Projection.worldToScreen(0f, 0f, -0.3f, ts, o, 0);
+        assertEquals(0.3f * 16f * Projection.SQRT6 * ts, WallDepth.sinkPx(FlagDef.Facing.N, ts, o[0], o[1]), 1e-3f);
+    }
+
+    @Test
     void wallThicknessFromTheHouseWallGeometry() {
         // walls_exterior_house_01_1 (north) and _0 (west), square-local, as Scenery produces them
         float[] north = {0f, 0f, 0f, 1f, 0.0466f, Projection.SQRT6};

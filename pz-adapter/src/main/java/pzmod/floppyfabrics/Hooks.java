@@ -86,7 +86,7 @@ public final class Hooks {
             FlagDef def = FlagRegistry.forSprite(sprite);
             if (def == null) return z2;
             // exactly the case where vanilla gives the flag its wall's depth preset (IsoSprite.setupTileDepth)
-            // curtains: same bias as a precaution, they hang on the window line drawn with GL_LEQUAL (D69)
+            // curtains: same bias, they hang on the window line drawn with GL_LEQUAL (D69); reversed behind the wall (D93)
             // wall cloths that are not WallOverlay tiles but attachedN/W (church banners) hang on the wall too (D78);
             // free-hanging cloths (inset > 0) have no wall at their line and keep vanilla depth
             if (def.kind != FlagDef.Kind.WALL || def.freeHanging()) return z2;
@@ -97,6 +97,9 @@ public final class Hooks {
             // a moved flag whose top vertices could not lift their depth sample far enough (D61): bias the rest
             FlagInstance inst = obj != null ? Instances.peek(obj, def) : null;
             if (inst != null && inst.depthDeficit > 0f) bias += Math.min(MAX_EXTRA_BIAS, inst.depthDeficit);
+            // a curtain on the far side of its wall (curtainS/E) must stay behind that wall: bias away from the viewer
+            // instead, so the wall wins the GL_LEQUAL tie where a swaying vertex is drawn over it (D93)
+            if (WallDepth.behindWall(def)) bias = -bias;
             float biased = z2 + bias / DEPTH_PER_Z2;
             lastBiasedSprite = sprite;
             lastBiasedZ2 = biased;

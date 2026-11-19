@@ -207,6 +207,7 @@ final class SpriteMesh {
         int cols = inst.cloth.cols(), rows = inst.cloth.rows();
         boolean moving = !inst.cloth.isSleeping();
         float deficit = 0f; // depth the per-vertex lift could not supply (vertex too close to the cloth's top edge)
+        boolean behind = WallDepth.behindWall(def); // curtainS/E: the wall is between the camera and the cloth (D93)
         // a drape lies over furniture drawn in the same sprite: only its own columns move (D82)
         boolean confine = def.drape;
         float clothL = tlx, clothR = tlx + def.clothW * frameK;
@@ -240,8 +241,20 @@ final class SpriteMesh {
                     Projection.sampleGrid2(inst.screen, cols, rows, tmp[0], tmp[1], tmp, 2);
                     float dxs = tmp[2], dys = tmp[3];
                     shade = sampleGrid1(inst.shade, cols, rows, tmp[0], tmp[1]);
-                    // depth: never behind the wall surface the vertex is now drawn over (D61)
-                    float lift = WallDepth.liftPx(def.facing, ts, dxs, dys);
+                    // depth: never behind the wall surface the vertex is now drawn over (D61); a cloth on the far
+                    // side of its wall: never in front of it (D93)
+                    float lift = behind ? 0f : WallDepth.liftPx(def.facing, ts, dxs, dys);
+                    float sink = behind ? WallDepth.sinkPx(def.facing, ts, dxs, dys) : 0f;
+                    if (sink > 0f) {
+                        float bottom = Math.max(cy[2], cy[3]) - 0.5f;
+                        float sy = py + sink;
+                        if (sy > bottom) {
+                            deficit = Math.max(deficit, WallDepth.depthOfPx(ts, sy - bottom));
+                            sy = bottom;
+                        }
+                        depthAt(px, sy, dtmp);
+                        v1u[k] = dtmp[0]; v1v[k] = dtmp[1];
+                    }
                     if (lift > 0f) {
                         float top = curve ? topPx + 0.5f : tly + (px - tlx) * (def.facing.alongX() ? 0.5f : -0.5f) + 0.5f;
                         float sy = py - lift;

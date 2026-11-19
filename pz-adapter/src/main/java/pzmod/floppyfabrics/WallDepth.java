@@ -58,6 +58,25 @@ final class WallDepth {
         return -change / PER_METRE_Z * 16f * Projection.SQRT6 * tileScale;
     }
 
+    /**
+     * For a cloth on the <em>far</em> side of its wall (curtainS/curtainE: facings N/W, D93): how far down (screen pixels,
+     * &ge; 0) a vertex must sample its depth UV so it is never nearer than the wall surface it is drawn over; 0 if the
+     * rest depth is already at least as far. The mirror of {@link #liftPx}: the wall in front must keep hiding the cloth.
+     */
+    static float sinkPx(FlagDef.Facing facing, int tileScale, float dxs, float dys) {
+        float change = wallDepthChange(facing, tileScale, dxs, dys);
+        if (!(change > 0f)) return 0f;
+        return change / PER_METRE_Z * 16f * Projection.SQRT6 * tileScale;
+    }
+
+    /**
+     * True for a wall cloth hung on the far side of its wall as seen by the camera (facings N/W: curtainS on the north
+     * wall of the square to the south, curtainE on the west wall of the square to the east). The wall is in front of it.
+     */
+    static boolean behindWall(FlagDef def) {
+        return def.kind == FlagDef.Kind.WALL && def.facing.flipped() && !def.freeHanging();
+    }
+
     /** Depth units of a vertical screen distance on a wall (inverse of the lift). */
     static float depthOfPx(int tileScale, float px) {
         return px / (16f * Projection.SQRT6 * tileScale) * PER_METRE_Z;

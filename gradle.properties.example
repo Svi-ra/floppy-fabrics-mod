@@ -11,5 +11,8 @@ pzInstallDir=C:/Program Files (x86)/Steam/steamapps/common/ProjectZomboid
 zombieBuddyJar=C:/Program Files (x86)/Steam/steamapps/workshop/content/108600/3619862853/mods/ZombieBuddy/libs/ZombieBuddy.jar
 # Where :pz-adapter:deployMod writes the mod folder (<modsDir>/FloppyFabrics). Usually <user home>/Zomboid/mods.
 modsDir=C:/Users/<you>/Zomboid/mods
+# Workshop upload folder; deployMod also syncs <workshopDir>/Contents/mods/FloppyFabrics if this folder exists
+# (the game prefers that copy over <modsDir>). Default <user home>/Zomboid/Workshop/FloppyFabrics.
+#workshopDir=C:/Users/<you>/Zomboid/Workshop/FloppyFabrics
 
 org.gradle.caching=true

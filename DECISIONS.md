@@ -871,3 +871,15 @@ package `pzmod.floppyfabrics`, data folder `media/floppyfabrics/` (also where ot
 No compatibility shims: nothing was ever published under the old names. `mod/common/README.txt` keeps the Build 42
 `common/` folder present (an empty folder is not kept by git and may be dropped by Workshop uploads; `assembleMod`
 strips `.gitkeep`). Supersedes the naming in D13 and D29.
+
+**D93 · Curtains on the far side of their wall drew over it (in-game report 2026-11-19). Supersedes D69 for N/W.**
+Screenshot: curtains seen from outside a house drew over the siding and shutters beside the window (closed window:
+stippled; broken window: solid). Those are curtainS/curtainE (our facings N/W, D64): they hang on the room side of the
+north/west wall of the next square, so that wall is **between the camera and the cloth**. D69 gave every curtain the
+toward-viewer bias (2e-4) and D61's per-vertex lift, both meant for cloths in front of their wall; together they pulled the
+cloth through the wall (bias alone ties/beats it, hence the stipple). *Fix:* `WallDepth.behindWall(def)` (wall cloth,
+flipped facing, not free-hanging). For those: the bias is applied **away** from the viewer (same amount, plus the deficit
+below), and instead of lifting, a vertex drawn over wall that is *farther* than its rest point samples its depth that
+much lower on the cloth (`WallDepth.sinkPx`, mirror of `liftPx`; clamped to the quad's bottom, the rest goes to
+`depthDeficit`). Moves toward the camera or up land over nearer wall, which already hides them: rest depth kept.
+curtainN/curtainW (S/E, in front of their wall) are unchanged. Not yet verified in-game.
