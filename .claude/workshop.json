@@ -1,0 +1,14 @@
+{
+  "appId": 108600,
+  "publishedFileId": "3838415942",
+  "workshopDir": "~/Zomboid/Workshop/FloppyFabrics",
+  "title": "Floppy Fabrics [B42.21+]",
+  "descriptionFile": "Mod page/publication-template/DESCRIPTION.bbcode.txt",
+  "previewFile": "Mod page/publication-template/variants/preview_logo55.gif",
+  "modInfo": "mod/42/mod.info",
+  "changelog": "CHANGELOG.md",
+  "testCommand": "gradlew.bat test",
+  "buildCommand": "gradlew.bat :pz-adapter:deployMod",
+  "gallery": ["Mod page/publication-template/media/*.gif"],
+  "tagPrefix": "workshop/v"
+}
