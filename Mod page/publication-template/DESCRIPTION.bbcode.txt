@@ -56,5 +56,5 @@ Report it on the [url=https://github.com/Svi-ra/floppy-fabrics-mod/issues]GitHub
 
 [hr][/hr]
 Released under the MIT licence.
-Workshop ID: 3838415942
+Workshop ID: 3842366760
 Mod ID: FloppyFabrics
