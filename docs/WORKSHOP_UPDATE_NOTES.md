@@ -11,6 +11,8 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
 ## Pending (next upload)
 
 **New**
+- **Volleyball nets** now sway in the wind and give when you walk into them. Each net moves as one piece across its
+  whole width; the poles stay put.
 - Compatibility with **Fence Sheets**: sheets and tarps hung on fences and empty door frames now move. Wind through the
   fence billows them, and people walking through a covered doorway push the sheet aside. Tarps stay tied at their top
   and sides, so a run of tarp tiles moves as one sheet with no gaps. Nothing changes if you don't use Fence Sheets.

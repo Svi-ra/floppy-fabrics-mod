@@ -42,6 +42,8 @@ final class SpriteMesh {
     private static final float[] vx = new float[MAX_V], vy = new float[MAX_V], vu = new float[MAX_V], vv = new float[MAX_V];
     private static final float[] v1u = new float[MAX_V], v1v = new float[MAX_V], v2u = new float[MAX_V], v2v = new float[MAX_V];
     private static final float[] vs = new float[MAX_V];
+    /** Rest-pose row fraction of each vertex of a confined wall mesh (D98). */
+    private static final float[] restT = new float[MAX_V];
     private static final float[] tmp = new float[4];
     private static final float[] dtmp = new float[4];
     // per-call frame mapping
@@ -208,23 +210,43 @@ final class SpriteMesh {
         boolean moving = !inst.cloth.isSleeping();
         float deficit = 0f; // depth the per-vertex lift could not supply (vertex too close to the cloth's top edge)
         boolean behind = WallDepth.behindWall(def); // curtainS/E: the wall is between the camera and the cloth (D93)
-        // a drape lies over furniture drawn in the same sprite: only its own columns move (D82)
-        boolean confine = def.drape;
+        // a drape lies over furniture drawn in the same sprite: only its own columns move (D82); a confined cloth also
+        // keeps the art above its top edge and below its hem still (poles and ground bar of a net, D98)
+        boolean rowsConfined = def.confine && !curve;
+        boolean confine = def.drape || rowsConfined;
         float clothL = tlx, clothR = tlx + def.clothW * frameK;
         if (confine) {
             mc = drapeColumns(mc, clothL, clothR);
-            if (mc < 0 || (mc + 1) * (mr + 1) > MAX_V) return false;
+            if (mc < 0) return false;
         } else {
             for (int i = 0; i <= mc; i++) colS[i] = (float) i / mc;
         }
+        // confined rows: quad top, the cloth's top edge, mr steps down to its hem, the still line below the hem, quad
+        // bottom. They follow the cloth's slope, so their heights differ per column (empty rows are skipped below).
+        int lines = rowsConfined ? mr + 4 : mr + 1;
+        int stillLine = mr + 2;
+        if ((mc + 1) * lines > MAX_V) return false;
+        float slope = def.facing.alongX() ? 0.5f : -0.5f;
+        float qTop = cy[0], qH = cy[3] - cy[0];
 
-        for (int j = 0; j <= mr; j++) {
-            float t = (float) j / mr;
+        for (int j = 0; j < lines; j++) {
             for (int i = 0; i <= mc; i++) {
                 float s = colS[i];
+                float t = (float) j / mr;
+                if (rowsConfined) {
+                    float ex = bilerp(cx, s, 0f);
+                    float top = tly + (ex - tlx) * slope, hem = top + clothHpx;
+                    float y = j == 0 ? qTop : j <= mr + 1 ? top + clothHpx * (j - 1) / mr
+                            : j == stillLine ? hem + FlagDef.CONFINE_GAP_PX * frameK : qTop + qH;
+                    t = qH > 0f ? Math.max(0f, Math.min(1f, (y - qTop) / qH)) : 0f;
+                    if (j > 0) t = Math.max(t, restT[(j - 1) * (mc + 1) + i]); // never above the line before
+                    restT[j * (mc + 1) + i] = t;
+                }
                 int k = j * (mc + 1) + i;
                 float px = bilerp(cx, s, t), py = bilerp(cy, s, t);
-                boolean still = confine && (px <= clothL + 0.01f || px >= clothR - 0.01f);
+                boolean still = rowsConfined
+                        ? px < clothL - 0.01f || px > clothR + 0.01f || j == 0 || j >= stillLine
+                        : confine && (px <= clothL + 0.01f || px >= clothR - 0.01f);
                 vu[k] = bilerp(cu, s, t); vv[k] = bilerp(cv, s, t);
                 v1u[k] = bilerp(c1u, s, t); v1v[k] = bilerp(c1v, s, t);
                 v2u[k] = bilerp(c2u, s, t); v2v[k] = bilerp(c2v, s, t);
@@ -273,9 +295,11 @@ final class SpriteMesh {
         }
         inst.depthDeficit = deficit;
         quad.setMainUv = true;
-        for (int j = 0; j < mr; j++) {
+        for (int j = 0; j < lines - 1; j++) {
             for (int i = 0; i < mc; i++) {
                 int k0 = j * (mc + 1) + i, k1 = k0 + 1, k3 = k0 + (mc + 1), k2 = k3 + 1;
+                // a confined row of zero height at rest covers no texels (e.g. above the top edge where it meets the quad)
+                if (rowsConfined && restT[k3] - restT[k0] < 1e-5f && restT[k2] - restT[k1] < 1e-5f) continue;
                 quad.corner(0, vu[k0], vv[k0], v1u[k0], v1v[k0], v2u[k0], v2v[k0]);
                 quad.corner(1, vu[k1], vv[k1], v1u[k1], v1v[k1], v2u[k1], v2v[k1]);
                 quad.corner(2, vu[k2], vv[k2], v1u[k2], v1v[k2], v2u[k2], v2v[k2]);

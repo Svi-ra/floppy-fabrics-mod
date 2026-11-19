@@ -25,7 +25,7 @@ Previews (`registry/previews/<sprite>.png`, full 128x256 2x tile frames) are ext
 
 ## Summary
 
-172 sprites registered (170 configured entries, 2 reference/host tiles) plus pattern-based entries.
+178 sprites registered (176 configured entries, 2 reference/host tiles) plus pattern-based entries.
 
 | Category | Sprites |
 |---|---|
@@ -33,6 +33,7 @@ Previews (`registry/previews/<sprite>.png`, full 128x256 2x tile frames) are ext
 | canopy | 84 |
 | curtain | 18 |
 | drape | 4 |
+| net | 6 |
 | pole flag | 1 |
 | string line | 28 |
 | wall flag | 11 |
@@ -276,6 +277,21 @@ Notes:
 - `walls_decoration_01_97`: Lit variant: walls_decoration_01_on_97 (derived).
 - `walls_decoration_01_98`: Lit variant: walls_decoration_01_on_98 (derived).
 - `walls_decoration_01_99`: E string over two tiles: this tile and the next south Lit variant: walls_decoration_01_on_99 (derived).
+
+## Net
+
+| Preview | Sprite | Name | Kind | Facing | Group | Config | Role |
+|---|---|---|---|---|---|---|---|
+| <img src="registry/previews/recreational_sports_01_88.png" width="48" alt="recreational_sports_01_88"> | `recreational_sports_01_88` | Volleyball net, 3-tile cloth (west pole), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_89.png" width="48" alt="recreational_sports_01_89"> | `recreational_sports_01_89` | Volleyball net, 3-tile cloth (middle), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_90.png" width="48" alt="recreational_sports_01_90"> | `recreational_sports_01_90` | Volleyball net, 3-tile cloth (east pole), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_91.png" width="48" alt="recreational_sports_01_91"> | `recreational_sports_01_91` | Volleyball net, 3-tile cloth (south pole), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_92.png" width="48" alt="recreational_sports_01_92"> | `recreational_sports_01_92` | Volleyball net, 3-tile cloth (middle), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_93.png" width="48" alt="recreational_sports_01_93"> | `recreational_sports_01_93` | Volleyball net, 3-tile cloth (north pole), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
+
+Notes:
+- `recreational_sports_01_88`: Volleyball net over 3 tiles running east (_88 west pole, _89 middle, _90 east pole), on the middle line of its squares: one 2.6 m x 0.9 m net shared by its tiles (D87), held by its top cable and both poles. confine keeps the poles, cords and ground bar still (D98). Cloth in the _88 frame.
+- `recreational_sports_01_91`: Volleyball net over 3 tiles running north (_91 south pole, _92 middle, _93 north pole); mirror of _88.._90. Cloth in the _91 frame.
 
 ## Pole flag
 

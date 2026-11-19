@@ -93,6 +93,14 @@ public final class FlagDef {
     /** Wall cloth hanging in free air on its line (a street banner, a pole banner; D87): no wall behind it, as an inset cloth. */
     public final boolean free;
     /**
+     * Wall cloth drawn in one sprite with still art around it (a volleyball net between its poles): only the cloth's own
+     * parallelogram moves. The render mesh gets columns at the cloth's side edges and rows along its top edge and hem;
+     * art beside it, above it, and from {@link #CONFINE_GAP_PX} below its hem down (a ground bar, pole feet) stays still.
+     */
+    public final boolean confine;
+    /** Gap (2x px) under the hem of a {@link #confine}d cloth that stretches with it; art below it never moves. */
+    public static final float CONFINE_GAP_PX = 12f;
+    /**
      * Multi-tile cloth (D87): every tile of one cloth (the Fort Knox flag, the street banner) names the same group and its
      * own offset in squares from the group's anchor tile; the cloth fields are in the anchor tile's 2x frame. All tiles
      * draw one shared simulation, so the cloth cannot come apart at the seams. Null for a single-tile cloth.
@@ -150,6 +158,7 @@ public final class FlagDef {
         anchor = b.anchor; depthPoint = b.depthPoint; sizeW = b.sizeW; sizeH = b.sizeH;
         drape = b.drape;
         free = b.free;
+        confine = b.confine;
         groupId = b.groupId; groupDx = b.groupDx; groupDy = b.groupDy; topCurve = b.topCurve;
         lineAx = b.lineAx; lineAy = b.lineAy; lineAz = b.lineAz; lineBx = b.lineBx; lineBy = b.lineBy; lineBz = b.lineBz;
         lineSag = b.lineSag; lineProfile = b.lineProfile;
@@ -178,7 +187,7 @@ public final class FlagDef {
      */
     public boolean sameClothAs(FlagDef o) {
         return kind == o.kind && facing == o.facing && clothX == o.clothX && clothY == o.clothY && clothW == o.clothW
-                && clothH == o.clothH && inset == o.inset && profile.cols == o.profile.cols && profile.rows == o.profile.rows
+                && clothH == o.clothH && inset == o.inset && confine == o.confine && profile.cols == o.profile.cols && profile.rows == o.profile.rows
                 && profile.pinLayout == o.profile.pinLayout && java.util.Arrays.equals(topCurve, o.topCurve);
     }
 
@@ -226,7 +235,7 @@ public final class FlagDef {
         float exposure = 1f, timeScale = 1f;
         Facing facing = Facing.S;
         float clothX, clothY, clothW, clothH, inset;
-        boolean drape, free;
+        boolean drape, free, confine;
         String groupId;
         int groupDx, groupDy;
         float[] topCurve;
@@ -295,6 +304,7 @@ public final class FlagDef {
                         if (!(topCurve[i] > topCurve[i - 2])) throw new IllegalArgumentException(sprite + ": topCurve x must increase");
                     }
                 }
+                if (confine && topCurve != null) throw new IllegalArgumentException(sprite + ": \"confine\" needs a straight top edge (no topCurve)");
                 if (groupId != null && groupId.isBlank()) throw new IllegalArgumentException(sprite + ": group id must not be blank");
             } else {
                 if (anchor == null) throw new IllegalArgumentException(sprite + ": pole needs \"anchor\"");

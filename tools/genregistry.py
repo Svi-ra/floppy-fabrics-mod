@@ -46,6 +46,10 @@ def describe(e, fname):
             cat, name = "curtain", f"Theatre stage curtain, {FACE[face]}"
         elif "knox" in ts:
             cat, name = "wall flag", f"Fort Knox flag, 3-tile cloth, {FACE[face]}"
+        elif ts == "recreational_sports_01":
+            pos = ["west pole", "middle", "east pole"] if face == "S" else ["south pole", "middle", "north pole"]
+            k = abs(g["offset"][0] or g["offset"][1])
+            cat, name = "net", f"Volleyball net, 3-tile cloth ({pos[k]}), {FACE[face]}"
         elif ts == "signs_one-off_09":
             if i <= 327:
                 cat, name = "banner", f"Riverside street banner segment {g['offset'] and (-g['offset'][1] if g['offset'][1] else g['offset'][0]) + 1}/16, {FACE[face]}"

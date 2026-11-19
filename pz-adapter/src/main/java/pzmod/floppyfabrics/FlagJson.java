@@ -85,6 +85,9 @@ public final class FlagJson {
             Object free = e.get("free");
             if (free != null && !(free instanceof Boolean)) throw new IllegalArgumentException(b.sprite + ": \"free\" must be true or false");
             b.free = Boolean.TRUE.equals(free);
+            Object confine = e.get("confine");
+            if (confine != null && !(confine instanceof Boolean)) throw new IllegalArgumentException(b.sprite + ": \"confine\" must be true or false");
+            b.confine = Boolean.TRUE.equals(confine);
             Map<String, Object> group = map(e, "group");
             if (group != null) { // one tile of a multi-tile cloth (D87)
                 b.groupId = str(group, "id", null);

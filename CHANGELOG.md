@@ -8,6 +8,9 @@ Decisions D94–D97. Unit-tested (113 tests), patch-verified offline, and verifi
 Player-facing summary for the Workshop page: [docs/WORKSHOP_UPDATE_NOTES.md](docs/WORKSHOP_UPDATE_NOTES.md).
 
 ### Added
+- **Volleyball nets move** (D98): both vanilla volleyball nets (`recreational_sports_01_88..90` and `_91..93`) are one
+  cloth each across their three tiles, held by the top cable and both poles and free at the hem. The poles, their tie
+  cords and the ground bar stay still. New wall key `confine` keeps the art around a cloth still. Not yet tested in-game.
 - **Fence Sheets compatibility** (D94): sheets and tarps hung with the Fence Sheets mod on fences and door frames now
   move. They have no window, so they are always open to the air: wind through the fence bellies them out, people
   walking through a covered doorway push the cloth aside. Tarps are heavier and stay tied along their top and sides, so

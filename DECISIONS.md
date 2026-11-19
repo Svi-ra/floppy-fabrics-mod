@@ -977,3 +977,34 @@ sheet hung outside a closed window never moved. `Curtains.outdoorFace` (curtain'
 - no curtain light (D73): there is no room on its side. Bodies act as on any live curtain.
 Applies to vanilla sheets and curtains and to any mod's curtain tiles alike. **Verified in-game by the user
 (2026-11-19)**, vanilla and Fitted Sheets sheets.
+
+## Volleyball nets (2026-11-20)
+
+Request: cloth simulation for the volleyball net sprites `recreational_sports_01_88..93`; each net is a multi-sprite
+object and must move as one piece of fabric, while its poles stay still.
+Evidence: the six sprites extracted from Tiles2x.pack (42.21) with `tools/flagtool.py extract` and measured column by
+column; `tileGeometry.txt` (all six `Translucent`; `_88`'s box spans x ±0.8 m at z −0.1..0 about the square's centre,
+`_91`'s the same along z); `newtiledefinitions.tiles` (only `BlocksPlacement`, no `SpriteGridPos`).
+
+**D98 · A volleyball net is one confined, free-hanging cloth over three tiles.**
+- **Layout from the art.** `_88/_89/_90` face S and run east: west pole (shaft x 33–41), middle, east pole (x 91–96).
+  The net's top cable is the line y = 32 + x/2 in every one of the three frames, so with the D87 shift for (1, 0) and
+  (2, 0) the three pieces join exactly (e.g. `_88`'s top at x 96 = 80, `_89`'s at x 32 = 48 + 32). `_91/_92/_93` are
+  the same art mirrored (E sprite(x) = partner(125 − x), `_91`↔`_90`, `_92`↔`_89`, `_93`↔`_88`): facing E, running
+  north from `_91`, offsets (0, 0), (0, −1), (0, −2). Placement direction is inferred from this continuity, as for the
+  street banner; not yet observed in-game.
+- **The cloth.** Net from its first to its last mesh column (cords to the poles excluded): S `{49, 56, 164, 70}` in the
+  `_88` frame, E `{40, 74, 164, 70}` in the `_91` frame: 2.56 m × 0.89 m, a 16×6 grid (far 8×4). It stands on the
+  middle line of its squares (`inset` 0.5, the line from screen x 32 to 96, matching the geometry box), so it is free
+  hanging: no wall plane, touched from both sides. Pinned `top_sides` (cable on top, lashed to a pole at each end);
+  the hem is free. Light and porous: 0.8 kg, Cd 0.35, almost no bending stiffness (0.02), exposure 1 (free-standing).
+- **`confine` (new wall key).** A wall mesh covers the sprite's whole rectangle, and vertices outside the cloth take its
+  nearest edge's displacement, so a free hem would have dragged the ground bar and pole feet with it. With `confine`
+  the mesh gets columns at the cloth's side edges (as drapes, D82) and rows that follow its slope: the quad top, the top
+  edge, `mesh` rows down to the hem, a still line `FlagDef.CONFINE_GAP_PX` (12 px) below the hem, the quad bottom.
+  Vertices left/right of the cloth, above its top edge, or on/below the still line never move; the band between the hem
+  and the still line holds only transparent texels and stretches with the hem. Rows of zero rest height (where the top
+  edge meets the quad edge) are skipped. Not combinable with `topCurve`. Checked by drawing the layout over the six
+  sprites: only net vertices move; the poles, cords and ground bar (y ≥ 200; hem + gap ≤ 161) are in still cells.
+Unit-tested (grouping, pins, still poles and bar by the measured pixels; `confine` parsing). **Not yet tested in-game.**
+
