@@ -4,7 +4,7 @@
   "workshopDir": "~/Zomboid/Workshop/FloppyFabrics",
   "title": "Floppy Fabrics [B42.21+]",
   "descriptionFile": "Mod page/publication-template/DESCRIPTION.bbcode.txt",
-  "previewFile": "Mod page/publication-template/variants/preview_logo55.gif",
+  "previewFile": "Mod page/publication-template/variants/preview_logo65_ZB_steam.gif",
   "modInfo": "mod/42/mod.info",
   "changelog": "CHANGELOG.md",
   "testCommand": ".\\gradlew.bat test",
