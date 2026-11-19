@@ -1052,5 +1052,6 @@ Tests (`RunsTest`): a six-tile net found identically from every tile (one group,
 each tile's own net maps to exactly its slice of [0, 1] with top edges on the cloth's top (the reported regression);
 end poles outside the cloth; width, columns and mass scale with n; north-running E net; incomplete, reversed, mixed,
 adjacent and over-long runs; load rejection of a bad seam and duplicate roles. 120 tests pass, `verifyPatches` applies
-all advices. **Not yet tested in-game.**
+all advices. **Verified in-game by the user (2026-11-20):** the volleyball net moves as one piece, poles still. The Fort
+Knox flag and the street banner (same draw fix) not yet re-checked.
 

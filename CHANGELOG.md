@@ -4,8 +4,8 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
-Decisions D94–D99. Unit-tested (120 tests) and patch-verified offline. D94–D97 verified in-game by the user (2026-11-19);
-D98–D99 (volleyball nets, runs, the multi-tile draw fix) not yet.
+Decisions D94–D99. Unit-tested (120 tests) and patch-verified offline. Verified in-game by the user: D94–D97
+(2026-11-19), the volleyball nets of D98–D99 (2026-11-20).
 Player-facing summary for the Workshop page: [docs/WORKSHOP_UPDATE_NOTES.md](docs/WORKSHOP_UPDATE_NOTES.md).
 
 ### Added
