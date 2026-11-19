@@ -5,13 +5,13 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 ## [Unreleased]
 
 Decisions D94–D100. Unit-tested (120 tests) and patch-verified offline. Verified in-game by the user: D94–D97
-(2026-11-19), the volleyball nets of D98–D99 (2026-11-20).
+(2026-11-19), the volleyball nets of D98–D99 and the car-wash covers of D100 (2026-11-20).
 Player-facing summary for the Workshop page: [docs/WORKSHOP_UPDATE_NOTES.md](docs/WORKSHOP_UPDATE_NOTES.md).
 
 ### Added
 - **Car-wash entrance covers move** (D100): the strip covers `location_business_machinery_01_36` (S) and `_37` (E)
   hang free under their rail across the middle of the square; cars, people and zombies passing through push them
-  aside, and they feel the wind outdoors. The rail and its mount stay still. Not yet verified in-game.
+  aside, and they feel the wind outdoors. The rail and its mount stay still.
 - **Volleyball nets move** (D98, D99): each vanilla volleyball net (`recreational_sports_01_88`, `_89` × n, `_90`, and
   `_91`, `_92` × n, `_93`) is one cloth over its whole length, held by the top cable and both poles and free at the hem.
   The poles, their tie cords and the ground bar stay still. New wall key `confine` keeps the art around a cloth still.

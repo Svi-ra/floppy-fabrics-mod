@@ -1073,5 +1073,5 @@ not solid, so vehicles and people drive and walk through it).
   the parallelograms over the sprites.
 - The strips move as one cloth (the gaps between them stay as drawn); being free-hanging, it is pushed from both sides
   by people, zombies and vehicles passing through, and feels the wind on outside squares (exposure 0.35).
-Unit tests unchanged in substance (`FlagsJsonTest` counts 62 entries); 120 tests pass. **Not yet verified in-game.**
+Unit tests unchanged in substance (`FlagsJsonTest` counts 62 entries); 120 tests pass. **Verified in-game by the user (2026-11-20).**
 
