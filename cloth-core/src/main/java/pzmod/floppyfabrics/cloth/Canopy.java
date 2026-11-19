@@ -90,11 +90,11 @@ public final class Canopy {
     }
 
     /**
-     * Awning canvas (≈ 0.3 kg/m²), slack on its frame (D86): 15 cm static deflection at a 15 m/s gale (cap 25 cm);
+     * Awning canvas (≈ 0.3 kg/m²), slack on its frame (D86): 7.5 cm static deflection at a 15 m/s gale (cap 12.5 cm);
      * flutter from 4 m/s, limit amplitude ≈ 1 mm per Pa of dynamic pressure (≈ 6 cm at 10 m/s, capped); valance with
      * little bending stiffness, coupled along the hem, shedding at St = 0.14.
      */
-    public static final Profile AWNING = new Profile("awning", 0.3f, 2.0f, 0.12f, 0.25f, 15f, 0.15f,
+    public static final Profile AWNING = new Profile("awning", 0.3f, 2.0f, 0.12f, 0.125f, 15f, 0.075f,
             1.0f, 0.4f, 0.6f,
             4f, 1.6f, 0.001f,
             0.9f, 0.1f, 15f, 1.1f, 160f,
