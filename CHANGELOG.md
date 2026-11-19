@@ -2,7 +2,7 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
 
-## [0.6.0] — unreleased — flutter, multi-tile cloths, banners, soft contacts, detail setting
+## [0.6.0] — 2026-11-19 — flutter, multi-tile cloths, banners, soft contacts, detail setting
 
 Decisions D86–D90. Unit-tested (103 tests) and patch-verified offline; not yet tested in-game.
 

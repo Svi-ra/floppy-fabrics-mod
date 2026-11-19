@@ -1,0 +1,60 @@
+[h1]Floppy Fabrics[/h1]
+Have you ever noticed how unnatural fabric looks in the wind? Even in a heavy storm, with gusts tearing down the street, your curtains and the flags outside hang as if they were carved from stone.
+
+With this mod, wind is no longer something the game only tells you about. Now you can actually see it, and the world feels far more alive for it.
+
+Real, dynamic physics for every fabric in Project Zomboid. Flags, curtains, banners, bunting and awnings billow in the wind, swing when something brushes past, and react to players, zombies and vehicles.
+
+[h1]Requirements[/h1]
+[b]Build 42.21+ only.[/b]
+[b]ZombieBuddy is required[/b] (this is a Java mod): subscribe to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url], install its launcher hook (see its page), then enable [b]ZombieBuddy[/b] and [b]Floppy Fabrics[/b] in the mod manager (ZombieBuddy version 2.3.4 or newer).
+On first launch ZombieBuddy asks you to approve the mod's Java jar. Approve it.
+
+[h1]What moves[/h1]
+[list]
+[*][b]Flags:[/b] wall flags, the American flag on its pole (turns with the wind, droops when calm), the Fort Knox flags and the white bar banner. Multi-tile flags are one cloth across their tiles, with no seams.
+[*][b]Curtains:[/b] window curtains and player-hung sheets (they move while the window is open or broken), hospital privacy curtains and theatre stage curtains (they hang free across the middle of their square and can be pushed from either side).
+[*][b]Banners and cloths:[/b] church banners, the Riverside street banner (16 tiles, hung from a sagging cable) and the banners on its light poles, altar cloths.
+[*][b]Strings, awnings and canopies:[/b] bunting and string lights swing on their strings (the glow of lit bulbs follows them); awnings and market canopies billow and flap in strong wind while their valances flutter.
+[/list]
+Each fabric has its own simulation tuned to how it behaves: a flag, a curtain, an awning, a string of bunting and an altar cloth do not move alike.
+
+[h1]How it behaves[/h1]
+[list]
+[*]Follows the game's own wind (speed and direction). Wind indoors is zero, so nothing moves in a closed room.
+[*]Players, zombies and vehicles push the cloth and drag it by friction. Walls and furniture stop it.
+[*]Curtains move only while their window is open, smashed or an empty frame. A closed curtain lifted by wind lets a little daylight flicker into the room.
+[*]With no wind, fabric is pixel-identical to vanilla.
+[/list]
+
+[h1]Settings[/h1]
+[b]Options > Mods > Floppy Fabrics[/b]: simulation detail from 0.5x to 4x. Lower it if you want maximum performance. The mod's own measured CPU cost was under 1 ms per frame with about 50 animated flags at the default detail.
+
+[h1]Safe to add and remove[/h1]
+Visual only and client-side. It adds no new objects, no mod data and nothing to your save. Disable the mod and everything returns to vanilla.
+[b]Multiplayer:[/b] nothing needs to be installed on the server and nothing is synced, because wind visuals are client-side. This has not been tested on a dedicated server yet.
+
+[h1]Known issues[/h1]
+[list]
+[*]Much of version 0.6.0 (flutter, multi-tile cloths, street and pole banners, strings, canopies, altar cloths) has not yet been played through in the game. Expect rough edges and please report them.
+[*]Multiplayer is not tested.
+[*]No Viewpoint support.
+[*]Curtains on player-built (thumpable) windows never move.
+[*]A player-hung sheet changes look when its window opens (it switches from its 3D model to its 2D sprite).
+[*]Where the vanilla art of two neighbouring tiles does not line up (the Knox flag differs by about 5 px), a small step stays visible.
+[*]Animals and loose items on the floor do not interact with cloth.
+[/list]
+
+[h1]Planned[/h1]
+Garments hanging on clothing racks, then more fabric tiles as they are mapped.
+
+[h1]For modders[/h1]
+Other mods can add or override flags and cloths with data only (a JSON file, no code). The reference and tools are in the repository: [url=https://github.com/Svi-ra/floppy-fabrics-mod]github.com/Svi-ra/floppy-fabrics-mod[/url].
+
+[h1]Found a bug?[/h1]
+Report it on the [url=https://github.com/Svi-ra/floppy-fabrics-mod/issues]GitHub issues page[/url] or in the comments. Please include your game build and a console.txt excerpt.
+
+[hr][/hr]
+Released under the MIT licence.
+Workshop ID: 3838415942
+Mod ID: FloppyFabrics
