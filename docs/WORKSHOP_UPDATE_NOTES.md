@@ -11,6 +11,8 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
 ## Pending (next upload)
 
 **New**
+- The mod is now **signed for ZombieBuddy** (author svi_ra). ZombieBuddy shows who signed it, and you can choose to
+  trust the author once so future updates load without asking again.
 - **Military training nets** (the cargo net under a beam and the tall net between posts) now sway in the wind and give
   when you walk into them, each as one piece across its whole length. The frames and posts stay put.
 - **Military tents** (green and tan): the roof and gables now breathe in the wind and flap in a storm, and the eaves

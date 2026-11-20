@@ -15,4 +15,9 @@ modsDir=C:/Users/<you>/Zomboid/mods
 # (the game prefers that copy over <modsDir>). Default <user home>/Zomboid/Workshop/FloppyFabrics.
 #workshopDir=C:/Users/<you>/Zomboid/Workshop/FloppyFabrics
 
+# ZombieBuddy signing (docs/ZOMBIEBUDDY_SIGNING.md): signJarZBS writes FloppyFabrics.jar.zbs and assembleMod ships it.
+# Leave these out to build an unsigned jar. The key file must stay outside the repo; never commit it.
+#zbsSteamID64=<17-digit SteamID64 of the Workshop uploader>
+#zbsPrivateKeyFile=C:/Users/<you>/.signing/ed25519-private.der
+
 org.gradle.caching=true

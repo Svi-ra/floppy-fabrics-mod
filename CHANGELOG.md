@@ -4,12 +4,16 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
-Decisions D94–D104. Unit-tested (125 tests) and patch-verified offline. Verified in-game by the user: D94–D97
+Decisions D94–D105. Unit-tested (125 tests) and patch-verified offline. Verified in-game by the user: D94–D97
 (2026-11-19), the volleyball nets of D98–D99, the car-wash covers of D100, the tents of D101–D102 and
 the military tent of D103 (2026-11-20).
 Player-facing summary for the Workshop page: [docs/WORKSHOP_UPDATE_NOTES.md](docs/WORKSHOP_UPDATE_NOTES.md).
 
 ### Added
+- **ZombieBuddy signature** (D105): the jar now ships with `FloppyFabrics.jar.zbs` (Ed25519, signed as Steam author
+  svi_ra) via `io.github.zed-0xff.zb-gradle-plugin` 1.0.3; `assembleMod` signs and packages it. Players see a signed
+  author and can trust it once. Needs the public key on the author's Steam profile (or in ZombieBuddy's authors
+  registry), see [docs/ZOMBIEBUDDY_SIGNING.md](docs/ZOMBIEBUDDY_SIGNING.md). Not yet verified in-game.
 - **Training nets move** (D104): the cargo net under a beam (`location_military_generic_01_48`, `_49`/`_50` × n, `_51`)
   and the tall net between staked posts (`_56`, `_57`/`_58` × n, `_59`) are each one cloth over their whole length,
   held at the top and both ends; frames, posts and braces stay still. Runs now accept several middle sprites in any

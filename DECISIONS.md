@@ -1181,3 +1181,23 @@ entry for any of them.
 Tests (`RunsTest`): every tile of 48-49-50-51, 48-50-49-50-49-51, 48-51, 56-57-58-59 and 56-58-58-57-59 finds the same
 run, draws its own sprite and shares one cloth; mixed nets and headless runs are rejected; the wood of both nets lies
 outside its cloth by the measured pixels. 125 tests pass. **Not yet verified in-game.**
+
+## ZombieBuddy signing (2026-11-20)
+
+Request: get a ZombieBuddy signature for the mod. Evidence: ZombieBuddy's `doc/ModSigning.md` and the
+`zb-gradle-plugin` README (zed-0xff on GitHub); the installed ZombieBuddy 2.3.4 jar contains `ZBSVerifier` and
+`KnownAuthors`, and its `ZBSVerifier.verify` parses our `.zbs` and fails only on the missing Steam-profile key.
+
+**D105 · The jar is signed with the zb-gradle-plugin as Steam author svi_ra; the key lives outside the repo.**
+- `pz-adapter` applies `io.github.zed-0xff.zb-gradle-plugin` 1.0.3 (latest on the Plugin Portal). `signJarZBS` signs
+  the `jar` output (the plugin's default when there is no `shadowJar`) and writes `FloppyFabrics.jar.zbs` beside it.
+- `assembleMod` depends on `signJarZBS` and copies the `.zbs` into `42/media/java/client/` next to the jar, so every
+  `deployMod` / `deployWorkshop` ships a matching pair. Signing is on only when `zbsSteamID64` and `zbsPrivateKeyFile`
+  are set (git-ignored `gradle.properties`); without them the jar ships unsigned, with a warning, and no stale `.zbs`.
+- Signer: SteamID64 76561199001294613 (svi_ra), the account that uploads Workshop item 3842366760; ZombieBuddy checks
+  that signer and uploader match. Key: Ed25519, PKCS#8 DER at `~/.signing/ed25519-private.der`, generated with the
+  JDK's `KeyPairGenerator` (no OpenSSL on this machine). Public key
+  `07747e406ab75140361389f88c0242f1ab458d897dcd686b56319d1e6d954c63`.
+- Trust needs the public key published by the author: `JavaModZBS:<key>` in the Steam profile summary, and/or a PR
+  adding `authors/svi_ra.json` to ZombieBuddy's registry. Both are manual; see `docs/ZOMBIEBUDDY_SIGNING.md`.
+Checked: an independent Ed25519 check of the deployed Workshop-folder jar + `.zbs` passes. **Not yet verified in-game.**
