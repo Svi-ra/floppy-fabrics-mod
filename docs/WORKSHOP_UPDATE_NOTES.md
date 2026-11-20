@@ -14,6 +14,14 @@ _Nothing pending._
 
 ## Published
 
+- 0.7.1 (2026-11-20, item 3842366760)
+
+**Fixed**
+    - **ZombieBuddy "invalid ZBS" error:** the mod would not load for some players, because ZombieBuddy could not reach
+      Steam to check the author's signature. The signature is removed for now. ZombieBuddy shows its usual "allow
+      this mod?" prompt again; allow it and the mod works. The signature comes back in a later update, once the author
+      is in ZombieBuddy's list of known authors.
+
 - 0.7.0 (2026-11-20, item 3842366760)
 
 **New**

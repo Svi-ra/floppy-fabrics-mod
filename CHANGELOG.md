@@ -2,6 +2,17 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
 
+## [0.7.1] - 2026-11-20
+
+Hotfix. Player-facing summary: [docs/WORKSHOP_UPDATE_NOTES.md](docs/WORKSHOP_UPDATE_NOTES.md).
+
+### Fixed
+- **"invalid ZBS" from ZombieBuddy** (D106): the jar ships unsigned again (no `FloppyFabrics.jar.zbs`). With svi_ra
+  not yet in ZombieBuddy's authors registry, every player's ZombieBuddy reads the key from the author's Steam profile;
+  when that request fails, ZombieBuddy 2.3.4 blocks the mod as `invalid ZBS` instead of treating it as unsigned.
+  Unsigned jars get the normal approval prompt (`allow_unsigned_mods` defaults to true). Signing is paused by
+  `zbsSigningPaused` in `pz-adapter/build.gradle` and comes back once zed-0xff/ZombieBuddy#148 is merged.
+
 ## [0.7.0] - 2026-11-20
 
 Decisions D94–D105. Unit-tested (125 tests) and patch-verified offline. Verified in-game by the user: D94–D97

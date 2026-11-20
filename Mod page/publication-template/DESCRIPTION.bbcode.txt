@@ -10,7 +10,7 @@ Real, dynamic physics for every fabric in Project Zomboid. Flags, curtains, bann
 [b]ZombieBuddy is required[/b] (this is a Java mod): subscribe to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url], install its launcher hook (see its page), then enable [b]ZombieBuddy[/b] and [b]Floppy Fabrics[/b] in the mod manager (ZombieBuddy version 2.3.4 or newer).
 
 On first launch ZombieBuddy asks you to approve the mod's Java jar.
-The jar is signed by user [b]svi_ra[/b]. You can choose to trust the author once, and later updates signed with the same key then load without asking again.
+The jar is unsigned for now, so ZombieBuddy asks again after each update. Signing returns once the author is in ZombieBuddy's known authors.
 
 The mod is visual only and does not touch your saves, but approve Java code only from authors you trust.
 

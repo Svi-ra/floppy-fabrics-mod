@@ -78,6 +78,12 @@ key from the Steam profile. Step 2 opened as
 [zed-0xff/ZombieBuddy#148](https://github.com/zed-0xff/ZombieBuddy/pull/148) (from the fork Svi-ra/ZombieBuddy, branch
 `add-author-svi_ra`), waiting for review.
 
+## Paused (D106, since 0.7.1)
+
+Signing is switched off by `zbsSigningPaused = true` in `pz-adapter/build.gradle` because of the issue below. When
+[zed-0xff/ZombieBuddy#148](https://github.com/zed-0xff/ZombieBuddy/pull/148) is merged, set it to `false`, rebuild
+(the `.zbs` is packaged again) and upload the next version.
+
 ## Known issue: "invalid ZBS" for some players (found 2026-11-20, v0.7.0)
 
 Not a stale upload: the live item (599,746 bytes, updated 09:24) was downloaded with SteamCMD and is byte-identical to

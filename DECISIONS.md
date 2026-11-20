@@ -1201,3 +1201,14 @@ Request: get a ZombieBuddy signature for the mod. Evidence: ZombieBuddy's `doc/M
 - Trust needs the public key published by the author: `JavaModZBS:<key>` in the Steam profile summary, and/or a PR
   adding `authors/svi_ra.json` to ZombieBuddy's registry. Both are manual; see `docs/ZOMBIEBUDDY_SIGNING.md`.
 Checked: an independent Ed25519 check of the deployed Workshop-folder jar + `.zbs` passes. **Not yet verified in-game.**
+
+**D106 · ZombieBuddy signing is paused until svi_ra is in the authors registry.**
+- Players reported ZombieBuddy's "invalid ZBS" on 0.7.0. The live item was byte-identical to the build, and
+  ZombieBuddy 2.3.4's `ZBSVerifier.check` on it returned ValidSignature. The failure is the key lookup: with no
+  registry entry, ZombieBuddy fetches `steamcommunity.com/profiles/<id>` on every player's machine, and on any network
+  or HTTP failure it returns "Could not verify signature" and blocks the mod. Reproduced with an empty trust store.
+- An unsigned jar is allowed by default (`Loader.g_allowUnsignedMods = true`) and gets the normal approval prompt.
+  So 0.7.1 ships without a `.zbs`: `zbsSigningPaused = true` in `pz-adapter/build.gradle` keeps `assembleMod` from
+  signing or packaging one (`-PzbsSign=true` overrides it).
+- Undo when zed-0xff/ZombieBuddy#148 is merged: ZombieBuddy downloads `authors.json` from GitHub master and caches it,
+  so no ZombieBuddy release is needed. Set `zbsSigningPaused = false` and ship the next version signed.

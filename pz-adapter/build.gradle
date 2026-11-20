@@ -97,13 +97,19 @@ tasks.register('verifyPatches', JavaExec) {
 }
 
 // ZombieBuddy signing is on when this machine has a Steam ID and key configured (gradle.properties, never committed).
-def zbsSigning = project.hasProperty('zbsSteamID64') && project.hasProperty('zbsPrivateKeyFile')
+// D106: PAUSED until zed-0xff/ZombieBuddy#148 (svi_ra in the authors registry) is merged. Until then players whose
+// game cannot reach steamcommunity.com get "invalid ZBS" and the mod is blocked; an unsigned jar just gets ZombieBuddy's
+// normal approval prompt. To sign again: set zbsSigningPaused to false (or build with -PzbsSign=true).
+def zbsSigningPaused = true
+def zbsSigning = (!zbsSigningPaused || project.findProperty('zbsSign') == 'true') &&
+        project.hasProperty('zbsSteamID64') && project.hasProperty('zbsPrivateKeyFile')
 
 // Assembles the clean mod folder in build/mod/${modId} (no sources, no build files).
 tasks.register('assembleMod', Sync) {
     description = "Builds the mod folder (mod.info, media, jar + .zbs signature) under build/mod/${modId}."
     group = 'build'
-    dependsOn tasks.named('jar'), tasks.named('signJarZBS')
+    dependsOn tasks.named('jar')
+    if (zbsSigning) dependsOn tasks.named('signJarZBS')
     into layout.buildDirectory.dir("mod/${modId}")
     from(rootProject.file('mod')) {
         exclude '**/.gitkeep'
@@ -119,7 +125,9 @@ tasks.register('assembleMod', Sync) {
         }
     }
     doLast {
-        if (!zbsSigning) logger.warn("WARNING: ${modId}.jar is UNSIGNED (set zbsSteamID64 + zbsPrivateKeyFile, see docs/ZOMBIEBUDDY_SIGNING.md)")
+        if (!zbsSigning) logger.warn(zbsSigningPaused
+                ? "WARNING: ${modId}.jar is UNSIGNED: signing is paused (D106, see docs/ZOMBIEBUDDY_SIGNING.md)"
+                : "WARNING: ${modId}.jar is UNSIGNED (set zbsSteamID64 + zbsPrivateKeyFile, see docs/ZOMBIEBUDDY_SIGNING.md)")
     }
 }
 
