@@ -37,7 +37,7 @@ class DecorationsTest {
         Map<String, Integer> kinds = new HashMap<>();
         for (FlagDef d : p.flags()) kinds.merge(d.drape ? "DRAPE" : d.kind.name(), 1, Integer::sum);
         assertEquals(28, kinds.get("LINE"), "7 strings x 4 tiles");
-        assertEquals(84 + 104, kinds.get("CANOPY"), "awnings + tents (D101)");
+        assertEquals(84 + 104 + 68, kinds.get("CANOPY"), "awnings + tents (D101) + military tent (D103)");
         assertEquals(4, kinds.get("DRAPE"));
         assertEquals(p.flags().size(), p.flags().stream().map(f -> f.sprite).distinct().count(), "one entry per sprite");
     }
@@ -195,6 +195,59 @@ class DecorationsTest {
         }
         assertTrue(maxAmp > 0.01f, "the gale moves the canvas: " + maxAmp);
         assertTrue(maxDiff < 1e-3f * maxAmp + 1e-5f, "half speed = full speed slowed down: " + maxDiff + " of " + maxAmp);
+    }
+
+    @Test
+    void militaryTentRoofBreathesAndItsEaveFlapsWhileTheirEdgesStayStill() throws Exception {
+        Decorations.CanopyField f = new Decorations.CanopyField();
+        // roof slope facing east (green, middle row), on the level above the walls
+        FlagDef roof = def("location_military_tent_01_20");
+        assertEquals(0, roof.canopyFlaps, "a roof slope has no valance");
+        assertEquals(0.6f, roof.canopyHeight, 1e-6f);
+        assertEquals(0.5f, roof.timeScale, 1e-6f, "tent pace (D102)");
+        assertEquals(def("location_military_tent_01_84").canopyColumns.length, roof.canopyColumns.length, "tan = green");
+        CanopyInstance ci = new CanopyInstance(roof, 10, 20, 1);
+        f.inst = ci;
+        ci.canopy.setWind(8f, 0f, 0f);
+        float clock = 0f;
+        for (int i = 0; i < 240; i++) { clock += 1f / 60f; ci.canopy.step(1f / 60f, clock); }
+        ci.project();
+        float[] c = roof.canopyColumns;
+        float moved = 0f;
+        for (int x = 0; x < 128; x += 2) {
+            float top = CanopyInstance.columnAt(c, x, 1), bot = CanopyInstance.columnAt(c, x, 3);
+            for (float y = top; y <= bot; y += 2f) {
+                f.sample(x, y, o);
+                moved = Math.max(moved, Math.abs(o[0]) + Math.abs(o[1]));
+            }
+        }
+        assertTrue(moved > 0.5f, "the roof canvas moves: " + moved);
+        f.sample(64f, CanopyInstance.columnAt(c, 64f, 3) + 1f, o);
+        assertEquals(0f, Math.abs(o[0]) + Math.abs(o[1]), 0f, "below the eave line stays still");
+
+        // gable: vertical, held on its outline
+        FlagDef gable = def("location_military_tent_01_43");
+        assertEquals(0f, gable.canopyNz, 1e-3f, "a gable stands upright");
+
+        // eave strip: all valance, hinged at the roof's edge, its ends held by the guy ropes
+        FlagDef eave = def("location_military_tent_01_38");
+        assertTrue(eave.canopyFlaps > 0);
+        float[] e = eave.canopyColumns;
+        for (int i = 0; i < e.length; i += 4) assertEquals(e[i + 1], e[i + 2], 0f, "no panel above the hinge");
+        CanopyInstance ei = new CanopyInstance(eave, 10, 20, 0);
+        f.inst = ei;
+        ei.canopy.setWind(0f, 12f, 0f);
+        clock = 0f;
+        for (int i = 0; i < 240; i++) { clock += 1f / 60f; ei.canopy.step(1f / 60f, clock); }
+        ei.project();
+        float mid = (e[0] + e[e.length - 4]) / 2f;
+        f.sample(mid, CanopyInstance.columnAt(e, mid, 3) - 1f, o);
+        assertTrue(Math.abs(o[0]) + Math.abs(o[1]) > 0.05f, "the eave's hem swings");
+        f.sample(mid, CanopyInstance.columnAt(e, mid, 1) - 1f, o);
+        assertEquals(0f, Math.abs(o[0]) + Math.abs(o[1]), 0f, "the roof edge above the hinge stays still");
+        f.sample(e[0] + 0.5f, CanopyInstance.columnAt(e, e[0] + 0.5f, 3) - 1f, o);
+        // the end flap node is held (taper 0); between it and the next node the angle ramps up: sub-pixel here
+        assertEquals(0f, Math.abs(o[0]) + Math.abs(o[1]), 0.25f, "the rope's end of the strip stays put");
     }
 
     @Test

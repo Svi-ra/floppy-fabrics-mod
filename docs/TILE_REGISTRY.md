@@ -25,7 +25,7 @@ Previews (`registry/previews/<sprite>.png`, full 128x256 2x tile frames) are ext
 
 ## Summary
 
-284 sprites registered (282 configured entries, 2 reference/host tiles) plus pattern-based entries.
+352 sprites registered (350 configured entries, 2 reference/host tiles) plus pattern-based entries.
 
 | Category | Sprites |
 |---|---|
@@ -36,7 +36,7 @@ Previews (`registry/previews/<sprite>.png`, full 128x256 2x tile frames) are ext
 | net | 6 |
 | pole flag | 1 |
 | string line | 28 |
-| tent | 104 |
+| tent | 172 |
 | wall flag | 11 |
 
 ## Tent
@@ -147,6 +147,74 @@ Previews (`registry/previews/<sprite>.png`, full 128x256 2x tile frames) are ext
 | <img src="registry/previews/camping_04_125.png" width="48" alt="camping_04_125"> | `camping_04_125` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
 | <img src="registry/previews/camping_04_126.png" width="48" alt="camping_04_126"> | `camping_04_126` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
 | <img src="registry/previews/camping_04_127.png" width="48" alt="camping_04_127"> | `camping_04_127` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_16.png" width="48" alt="location_military_tent_01_16"> | `location_military_tent_01_16` | Green military tent, roof slope facing west | canopy | W | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_17.png" width="48" alt="location_military_tent_01_17"> | `location_military_tent_01_17` | Green military tent, roof slope facing west | canopy | W | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_18.png" width="48" alt="location_military_tent_01_18"> | `location_military_tent_01_18` | Green military tent, roof slope facing west | canopy | W | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_19.png" width="48" alt="location_military_tent_01_19"> | `location_military_tent_01_19` | Green military tent, roof slope facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_20.png" width="48" alt="location_military_tent_01_20"> | `location_military_tent_01_20` | Green military tent, roof slope facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_21.png" width="48" alt="location_military_tent_01_21"> | `location_military_tent_01_21` | Green military tent, roof slope facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_22.png" width="48" alt="location_military_tent_01_22"> | `location_military_tent_01_22` | Green military tent, roof slope facing west | canopy | W | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_23.png" width="48" alt="location_military_tent_01_23"> | `location_military_tent_01_23` | Green military tent, roof slope facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_24.png" width="48" alt="location_military_tent_01_24"> | `location_military_tent_01_24` | Green military tent, roof slope facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_25.png" width="48" alt="location_military_tent_01_25"> | `location_military_tent_01_25` | Green military tent, roof slope facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_26.png" width="48" alt="location_military_tent_01_26"> | `location_military_tent_01_26` | Green military tent, roof slope facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_27.png" width="48" alt="location_military_tent_01_27"> | `location_military_tent_01_27` | Green military tent, roof slope facing north | canopy | N | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_28.png" width="48" alt="location_military_tent_01_28"> | `location_military_tent_01_28` | Green military tent, roof slope facing north | canopy | N | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_29.png" width="48" alt="location_military_tent_01_29"> | `location_military_tent_01_29` | Green military tent, roof slope facing north | canopy | N | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_30.png" width="48" alt="location_military_tent_01_30"> | `location_military_tent_01_30` | Green military tent, roof slope facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_31.png" width="48" alt="location_military_tent_01_31"> | `location_military_tent_01_31` | Green military tent, roof slope facing north | canopy | N | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_32.png" width="48" alt="location_military_tent_01_32"> | `location_military_tent_01_32` | Green military tent, eave flapping eastward | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_33.png" width="48" alt="location_military_tent_01_33"> | `location_military_tent_01_33` | Green military tent, eave flapping eastward | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_34.png" width="48" alt="location_military_tent_01_34"> | `location_military_tent_01_34` | Green military tent, eave flapping eastward | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_37.png" width="48" alt="location_military_tent_01_37"> | `location_military_tent_01_37` | Green military tent, eave flapping southward | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_38.png" width="48" alt="location_military_tent_01_38"> | `location_military_tent_01_38` | Green military tent, eave flapping southward | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_39.png" width="48" alt="location_military_tent_01_39"> | `location_military_tent_01_39` | Green military tent, eave flapping southward | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_40.png" width="48" alt="location_military_tent_01_40"> | `location_military_tent_01_40` | Green military tent, gable facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_41.png" width="48" alt="location_military_tent_01_41"> | `location_military_tent_01_41` | Green military tent, gable facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_42.png" width="48" alt="location_military_tent_01_42"> | `location_military_tent_01_42` | Green military tent, gable facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_43.png" width="48" alt="location_military_tent_01_43"> | `location_military_tent_01_43` | Green military tent, gable facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_44.png" width="48" alt="location_military_tent_01_44"> | `location_military_tent_01_44` | Green military tent, gable facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_45.png" width="48" alt="location_military_tent_01_45"> | `location_military_tent_01_45` | Green military tent, gable facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_48.png" width="48" alt="location_military_tent_01_48"> | `location_military_tent_01_48` | Green military tent, gable facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_49.png" width="48" alt="location_military_tent_01_49"> | `location_military_tent_01_49` | Green military tent, gable facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_50.png" width="48" alt="location_military_tent_01_50"> | `location_military_tent_01_50` | Green military tent, gable facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_51.png" width="48" alt="location_military_tent_01_51"> | `location_military_tent_01_51` | Green military tent, gable facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_52.png" width="48" alt="location_military_tent_01_52"> | `location_military_tent_01_52` | Green military tent, gable facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_53.png" width="48" alt="location_military_tent_01_53"> | `location_military_tent_01_53` | Green military tent, gable facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_80.png" width="48" alt="location_military_tent_01_80"> | `location_military_tent_01_80` | Tan military tent, roof slope facing west | canopy | W | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_81.png" width="48" alt="location_military_tent_01_81"> | `location_military_tent_01_81` | Tan military tent, roof slope facing west | canopy | W | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_82.png" width="48" alt="location_military_tent_01_82"> | `location_military_tent_01_82` | Tan military tent, roof slope facing west | canopy | W | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_83.png" width="48" alt="location_military_tent_01_83"> | `location_military_tent_01_83` | Tan military tent, roof slope facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_84.png" width="48" alt="location_military_tent_01_84"> | `location_military_tent_01_84` | Tan military tent, roof slope facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_85.png" width="48" alt="location_military_tent_01_85"> | `location_military_tent_01_85` | Tan military tent, roof slope facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_86.png" width="48" alt="location_military_tent_01_86"> | `location_military_tent_01_86` | Tan military tent, roof slope facing west | canopy | W | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_87.png" width="48" alt="location_military_tent_01_87"> | `location_military_tent_01_87` | Tan military tent, roof slope facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_88.png" width="48" alt="location_military_tent_01_88"> | `location_military_tent_01_88` | Tan military tent, roof slope facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_89.png" width="48" alt="location_military_tent_01_89"> | `location_military_tent_01_89` | Tan military tent, roof slope facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_90.png" width="48" alt="location_military_tent_01_90"> | `location_military_tent_01_90` | Tan military tent, roof slope facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_91.png" width="48" alt="location_military_tent_01_91"> | `location_military_tent_01_91` | Tan military tent, roof slope facing north | canopy | N | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_92.png" width="48" alt="location_military_tent_01_92"> | `location_military_tent_01_92` | Tan military tent, roof slope facing north | canopy | N | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_93.png" width="48" alt="location_military_tent_01_93"> | `location_military_tent_01_93` | Tan military tent, roof slope facing north | canopy | N | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_94.png" width="48" alt="location_military_tent_01_94"> | `location_military_tent_01_94` | Tan military tent, roof slope facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_95.png" width="48" alt="location_military_tent_01_95"> | `location_military_tent_01_95` | Tan military tent, roof slope facing north | canopy | N | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_96.png" width="48" alt="location_military_tent_01_96"> | `location_military_tent_01_96` | Tan military tent, eave flapping eastward | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_97.png" width="48" alt="location_military_tent_01_97"> | `location_military_tent_01_97` | Tan military tent, eave flapping eastward | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_98.png" width="48" alt="location_military_tent_01_98"> | `location_military_tent_01_98` | Tan military tent, eave flapping eastward | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_101.png" width="48" alt="location_military_tent_01_101"> | `location_military_tent_01_101` | Tan military tent, eave flapping southward | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_102.png" width="48" alt="location_military_tent_01_102"> | `location_military_tent_01_102` | Tan military tent, eave flapping southward | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_103.png" width="48" alt="location_military_tent_01_103"> | `location_military_tent_01_103` | Tan military tent, eave flapping southward | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_104.png" width="48" alt="location_military_tent_01_104"> | `location_military_tent_01_104` | Tan military tent, gable facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_105.png" width="48" alt="location_military_tent_01_105"> | `location_military_tent_01_105` | Tan military tent, gable facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_106.png" width="48" alt="location_military_tent_01_106"> | `location_military_tent_01_106` | Tan military tent, gable facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_107.png" width="48" alt="location_military_tent_01_107"> | `location_military_tent_01_107` | Tan military tent, gable facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_108.png" width="48" alt="location_military_tent_01_108"> | `location_military_tent_01_108` | Tan military tent, gable facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_109.png" width="48" alt="location_military_tent_01_109"> | `location_military_tent_01_109` | Tan military tent, gable facing east | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_112.png" width="48" alt="location_military_tent_01_112"> | `location_military_tent_01_112` | Tan military tent, gable facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_113.png" width="48" alt="location_military_tent_01_113"> | `location_military_tent_01_113` | Tan military tent, gable facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_114.png" width="48" alt="location_military_tent_01_114"> | `location_military_tent_01_114` | Tan military tent, gable facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_115.png" width="48" alt="location_military_tent_01_115"> | `location_military_tent_01_115` | Tan military tent, gable facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_116.png" width="48" alt="location_military_tent_01_116"> | `location_military_tent_01_116` | Tan military tent, gable facing south | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/location_military_tent_01_117.png" width="48" alt="location_military_tent_01_117"> | `location_military_tent_01_117` | Tan military tent, gable facing south | canopy | S | — | decorations.json | primary |
 
 ## Banner
 
@@ -443,3 +511,6 @@ Details and notes: [CUSTOM_TEXTURES.md](CUSTOM_TEXTURES.md).
 | `lighting_indoor_01_56..58` | Metal lamps, not strings (D80) |
 | `camping_03_0..7` | Log lean-to shelter: logs, no fabric (D101) |
 | `camping_04_1..3, _9..11, _16..18, _24..26 (and +32, +64, +96)` | Tent tiles without art (D101) |
+| `location_military_tent_01_0..11 (and +64)` | Military tent canvas walls: drawn by vanilla's wall renderer with cutaways, not hooked (D103) |
+| `location_military_tent_01_35, _36 (and +64)` | Military tent guy ropes, no cloth (D103) |
+| `location_military_tent_01_56..63 (and +64)` | Military tent door/window flaps: vanilla curtains, handled by the curtain rule (D63, D103) |

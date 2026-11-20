@@ -17,6 +17,7 @@ Everything is measured in the 2x tile frame (128x256), the coordinate system of 
   The valance's top is a smooth line h px above the scallop tips. Back views of plain canopies show no valance.
 * Tents (D101): tents and shelters (camping_01, _03, _04) as canopies without a valance: the canvas outline per 4-px
   column from a colour mask (poles, log floors and fur are not canvas), pinned on every edge (poles, ridge, pegs).
+* Military tent (D103): location_military_tent_01 roof slopes and gables the same way; its eave strips as valances.
 * Drapes (D82): the altar cloths, measured by hand (see DECISIONS D82) and written as they are.
 """
 import io
@@ -333,6 +334,64 @@ def tent_entry(sprite, img, fabric, family, slope):
             'exposure': TENT_EXPOSURE, 'timeScale': TENT_TIME_SCALE, 'canopy': c}
 
 
+# ---------------------------------------------------------------- military tent (D103)
+
+# location_military_tent_01: a tent built like a house, green 0-63 and tan 64-127 (+64). Its walls (0-11) are vanilla
+# walls drawn through the wall renderer (cutaways) and stay vanilla; its door/window flaps (56-63) are curtains (D63).
+# The roof slopes and gables sit on the level above the walls (WestRoofB/M/T); the eave strips with their guy ropes
+# at the walls' top. (piece, facing, sprites, row): facing = the side the canvas faces, from the sprite's edges.
+MT = 'location_military_tent_01_'
+MILITARY = [
+    ('roof', 'W', {16: 'B', 17: 'M', 18: 'T', 22: 'M'}),
+    ('roof', 'E', {19: 'T', 20: 'M', 21: 'B', 23: 'M'}),
+    ('roof', 'S', {24: 'B', 25: 'M', 26: 'T', 30: 'M'}),
+    ('roof', 'N', {27: 'T', 28: 'M', 29: 'B', 31: 'M'}),
+    # gables: vertical canvas at the ends of the ridge, along y on the tile's west edge (E) or along x on its north (S)
+    ('gable', 'E', {40: 'B', 41: 'M', 42: 'T', 43: 'T', 44: 'M', 45: 'B'}),
+    ('gable', 'S', {48: 'B', 49: 'M', 50: 'T', 51: 'T', 52: 'M', 53: 'B'}),
+    # eaves: the roof's edge past the wall, hanging free between its guy ropes; out = away from the tent (the side the
+    # rope runs to its peg). 35 and 36 are ropes only.
+    ('eave', 'E', {32: 'T', 33: 'T', 34: 'T'}),
+    ('eave', 'S', {37: 'T', 38: 'T', 39: 'T'}),
+]
+# canvas slope from horizontal (= normal tilt from vertical): roof ~0.45 m rise per tile; gables are vertical
+MIL_TILT = {'roof': 25, 'gable': 90}
+MIL_SIZE = {'roof': [1.0, 1.1], 'gable': [1.0, 1.0], 'eave': [1.0, 0.3]}
+# centre height above the level's floor by roof row (B/M/T); eaves hang at the top of the walls below the roof
+MIL_ROW_HEIGHT = {'B': 0.2, 'M': 0.6, 'T': 1.0}
+MIL_EAVE_HEIGHT = 2.2
+MIL_EXPOSURE = 0.7     # up in the open, above the walls
+MIL_EAVE_FLAPS = 4
+
+
+def military_entry(sprite, img, piece, facing, row):
+    alpha = np.array(img)[:, :, 3] > 60
+    cols = tent_columns(alpha, alpha, 2)  # one canvas colour; the guy ropes go with the opening
+    ox, oy = OUT[facing]
+    height = MIL_EAVE_HEIGHT if piece == 'eave' else MIL_ROW_HEIGHT[row]
+    if piece == 'eave':
+        # the whole strip is a valance swinging about its top (the roof's edge); its ends stay with the ropes
+        cols = [[x, t, t, b] for x, t, _, b in cols]
+        band = float(np.median([b - t for _, t, _, b in cols]))
+        normal = [0.0, 0.0, 1.0]
+        flaps, valance = MIL_EAVE_FLAPS, round(band / LEVEL_PX, 3)
+    else:
+        t = np.radians(MIL_TILT[piece])
+        normal = [round(ox * np.sin(t), 3), round(oy * np.sin(t), 3), round(float(np.cos(t)), 3)]
+        flaps, valance = 0, 0
+    c = {'columns': cols, 'normal': normal, 'out': [ox, oy], 'spread': 0, 'size': MIL_SIZE[piece],
+         'flaps': flaps, 'valance': valance, 'height': height, 'type': 'awning'}
+    return {'sprite': sprite, 'kind': 'canopy', 'facing': facing, 'family': 'military_' + piece, 'fabric': 'canvas',
+            'exposure': MIL_EXPOSURE, 'timeScale': TENT_TIME_SCALE, 'canopy': c}
+
+
+def military_sprites():
+    for piece, facing, rows in MILITARY:
+        for base in (0, 64):
+            for i, row in rows.items():
+                yield MT + str(base + i), piece, facing, row
+
+
 # ---------------------------------------------------------------- drapes (measured by hand, DECISIONS D82)
 
 DRAPES = [
@@ -354,6 +413,7 @@ def main():
     pack, dst = sys.argv[1], sys.argv[2]
     png = sys.argv[4] if len(sys.argv) > 4 and sys.argv[3] == '--png' else None
     names = {n for s in STRINGS for n in s[:4]} | {n for _, _, ns in CANOPIES for n in ns} | {n for t in TENTS for n in t[3]}
+    names |= {m[0] for m in military_sprites()}
     img = read_pack(pack, names)
     if png:
         os.makedirs(png, exist_ok=True)
@@ -366,10 +426,12 @@ def main():
     for fabric, family, slope, sprites in TENTS:
         for s in sprites:
             entries.append(tent_entry(s, img[s], fabric, family, slope))
+    for s, piece, facing, row in military_sprites():
+        entries.append(military_entry(s, img[s], piece, facing, row))
     entries += DRAPES
     doc = {'version': 2,
            'comment': 'Generated by tools/decotool.py from Tiles2x.pack (build 42.21.0): strings (D80), canopies (D81), '
-                      'drapes (D82), tents (D101). Pixel coordinates in the 2x tile frame; metres relative to the object\'s square.',
+                      'drapes (D82), tents (D101), military tent (D103). Pixel coordinates in the 2x tile frame; metres relative to the object\'s square.',
            'flags': entries}
     with open(dst, 'w', encoding='utf-8', newline='\n') as f:
         f.write('{\n  "version": 2,\n  "comment": ' + json.dumps(doc['comment']) + ',\n  "flags": [\n')

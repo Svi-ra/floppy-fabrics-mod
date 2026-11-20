@@ -19,7 +19,7 @@ hanging coat do not move alike), and the mod is built so new kinds of fabric are
 - **Strings, awnings and canopies:** bunting and string lights swing on their strings (the glow of lit bulbs follows
   them); awnings and market canopies billow and flap in strong wind while their valances flutter.
 - **Tents and shelters:** tarp and camping tents, the improvised tent and the tarp and hide shelters breathe in the wind
-  and flap in a gale; their poles and pegs stay put.
+  and flap in a gale; their poles and pegs stay put. The roof, gables and eaves of the military tent move too.
 
 **Planned next** (see [docs/HANGING_CLOTHES_FUTURE.md](docs/HANGING_CLOTHES_FUTURE.md) and
 [docs/CLOTHING_RACKS_FUTURE.md](docs/CLOTHING_RACKS_FUTURE.md)): the garments hanging on clothing racks, then more

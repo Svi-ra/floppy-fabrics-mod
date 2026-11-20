@@ -11,6 +11,8 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
 ## Pending (next upload)
 
 **New**
+- **Military tents** (green and tan): the roof and gables now breathe in the wind and flap in a storm, and the eaves
+  flap between their guy ropes. The walls stay put.
 - **Tents and shelters** now breathe in the wind and flap in a storm: the tarp tent, all four camping tents, the
   improvised tent and the tarp and hide shelters. Poles, pegs and bedding stay put.
 - **Car-wash entrance covers** now swing aside when you drive or walk through them, and sway in the wind outdoors.

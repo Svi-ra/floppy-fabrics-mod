@@ -83,6 +83,14 @@ def describe(e, fname):
         else:
             what = "Hide shelter"
         name = f"{what}, piece with the {slope}-facing slope"
+    elif kind == "canopy" and ts == "location_military_tent_01":
+        cat = "tent"
+        colour = "Green" if i < 64 else "Tan"
+        piece = e["family"].split("_", 1)[1]
+        side = {"S": "south", "E": "east", "N": "north", "W": "west"}[face]
+        name = {"roof": f"{colour} military tent, roof slope facing {side}",
+                "gable": f"{colour} military tent, gable facing {side}",
+                "eave": f"{colour} military tent, eave flapping {side}ward"}[piece]
     elif kind == "canopy":
         cat = "canopy"
         name = f"{FAMILY[e['family']].capitalize()}, {FACE[face]}"
@@ -133,6 +141,9 @@ excluded = [
     ("lighting_indoor_01_56..58", "Metal lamps, not strings (D80)"),
     ("camping_03_0..7", "Log lean-to shelter: logs, no fabric (D101)"),
     ("camping_04_1..3, _9..11, _16..18, _24..26 (and +32, +64, +96)", "Tent tiles without art (D101)"),
+    ("location_military_tent_01_0..11 (and +64)", "Military tent canvas walls: drawn by vanilla's wall renderer with cutaways, not hooked (D103)"),
+    ("location_military_tent_01_35, _36 (and +64)", "Military tent guy ropes, no cloth (D103)"),
+    ("location_military_tent_01_56..63 (and +64)", "Military tent door/window flaps: vanilla curtains, handled by the curtain rule (D63, D103)"),
 ]
 
 textures = [dict(id="pole_flag", file="mod/42/media/floppyfabrics/pole_flag.png", runtimePath="media/floppyfabrics/pole_flag.png",
