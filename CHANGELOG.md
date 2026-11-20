@@ -2,7 +2,7 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
 
-## [Unreleased]
+## [0.7.0] - 2026-11-20
 
 Decisions D94–D105. Unit-tested (125 tests) and patch-verified offline. Verified in-game by the user: D94–D97
 (2026-11-19), the volleyball nets of D98–D99, the car-wash covers of D100, the tents of D101–D102 and
