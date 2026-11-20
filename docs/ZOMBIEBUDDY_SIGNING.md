@@ -78,6 +78,24 @@ key from the Steam profile. Step 2 opened as
 [zed-0xff/ZombieBuddy#148](https://github.com/zed-0xff/ZombieBuddy/pull/148) (from the fork Svi-ra/ZombieBuddy, branch
 `add-author-svi_ra`), waiting for review.
 
+## Known issue: "invalid ZBS" for some players (found 2026-11-20, v0.7.0)
+
+Not a stale upload: the live item (599,746 bytes, updated 09:24) was downloaded with SteamCMD and is byte-identical to
+`deployWorkshop`'s folder. ZombieBuddy 2.3.4's own `ZBSVerifier.check` on that download returns ValidSignature with
+uploader = signer.
+
+The cause is the key lookup. With svi_ra not in the authors registry yet, every player's ZombieBuddy fetches
+`https://steamcommunity.com/profiles/76561199001294613` to read `JavaModZBS:`. If that request fails (steamcommunity
+blocked or rate-limited, proxy or TLS trouble, timeout), ZombieBuddy does **not** fall back to "unsigned". It returns
+"Could not verify signature", marks the mod `invalid ZBS` and blocks it. Reproduced by running the verifier with an
+empty trust store.
+
+Fix: get #148 merged. ZombieBuddy downloads the registry from
+`raw.githubusercontent.com/zed-0xff/ZombieBuddy/refs/heads/master/authors.json` and caches it, so no ZombieBuddy release
+is needed. The key then resolves without steamcommunity. To confirm a player report, ask for their `console.txt` and
+look for `ZBS verification invalid ... detailedMessage=`: a network or HTTP error there means this issue. Shipping
+without a `.zbs` is no stopgap, because ZombieBuddy blocks unsigned jars when `allow_unsigned_mods=false`.
+
 ## Checking a build
 
 `ZBSVerifier` in ZombieBuddy 2.3.4 parses our `.zbs` and, before step 1 is done, reports only *"Could not find
