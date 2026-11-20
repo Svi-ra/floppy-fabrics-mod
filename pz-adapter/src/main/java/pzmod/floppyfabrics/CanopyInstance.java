@@ -8,8 +8,6 @@ import pzmod.floppyfabrics.cloth.Canopy;
  * {@code pivot} to {@code bottom} the valance.
  */
 final class CanopyInstance {
-    /** Height (m above its floor) assumed for the hem when placing flap nodes in the world (only for the gust field). */
-    static final float HEM_HEIGHT = 2.0f;
 
     final FlagDef def;
     final Canopy canopy;
@@ -31,12 +29,15 @@ final class CanopyInstance {
         int k = Detail.flaps(def.canopyFlaps); // detail setting (D89)
         canopy = new Canopy(def.canopyProfile, def.canopyWidth, def.canopyDepth, def.canopyNx, def.canopyNy, def.canopyNz,
                 k, def.canopyValance);
-        cx = sx + 0.5f; cy = sy + 0.5f; cz = sz * Projection.LEVEL_M + HEM_HEIGHT;
+        cx = sx + 0.5f; cy = sy + 0.5f; cz = sz * Projection.LEVEL_M + def.canopyHeight;
         canopy.setCenter(cx, cy);
         flapS = new float[k];
         theta = new float[k];
         outSX = new float[k];
         outSY = new float[k];
+        // height (m above the floor) of the canopy (default 2: awnings), used to place the hem's flap nodes in the world
+        // (gust field) and the vehicle-wash box; tents sit lower (D101)
+        float hemHeight = def.canopyHeight;
         float[] c = def.canopyColumns;
         float h0 = Float.NaN, h1 = Float.NaN;
         for (int i = 0; i < c.length; i += 4) {
@@ -55,7 +56,7 @@ final class CanopyInstance {
             float fy = columnAt(c, fx, 2);
             // the 2x frame point (fx, fy) at the assumed hem height → world (x, y): x − y from screen x, x + y from screen y
             float d = (fx - 64f) / 64f;
-            float sum = (fy - 192f + HEM_HEIGHT * Projection.PX_PER_M_Z_2X) / 32f;
+            float sum = (fy - 192f + hemHeight * Projection.PX_PER_M_Z_2X) / 32f;
             float wx = sx + 0.5f * (sum + d), wy = sy + 0.5f * (sum - d);
             // the hem's outward direction turns along a curved hem (dome, quarter round)
             double ang = Math.toRadians(def.canopySpread * (s - 0.5f));

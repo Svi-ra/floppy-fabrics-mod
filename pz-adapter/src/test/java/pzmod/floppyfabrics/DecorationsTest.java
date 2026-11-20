@@ -11,7 +11,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/** decorations.json (strings, canopies, drapes) and the displacement fields that draw them (D80-D84). */
+/** decorations.json (strings, canopies, drapes, tents) and the displacement fields that draw them (D80-D84, D101). */
 class DecorationsTest {
     private final float[] o = new float[6];
 
@@ -36,7 +36,7 @@ class DecorationsTest {
         Map<String, Integer> kinds = new HashMap<>();
         for (FlagDef d : p.flags()) kinds.merge(d.drape ? "DRAPE" : d.kind.name(), 1, Integer::sum);
         assertEquals(28, kinds.get("LINE"), "7 strings x 4 tiles");
-        assertEquals(84, kinds.get("CANOPY"));
+        assertEquals(84 + 104, kinds.get("CANOPY"), "awnings + tents (D101)");
         assertEquals(4, kinds.get("DRAPE"));
         assertEquals(p.flags().size(), p.flags().stream().map(f -> f.sprite).distinct().count(), "one entry per sprite");
     }
@@ -132,6 +132,45 @@ class DecorationsTest {
         assertTrue(atPivotAbove < 0.2f, "continuous at the pivot: " + atPivotAbove);
         f.sample(xm, bot + 40f, o);
         assertEquals(0f, Math.abs(o[0]) + Math.abs(o[1]), 0f, "the frame's legs below stay still");
+    }
+
+    @Test
+    void tentCanvasBreathesInTheWindWhileItsPolesAndEdgesStayStill() throws Exception {
+        // the improvised tent: orange canvas with a pole standing in front of it (frame x 85..89)
+        FlagDef d = def("camping_03_27");
+        assertEquals(FlagDef.Kind.CANOPY, d.kind);
+        assertEquals(0, d.canopyFlaps, "a tent has no valance");
+        assertEquals(0.7f, d.canopyHeight, 1e-6f);
+        assertEquals(0.5f, d.exposure, 1e-6f);
+        assertEquals(2f, def("walls_decoration_01_84").canopyHeight, 0f, "awnings keep the default height");
+        CanopyInstance ci = new CanopyInstance(d, 10, 20, 0);
+        assertEquals(0.7f, ci.cz, 1e-5f);
+        ci.project();
+        Decorations.CanopyField f = new Decorations.CanopyField();
+        f.inst = ci;
+        for (int x = 0; x < 128; x += 2) for (int y = 100; y < 256; y += 2) {
+            f.sample(x, y, o);
+            assertEquals(0f, Math.abs(o[0]) + Math.abs(o[1]), 0f, "vanilla at rest");
+        }
+        ci.canopy.setWind(8f, 0f, 0f); // at its east-facing slope
+        float clock = 0f;
+        for (int i = 0; i < 240; i++) { clock += 1f / 60f; ci.canopy.step(1f / 60f, clock); }
+        ci.project();
+        float moved = 0f;
+        for (int x = 30; x < 80; x += 2) for (int y = 160; y < 230; y += 2) {
+            f.sample(x, y, o);
+            moved = Math.max(moved, Math.abs(o[0]) + Math.abs(o[1]));
+        }
+        assertTrue(moved > 0.5f, "the canvas moves: " + moved);
+        for (int y = 100; y < 256; y += 2) {
+            f.sample(87f, y, o);
+            assertEquals(0f, Math.abs(o[0]) + Math.abs(o[1]), 0f, "the pole stays still at y " + y);
+        }
+        float[] c = d.canopyColumns;
+        f.sample(50f, CanopyInstance.columnAt(c, 50f, 1) + 0.01f, o);
+        assertEquals(0f, Math.abs(o[0]) + Math.abs(o[1]), 0.05f, "ridge held");
+        f.sample(50f, CanopyInstance.columnAt(c, 50f, 3) + 3f, o);
+        assertEquals(0f, Math.abs(o[0]) + Math.abs(o[1]), 0f, "the ground below the pegs stays still");
     }
 
     @Test

@@ -25,7 +25,7 @@ Previews (`registry/previews/<sprite>.png`, full 128x256 2x tile frames) are ext
 
 ## Summary
 
-180 sprites registered (178 configured entries, 2 reference/host tiles) plus pattern-based entries.
+284 sprites registered (282 configured entries, 2 reference/host tiles) plus pattern-based entries.
 
 | Category | Sprites |
 |---|---|
@@ -36,7 +36,117 @@ Previews (`registry/previews/<sprite>.png`, full 128x256 2x tile frames) are ext
 | net | 6 |
 | pole flag | 1 |
 | string line | 28 |
+| tent | 104 |
 | wall flag | 11 |
+
+## Tent
+
+| Preview | Sprite | Name | Kind | Facing | Group | Config | Role |
+|---|---|---|---|---|---|---|---|
+| <img src="registry/previews/camping_01_0.png" width="48" alt="camping_01_0"> | `camping_01_0` | Small tarp tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_01_1.png" width="48" alt="camping_01_1"> | `camping_01_1` | Small tarp tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_01_2.png" width="48" alt="camping_01_2"> | `camping_01_2` | Small tarp tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_01_3.png" width="48" alt="camping_01_3"> | `camping_01_3` | Small tarp tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_8.png" width="48" alt="camping_03_8"> | `camping_03_8` | Tarp shelter, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_9.png" width="48" alt="camping_03_9"> | `camping_03_9` | Tarp shelter, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_10.png" width="48" alt="camping_03_10"> | `camping_03_10` | Tarp shelter, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_11.png" width="48" alt="camping_03_11"> | `camping_03_11` | Tarp shelter, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_12.png" width="48" alt="camping_03_12"> | `camping_03_12` | Tarp shelter, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_13.png" width="48" alt="camping_03_13"> | `camping_03_13` | Tarp shelter, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_14.png" width="48" alt="camping_03_14"> | `camping_03_14` | Tarp shelter, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_15.png" width="48" alt="camping_03_15"> | `camping_03_15` | Tarp shelter, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_24.png" width="48" alt="camping_03_24"> | `camping_03_24` | Improvised tent (pole and tarp), piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_25.png" width="48" alt="camping_03_25"> | `camping_03_25` | Improvised tent (pole and tarp), piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_26.png" width="48" alt="camping_03_26"> | `camping_03_26` | Improvised tent (pole and tarp), piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_27.png" width="48" alt="camping_03_27"> | `camping_03_27` | Improvised tent (pole and tarp), piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_40.png" width="48" alt="camping_03_40"> | `camping_03_40` | Hide shelter, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_41.png" width="48" alt="camping_03_41"> | `camping_03_41` | Hide shelter, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_42.png" width="48" alt="camping_03_42"> | `camping_03_42` | Hide shelter, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_43.png" width="48" alt="camping_03_43"> | `camping_03_43` | Hide shelter, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_44.png" width="48" alt="camping_03_44"> | `camping_03_44` | Hide shelter, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_45.png" width="48" alt="camping_03_45"> | `camping_03_45` | Hide shelter, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_46.png" width="48" alt="camping_03_46"> | `camping_03_46` | Hide shelter, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_03_47.png" width="48" alt="camping_03_47"> | `camping_03_47` | Hide shelter, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_0.png" width="48" alt="camping_04_0"> | `camping_04_0` | Yellow tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_4.png" width="48" alt="camping_04_4"> | `camping_04_4` | Yellow tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_5.png" width="48" alt="camping_04_5"> | `camping_04_5` | Yellow tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_6.png" width="48" alt="camping_04_6"> | `camping_04_6` | Yellow tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_7.png" width="48" alt="camping_04_7"> | `camping_04_7` | Yellow tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_8.png" width="48" alt="camping_04_8"> | `camping_04_8` | Yellow tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_12.png" width="48" alt="camping_04_12"> | `camping_04_12` | Yellow tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_13.png" width="48" alt="camping_04_13"> | `camping_04_13` | Yellow tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_14.png" width="48" alt="camping_04_14"> | `camping_04_14` | Yellow tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_15.png" width="48" alt="camping_04_15"> | `camping_04_15` | Yellow tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_19.png" width="48" alt="camping_04_19"> | `camping_04_19` | Yellow tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_20.png" width="48" alt="camping_04_20"> | `camping_04_20` | Yellow tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_21.png" width="48" alt="camping_04_21"> | `camping_04_21` | Yellow tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_22.png" width="48" alt="camping_04_22"> | `camping_04_22` | Yellow tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_23.png" width="48" alt="camping_04_23"> | `camping_04_23` | Yellow tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_27.png" width="48" alt="camping_04_27"> | `camping_04_27` | Yellow tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_28.png" width="48" alt="camping_04_28"> | `camping_04_28` | Yellow tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_29.png" width="48" alt="camping_04_29"> | `camping_04_29` | Yellow tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_30.png" width="48" alt="camping_04_30"> | `camping_04_30` | Yellow tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_31.png" width="48" alt="camping_04_31"> | `camping_04_31` | Yellow tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_32.png" width="48" alt="camping_04_32"> | `camping_04_32` | Blue tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_36.png" width="48" alt="camping_04_36"> | `camping_04_36` | Blue tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_37.png" width="48" alt="camping_04_37"> | `camping_04_37` | Blue tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_38.png" width="48" alt="camping_04_38"> | `camping_04_38` | Blue tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_39.png" width="48" alt="camping_04_39"> | `camping_04_39` | Blue tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_40.png" width="48" alt="camping_04_40"> | `camping_04_40` | Blue tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_44.png" width="48" alt="camping_04_44"> | `camping_04_44` | Blue tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_45.png" width="48" alt="camping_04_45"> | `camping_04_45` | Blue tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_46.png" width="48" alt="camping_04_46"> | `camping_04_46` | Blue tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_47.png" width="48" alt="camping_04_47"> | `camping_04_47` | Blue tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_51.png" width="48" alt="camping_04_51"> | `camping_04_51` | Blue tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_52.png" width="48" alt="camping_04_52"> | `camping_04_52` | Blue tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_53.png" width="48" alt="camping_04_53"> | `camping_04_53` | Blue tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_54.png" width="48" alt="camping_04_54"> | `camping_04_54` | Blue tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_55.png" width="48" alt="camping_04_55"> | `camping_04_55` | Blue tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_59.png" width="48" alt="camping_04_59"> | `camping_04_59` | Blue tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_60.png" width="48" alt="camping_04_60"> | `camping_04_60` | Blue tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_61.png" width="48" alt="camping_04_61"> | `camping_04_61` | Blue tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_62.png" width="48" alt="camping_04_62"> | `camping_04_62` | Blue tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_63.png" width="48" alt="camping_04_63"> | `camping_04_63` | Blue tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_64.png" width="48" alt="camping_04_64"> | `camping_04_64` | Brown tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_68.png" width="48" alt="camping_04_68"> | `camping_04_68` | Brown tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_69.png" width="48" alt="camping_04_69"> | `camping_04_69` | Brown tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_70.png" width="48" alt="camping_04_70"> | `camping_04_70` | Brown tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_71.png" width="48" alt="camping_04_71"> | `camping_04_71` | Brown tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_72.png" width="48" alt="camping_04_72"> | `camping_04_72` | Brown tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_76.png" width="48" alt="camping_04_76"> | `camping_04_76` | Brown tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_77.png" width="48" alt="camping_04_77"> | `camping_04_77` | Brown tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_78.png" width="48" alt="camping_04_78"> | `camping_04_78` | Brown tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_79.png" width="48" alt="camping_04_79"> | `camping_04_79` | Brown tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_83.png" width="48" alt="camping_04_83"> | `camping_04_83` | Brown tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_84.png" width="48" alt="camping_04_84"> | `camping_04_84` | Brown tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_85.png" width="48" alt="camping_04_85"> | `camping_04_85` | Brown tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_86.png" width="48" alt="camping_04_86"> | `camping_04_86` | Brown tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_87.png" width="48" alt="camping_04_87"> | `camping_04_87` | Brown tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_91.png" width="48" alt="camping_04_91"> | `camping_04_91` | Brown tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_92.png" width="48" alt="camping_04_92"> | `camping_04_92` | Brown tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_93.png" width="48" alt="camping_04_93"> | `camping_04_93` | Brown tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_94.png" width="48" alt="camping_04_94"> | `camping_04_94` | Brown tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_95.png" width="48" alt="camping_04_95"> | `camping_04_95` | Brown tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_96.png" width="48" alt="camping_04_96"> | `camping_04_96` | Green tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_100.png" width="48" alt="camping_04_100"> | `camping_04_100` | Green tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_101.png" width="48" alt="camping_04_101"> | `camping_04_101` | Green tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_102.png" width="48" alt="camping_04_102"> | `camping_04_102` | Green tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_103.png" width="48" alt="camping_04_103"> | `camping_04_103` | Green tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_104.png" width="48" alt="camping_04_104"> | `camping_04_104` | Green tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_108.png" width="48" alt="camping_04_108"> | `camping_04_108` | Green tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_109.png" width="48" alt="camping_04_109"> | `camping_04_109` | Green tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_110.png" width="48" alt="camping_04_110"> | `camping_04_110` | Green tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_111.png" width="48" alt="camping_04_111"> | `camping_04_111` | Green tent, piece with the east-facing slope | canopy | E | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_115.png" width="48" alt="camping_04_115"> | `camping_04_115` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_116.png" width="48" alt="camping_04_116"> | `camping_04_116` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_117.png" width="48" alt="camping_04_117"> | `camping_04_117` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_118.png" width="48" alt="camping_04_118"> | `camping_04_118` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_119.png" width="48" alt="camping_04_119"> | `camping_04_119` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_123.png" width="48" alt="camping_04_123"> | `camping_04_123` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_124.png" width="48" alt="camping_04_124"> | `camping_04_124` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_125.png" width="48" alt="camping_04_125"> | `camping_04_125` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_126.png" width="48" alt="camping_04_126"> | `camping_04_126` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
+| <img src="registry/previews/camping_04_127.png" width="48" alt="camping_04_127"> | `camping_04_127` | Green tent, piece with the south-facing slope | canopy | S | — | decorations.json | primary |
 
 ## Banner
 
@@ -331,3 +441,5 @@ Details and notes: [CUSTOM_TEXTURES.md](CUSTOM_TEXTURES.md).
 | `location_entertainment_theatre_01_95, _100` | Stage curtain rods, no cloth (D77) |
 | `lighting_outdoor_01_48..51` | Flood lights named 'Lights', not strings (D80) |
 | `lighting_indoor_01_56..58` | Metal lamps, not strings (D80) |
+| `camping_03_0..7` | Log lean-to shelter: logs, no fabric (D101) |
+| `camping_04_1..3, _9..11, _16..18, _24..26 (and +32, +64, +96)` | Tent tiles without art (D101) |

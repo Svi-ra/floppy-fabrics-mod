@@ -69,6 +69,20 @@ def describe(e, fname):
         name += f", {'south (runs east)' if e['line']['a'][1] == 0 and e['line']['b'][1] == 0 else 'east (runs south)'}"
         if t != "bunting":
             notes = (notes + " Lit variant: " + ts + "_on_" + str(i) + " (derived).").strip()
+    elif kind == "canopy" and ts.startswith("camping_0"):
+        cat = "tent"
+        slope = {"S": "south", "E": "east"}[face]
+        if ts == "camping_01":
+            what = "Small tarp tent"
+        elif ts == "camping_04":
+            what = f"{['Yellow', 'Blue', 'Brown', 'Green'][i // 32]} tent"
+        elif 8 <= i <= 15:
+            what = "Tarp shelter"
+        elif 24 <= i <= 27:
+            what = "Improvised tent (pole and tarp)"
+        else:
+            what = "Hide shelter"
+        name = f"{what}, piece with the {slope}-facing slope"
     elif kind == "canopy":
         cat = "canopy"
         name = f"{FAMILY[e['family']].capitalize()}, {FACE[face]}"
@@ -117,6 +131,8 @@ excluded = [
     ("location_entertainment_theatre_01_95, _100", "Stage curtain rods, no cloth (D77)"),
     ("lighting_outdoor_01_48..51", "Flood lights named 'Lights', not strings (D80)"),
     ("lighting_indoor_01_56..58", "Metal lamps, not strings (D80)"),
+    ("camping_03_0..7", "Log lean-to shelter: logs, no fabric (D101)"),
+    ("camping_04_1..3, _9..11, _16..18, _24..26 (and +32, +64, +96)", "Tent tiles without art (D101)"),
 ]
 
 textures = [dict(id="pole_flag", file="mod/42/media/floppyfabrics/pole_flag.png", runtimePath="media/floppyfabrics/pole_flag.png",

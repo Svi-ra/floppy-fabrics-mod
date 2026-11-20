@@ -91,6 +91,7 @@ drawn beside it stays still.
 | `canopy.flaps` | int | Valance flap nodes (0 = no valance) |
 | `canopy.valance` | m | Valance height |
 | `canopy.type` | `"awning"` | Physical profile (`Canopy.AWNING`) |
+| `canopy.height` | m | Default 2. Height of the canopy's middle above its floor: where the gust field samples it and the box in which passing vehicles and runners push air at it (tents 0.7, D101) |
 | `exposure` | 0–4 | Default 0.7 |
 | `mesh` | [cols, rows] | Default [12, 22] |
 

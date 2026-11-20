@@ -150,6 +150,8 @@ public final class FlagDef {
     /** Panel width along the hem and depth, metres; valance height (m) and flap count. */
     public final float canopyWidth, canopyDepth, canopyValance;
     public final int canopyFlaps;
+    /** Height of the canopy's middle above its floor, metres (gust field, vehicle wash; default 2, tents lower). */
+    public final float canopyHeight;
     public final Canopy.Profile canopyProfile;
     /** Render mesh over the sprite rectangle (cells). */
     public final int meshCols, meshRows;
@@ -186,7 +188,7 @@ public final class FlagDef {
         canopyColumns = b.canopyColumns; canopyNx = b.canopyNx; canopyNy = b.canopyNy; canopyNz = b.canopyNz;
         canopyOutX = b.canopyOutX; canopyOutY = b.canopyOutY; canopySpread = b.canopySpread;
         canopyWidth = b.canopyWidth; canopyDepth = b.canopyDepth; canopyValance = b.canopyValance;
-        canopyFlaps = b.canopyFlaps; canopyProfile = b.canopyProfile;
+        canopyFlaps = b.canopyFlaps; canopyProfile = b.canopyProfile; canopyHeight = b.canopyHeight;
         canvasTexture = b.canvasTexture; canvasU0 = b.canvasU0; canvasV0 = b.canvasV0; canvasU1 = b.canvasU1; canvasV1 = b.canvasV1;
         staticQuads = List.copyOf(b.staticQuads);
         source = b.source;
@@ -268,7 +270,7 @@ public final class FlagDef {
         b.canopyColumns = d.canopyColumns; b.canopyNx = d.canopyNx; b.canopyNy = d.canopyNy; b.canopyNz = d.canopyNz;
         b.canopyOutX = d.canopyOutX; b.canopyOutY = d.canopyOutY; b.canopySpread = d.canopySpread;
         b.canopyWidth = d.canopyWidth; b.canopyDepth = d.canopyDepth; b.canopyValance = d.canopyValance;
-        b.canopyFlaps = d.canopyFlaps; b.canopyProfile = d.canopyProfile;
+        b.canopyFlaps = d.canopyFlaps; b.canopyProfile = d.canopyProfile; b.canopyHeight = d.canopyHeight;
         b.meshCols = d.meshCols; b.meshRows = d.meshRows;
         b.anchor = d.anchor; b.depthPoint = d.depthPoint; b.sizeW = d.sizeW; b.sizeH = d.sizeH;
         b.canvasU0 = d.canvasU0; b.canvasV0 = d.canvasV0; b.canvasU1 = d.canvasU1; b.canvasV1 = d.canvasV1;
@@ -297,6 +299,7 @@ public final class FlagDef {
         float[] canopyColumns;
         float canopyNx, canopyNy, canopyNz = 1f, canopyOutX, canopyOutY = 1f, canopySpread, canopyWidth, canopyDepth, canopyValance;
         int canopyFlaps;
+        float canopyHeight = 2f;
         Canopy.Profile canopyProfile;
         int meshCols = 5, meshRows = 8;
         Point anchor, depthPoint;
@@ -341,6 +344,7 @@ public final class FlagDef {
                     throw new IllegalArgumentException(sprite + ": canopy size [w, d] must be 0.1..10 m");
                 if (canopyFlaps < 0 || canopyFlaps > 64) throw new IllegalArgumentException(sprite + ": canopy flaps 0..64");
                 if (canopyFlaps > 0 && !(canopyValance > 0.02f && canopyValance < 2f)) throw new IllegalArgumentException(sprite + ": valance height 0.02..2 m");
+                if (!(canopyHeight >= 0f && canopyHeight <= 10f)) throw new IllegalArgumentException(sprite + ": canopy height 0..10 m");
                 if (!(Math.abs(canopySpread) <= 270f)) throw new IllegalArgumentException(sprite + ": canopy spread -270..270 degrees");
                 if (meshCols < 1 || meshRows < 1 || meshCols > 32 || meshRows > 32) throw new IllegalArgumentException(sprite + ": mesh 1..32");
                 return new FlagDef(this);

@@ -15,6 +15,8 @@ Everything is measured in the 2x tile frame (128x256), the coordinate system of 
   straight canopies the run of the outline that follows the hem's iso slope (+0.5 along x, -0.5 along y), for round
   ones the low part of the outline (within 28 px of its lowest point, |slope| < 0.9; 1.6 for quarter rounds).
   The valance's top is a smooth line h px above the scallop tips. Back views of plain canopies show no valance.
+* Tents (D101): tents and shelters (camping_01, _03, _04) as canopies without a valance: the canvas outline per 4-px
+  column from a colour mask (poles, log floors and fur are not canvas), pinned on every edge (poles, ridge, pegs).
 * Drapes (D82): the altar cloths, measured by hand (see DECISIONS D82) and written as they are.
 """
 import io
@@ -235,6 +237,99 @@ def canopy_entry(sprite, img, family, facing):
     return {'sprite': sprite, 'kind': 'canopy', 'facing': facing, 'family': family, 'canopy': c}
 
 
+# ---------------------------------------------------------------- tents (D101)
+
+# Vanilla tents and shelters: one IsoObject per square, each drawing its own piece of the canvas. Tile groups from
+# newtiledefinitions (Facing, SpriteGridPos) and the entity scripts (LeanTo/Tarp/Leather_Shelter, moveable TentX):
+# (fabric, slope, sprites). `slope` is the side of the canvas the camera sees: E when the tile group (and the ridge)
+# runs along y, S when it runs along x. The camera looks from the south-east, so that is the side facing it.
+C1, C3, C4 = 'camping_01_', 'camping_03_', 'camping_04_'
+TENTS = [
+    # small tarp tent (camping.tentSprites.tarp): 0/1 grid (0,1)/(0,0), 2/3 grid (0,0)/(1,0)
+    ('orange', 'tent', 'E', [C1 + '0', C1 + '1']),
+    ('orange', 'tent', 'S', [C1 + '2', C1 + '3']),
+    # Tarp_Shelter: N/S faces along x, E/W faces along y; the log floor and the poles are not canvas
+    ('tarp', 'leanto', 'S', [C3 + str(i) for i in (8, 9, 14, 15)]),
+    ('tarp', 'leanto', 'E', [C3 + str(i) for i in (10, 11, 12, 13)]),
+    # improvised tent (pole + orange tarp): 24/25 along y, 26/27 along x
+    ('orange', 'tent', 'E', [C3 + '24', C3 + '25']),
+    ('orange', 'tent', 'S', [C3 + '26', C3 + '27']),
+    # Leather_Shelter: hide on poles over a fur bed
+    ('hide', 'leanto', 'S', [C3 + str(i) for i in (40, 41, 44, 45)]),
+    ('hide', 'leanto', 'E', [C3 + str(i) for i in (42, 43, 46, 47)]),
+]
+# camping_04: four colours (Yellow, Blue, Brown, Green) x 32: E 0-7 and W 8-15 on a 2x4 grid along y, S 16-23 and
+# N 24-31 on a 4x2 grid along x. Only the tiles with art are listed (the others draw nothing).
+C4_ART = {'E': (0, 4, 5, 6, 7, 8, 12, 13, 14, 15), 'S': (19, 20, 21, 22, 23, 27, 28, 29, 30, 31)}
+for base in (0, 32, 64, 96):
+    for slope, ids in C4_ART.items():
+        TENTS.append(('nylon', 'tent', slope, [C4 + str(base + i) for i in ids]))
+# canvas slope from horizontal (= normal tilt from vertical), panel size per tile [along the ridge, down the slope] m,
+# centre height above the floor (m: gust field and the vehicle-wash box), share of the climate wind
+TENT_TILT = {'tent': 60, 'leanto': 45}
+TENT_SIZE = {'tent': [1.0, 1.2], 'leanto': [1.0, 1.4]}
+TENT_HEIGHT = {'tent': 0.7, 'leanto': 1.0}
+TENT_EXPOSURE = 0.5
+
+
+def fabric_mask(img, fabric):
+    """Canvas pixels: alpha, then by colour (the poles, log floors, bedding and fur are not canvas)."""
+    a = np.array(img).astype(float)
+    alpha = a[:, :, 3] > 60
+    rgb = a[:, :, :3] / 255.0
+    mx, mn = rgb.max(2), rgb.min(2)
+    v, s = mx, np.where(mx > 0, (mx - mn) / np.maximum(mx, 1e-6), 0)
+    r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
+    d = np.maximum(mx - mn, 1e-6)
+    hue = np.where(mx == r, (60 * (g - b) / d) % 360, np.where(mx == g, 60 * (b - r) / d + 120, 60 * (r - g) / d + 240))
+    if fabric == 'tarp':      # olive tarp (hue ~50); wood is hue 15-35 and darker
+        return alpha & (hue >= 38) & (hue <= 75) & (v > 0.35)
+    if fabric == 'orange':    # orange canvas: bright and saturated; poles and leaf bedding are dark
+        return alpha & (hue < 40) & (v > 0.55) & (s > 0.35)
+    if fabric == 'hide':      # hide is as brown as the poles (removed by the wider opening); drop the white fur
+        return alpha & ~((s < 0.3) & (v > 0.55))
+    return alpha              # nylon tents: thin poles and guy lines go with the opening
+
+
+def tent_columns(mask, alpha, radius, step=4):
+    o = dilate(erode(mask, radius), radius) & mask
+    # a pole standing in front of the canvas: columns mostly covered by opaque non-canvas pixels are not canvas
+    other = alpha & ~mask
+    for x in range(o.shape[1]):
+        ys = np.nonzero(o[:, x])[0]
+        if len(ys) and other[ys.min():ys.max() + 1, x].sum() > 0.5 * (ys.max() - ys.min() + 1):
+            o[:, x] = False
+    xs = np.nonzero(o.sum(0) >= 3)[0]
+    x0, x1 = int(xs.min()), int(xs.max())
+    sample = list(range(x0, x1 + 1, step))
+    if sample[-1] != x1:
+        sample.append(x1)
+    cols = []
+    for x in sample:
+        ys = np.nonzero(o[:, x])[0]
+        if len(ys) >= 3:
+            cols.append([x, int(ys.min()), int(ys.max()), int(ys.max())])
+        elif cols:
+            # a gap (a pole between two pieces of canvas): a zero-height column keeps it still
+            y = cols[-1][3]
+            cols.append([x, y, y, y])
+    while cols and cols[-1][1] == cols[-1][3]:
+        cols.pop()
+    return cols
+
+
+def tent_entry(sprite, img, fabric, family, slope):
+    alpha = np.array(img)[:, :, 3] > 60
+    cols = tent_columns(fabric_mask(img, fabric), alpha, 4 if fabric == 'hide' else 2)
+    ox, oy = OUT[slope]
+    t = np.radians(TENT_TILT[family])
+    normal = [round(ox * np.sin(t), 3), round(oy * np.sin(t), 3), round(float(np.cos(t)), 3)]
+    c = {'columns': cols, 'normal': normal, 'out': [ox, oy], 'spread': 0, 'size': TENT_SIZE[family],
+         'flaps': 0, 'valance': 0, 'height': TENT_HEIGHT[family], 'type': 'awning'}
+    return {'sprite': sprite, 'kind': 'canopy', 'facing': slope, 'family': family, 'fabric': fabric,
+            'exposure': TENT_EXPOSURE, 'canopy': c}
+
+
 # ---------------------------------------------------------------- drapes (measured by hand, DECISIONS D82)
 
 DRAPES = [
@@ -255,7 +350,7 @@ def main():
         sys.exit(__doc__)
     pack, dst = sys.argv[1], sys.argv[2]
     png = sys.argv[4] if len(sys.argv) > 4 and sys.argv[3] == '--png' else None
-    names = {n for s in STRINGS for n in s[:4]} | {n for _, _, ns in CANOPIES for n in ns}
+    names = {n for s in STRINGS for n in s[:4]} | {n for _, _, ns in CANOPIES for n in ns} | {n for t in TENTS for n in t[3]}
     img = read_pack(pack, names)
     if png:
         os.makedirs(png, exist_ok=True)
@@ -265,10 +360,13 @@ def main():
     for family, facing, sprites in CANOPIES:
         for s in sprites:
             entries.append(canopy_entry(s, img[s], family, facing))
+    for fabric, family, slope, sprites in TENTS:
+        for s in sprites:
+            entries.append(tent_entry(s, img[s], fabric, family, slope))
     entries += DRAPES
     doc = {'version': 2,
            'comment': 'Generated by tools/decotool.py from Tiles2x.pack (build 42.21.0): strings (D80), canopies (D81), '
-                      'drapes (D82). Pixel coordinates in the 2x tile frame; metres relative to the object\'s square.',
+                      'drapes (D82), tents (D101). Pixel coordinates in the 2x tile frame; metres relative to the object\'s square.',
            'flags': entries}
     with open(dst, 'w', encoding='utf-8', newline='\n') as f:
         f.write('{\n  "version": 2,\n  "comment": ' + json.dumps(doc['comment']) + ',\n  "flags": [\n')

@@ -11,6 +11,8 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
 ## Pending (next upload)
 
 **New**
+- **Tents and shelters** now breathe in the wind and flap in a storm: the tarp tent, all four camping tents, the
+  improvised tent and the tarp and hide shelters. Poles, pegs and bedding stay put.
 - **Car-wash entrance covers** now swing aside when you drive or walk through them, and sway in the wind outdoors.
 - **Volleyball nets** now sway in the wind and give when you walk into them. Each net moves as one piece across its
   whole length, however long the map made it; the poles stay put.

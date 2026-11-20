@@ -203,6 +203,7 @@ public final class FlagJson {
         b.canopyWidth = size[0]; b.canopyDepth = size[1];
         b.canopyFlaps = (int) num(c, "flaps", 8f);
         b.canopyValance = num(c, "valance", 0.2f);
+        b.canopyHeight = num(c, "height", 2f);
         String type = str(c, "type", "awning");
         Canopy.Profile prof = Canopy.byName(type);
         if (prof == null) throw new IllegalArgumentException(b.sprite + ": unknown canopy type '" + type + "'");
