@@ -73,6 +73,11 @@ is not installed; same format as `openssl genpkey -algorithm ed25519 -outform DE
 
 3. Upload the next Workshop version (it already contains the `.zbs`).
 
+Status (2026-11-20): step 1 done; ZombieBuddy 2.3.4's `ZBSVerifier` returns ValidSignature for the signed jar with the
+key from the Steam profile. Step 2 opened as
+[zed-0xff/ZombieBuddy#148](https://github.com/zed-0xff/ZombieBuddy/pull/148) (from the fork Svi-ra/ZombieBuddy, branch
+`add-author-svi_ra`), waiting for review.
+
 ## Checking a build
 
 `ZBSVerifier` in ZombieBuddy 2.3.4 parses our `.zbs` and, before step 1 is done, reports only *"Could not find
