@@ -4,12 +4,16 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
-Decisions D94–D103. Unit-tested (123 tests) and patch-verified offline. Verified in-game by the user: D94–D97
+Decisions D94–D104. Unit-tested (125 tests) and patch-verified offline. Verified in-game by the user: D94–D97
 (2026-11-19), the volleyball nets of D98–D99, the car-wash covers of D100, the tents of D101–D102 and
 the military tent of D103 (2026-11-20).
 Player-facing summary for the Workshop page: [docs/WORKSHOP_UPDATE_NOTES.md](docs/WORKSHOP_UPDATE_NOTES.md).
 
 ### Added
+- **Training nets move** (D104): the cargo net under a beam (`location_military_generic_01_48`, `_49`/`_50` × n, `_51`)
+  and the tall net between staked posts (`_56`, `_57`/`_58` × n, `_59`) are each one cloth over their whole length,
+  held at the top and both ends; frames, posts and braces stay still. Runs now accept several middle sprites in any
+  order. The climbing ropes (`_52..55`) stay vanilla. Not yet verified in-game.
 - **Military tent moves** (D103): the roof slopes and gables of `location_military_tent_01` (green and tan) breathe in
   the wind and flap in a gale, held at ridge, eaves and seams; the eave strips flap below the roof's edge between their
   guy ropes. Walls stay vanilla (wall renderer with cutaways). Verified in-game by the user (2026-11-20).

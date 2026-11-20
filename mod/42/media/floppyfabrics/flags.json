@@ -1229,6 +1229,240 @@
       },
       "mesh": [8, 6],
       "exposure": 1.0
+    },
+    {
+      "sprite": "location_military_generic_01_48",
+      "kind": "wall",
+      "facing": "E",
+      "comment": "Training cargo net hung from a beam, running north: _48 (south frame), any number of _49/_50, _51 (north post). One cloth for the whole run (D99, several middles D104); top line y = 152 - x/2 (21 px under the beam, so the beam and the knee braces stay still), held at the top and both ends. _48's cloth starts after its knee brace (x 76) and _51 keeps only 2 px: its last rope stays tied to the post.",
+      "run": {
+        "id": "training_net_hanging",
+        "role": "start",
+        "next": [0, -1],
+        "cellsPerTile": 5
+      },
+      "inset": 0.4,
+      "confine": true,
+      "cloth": {
+        "x": 76,
+        "y": 114,
+        "w": 46,
+        "h": 101
+      },
+      "physics": {
+        "grid": [5, 7],
+        "lodGrid": [3, 4],
+        "mass": 1.0,
+        "drag": 0.35,
+        "pin": "top_sides",
+        "stiffness": [1.0, 0.8, 0.02]
+      },
+      "mesh": [8, 8],
+      "exposure": 1.0
+    },
+    {
+      "sprite": "location_military_generic_01_49",
+      "kind": "wall",
+      "facing": "E",
+      "run": {
+        "id": "training_net_hanging",
+        "role": "middle",
+        "next": [0, -1],
+        "cellsPerTile": 5
+      },
+      "inset": 0.4,
+      "confine": true,
+      "cloth": {
+        "x": 58,
+        "y": 123,
+        "w": 64,
+        "h": 101
+      },
+      "physics": {
+        "grid": [5, 7],
+        "lodGrid": [3, 4],
+        "mass": 1.0,
+        "drag": 0.35,
+        "pin": "top_sides",
+        "stiffness": [1.0, 0.8, 0.02]
+      },
+      "mesh": [8, 8],
+      "exposure": 1.0
+    },
+    {
+      "sprite": "location_military_generic_01_50",
+      "kind": "wall",
+      "facing": "E",
+      "run": {
+        "id": "training_net_hanging",
+        "role": "middle",
+        "next": [0, -1],
+        "cellsPerTile": 5
+      },
+      "inset": 0.4,
+      "confine": true,
+      "cloth": {
+        "x": 58,
+        "y": 123,
+        "w": 64,
+        "h": 101
+      },
+      "physics": {
+        "grid": [5, 7],
+        "lodGrid": [3, 4],
+        "mass": 1.0,
+        "drag": 0.35,
+        "pin": "top_sides",
+        "stiffness": [1.0, 0.8, 0.02]
+      },
+      "mesh": [8, 8],
+      "exposure": 1.0
+    },
+    {
+      "sprite": "location_military_generic_01_51",
+      "kind": "wall",
+      "facing": "E",
+      "run": {
+        "id": "training_net_hanging",
+        "role": "end",
+        "next": [0, -1],
+        "cellsPerTile": 5
+      },
+      "inset": 0.4,
+      "confine": true,
+      "cloth": {
+        "x": 58,
+        "y": 123,
+        "w": 2,
+        "h": 101
+      },
+      "physics": {
+        "grid": [5, 7],
+        "lodGrid": [3, 4],
+        "mass": 1.0,
+        "drag": 0.35,
+        "pin": "top_sides",
+        "stiffness": [1.0, 0.8, 0.02]
+      },
+      "mesh": [8, 8],
+      "exposure": 1.0
+    },
+    {
+      "sprite": "location_military_generic_01_56",
+      "kind": "wall",
+      "facing": "E",
+      "comment": "Tall training net between two staked posts, running north: _56 (south post), any number of _57/_58, _59 (north post). Top line y = 66 - x/2 (lowered so it stays inside the frame; the knots above are still), held at the top and both ends; _56's cloth starts after its post and brace (x 72).",
+      "run": {
+        "id": "training_net_tall",
+        "role": "start",
+        "next": [0, -1],
+        "cellsPerTile": 5
+      },
+      "inset": 0.5,
+      "confine": true,
+      "cloth": {
+        "x": 72,
+        "y": 30,
+        "w": 49,
+        "h": 172
+      },
+      "physics": {
+        "grid": [5, 10],
+        "lodGrid": [3, 5],
+        "mass": 1.5,
+        "drag": 0.35,
+        "pin": "top_sides",
+        "stiffness": [1.0, 0.8, 0.02]
+      },
+      "mesh": [8, 10],
+      "exposure": 1.0
+    },
+    {
+      "sprite": "location_military_generic_01_57",
+      "kind": "wall",
+      "facing": "E",
+      "run": {
+        "id": "training_net_tall",
+        "role": "middle",
+        "next": [0, -1],
+        "cellsPerTile": 5
+      },
+      "inset": 0.5,
+      "confine": true,
+      "cloth": {
+        "x": 57,
+        "y": 37.5,
+        "w": 64,
+        "h": 172
+      },
+      "physics": {
+        "grid": [5, 10],
+        "lodGrid": [3, 5],
+        "mass": 1.5,
+        "drag": 0.35,
+        "pin": "top_sides",
+        "stiffness": [1.0, 0.8, 0.02]
+      },
+      "mesh": [8, 10],
+      "exposure": 1.0
+    },
+    {
+      "sprite": "location_military_generic_01_58",
+      "kind": "wall",
+      "facing": "E",
+      "run": {
+        "id": "training_net_tall",
+        "role": "middle",
+        "next": [0, -1],
+        "cellsPerTile": 5
+      },
+      "inset": 0.5,
+      "confine": true,
+      "cloth": {
+        "x": 57,
+        "y": 37.5,
+        "w": 64,
+        "h": 172
+      },
+      "physics": {
+        "grid": [5, 10],
+        "lodGrid": [3, 5],
+        "mass": 1.5,
+        "drag": 0.35,
+        "pin": "top_sides",
+        "stiffness": [1.0, 0.8, 0.02]
+      },
+      "mesh": [8, 10],
+      "exposure": 1.0
+    },
+    {
+      "sprite": "location_military_generic_01_59",
+      "kind": "wall",
+      "facing": "E",
+      "run": {
+        "id": "training_net_tall",
+        "role": "end",
+        "next": [0, -1],
+        "cellsPerTile": 5
+      },
+      "inset": 0.5,
+      "confine": true,
+      "cloth": {
+        "x": 57,
+        "y": 37.5,
+        "w": 10,
+        "h": 172
+      },
+      "physics": {
+        "grid": [5, 10],
+        "lodGrid": [3, 5],
+        "mass": 1.5,
+        "drag": 0.35,
+        "pin": "top_sides",
+        "stiffness": [1.0, 0.8, 0.02]
+      },
+      "mesh": [8, 10],
+      "exposure": 1.0
     }
   ]
 }

@@ -20,6 +20,8 @@ hanging coat do not move alike), and the mod is built so new kinds of fabric are
   them); awnings and market canopies billow and flap in strong wind while their valances flutter.
 - **Tents and shelters:** tarp and camping tents, the improvised tent and the tarp and hide shelters breathe in the wind
   and flap in a gale; their poles and pegs stay put. The roof, gables and eaves of the military tent move too.
+- **Nets:** volleyball nets and the military training nets sway and give as one piece across their whole length,
+  however many tiles the map gives them; poles and frames stay still.
 
 **Planned next** (see [docs/HANGING_CLOTHES_FUTURE.md](docs/HANGING_CLOTHES_FUTURE.md) and
 [docs/CLOTHING_RACKS_FUTURE.md](docs/CLOTHING_RACKS_FUTURE.md)): the garments hanging on clothing racks, then more

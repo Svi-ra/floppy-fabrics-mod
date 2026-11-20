@@ -152,6 +152,70 @@ class RunsTest {
         assertNotNull(Runs.find(strip(1, 0, net(s, m, e, Runs.MAX_TILES - 2)), def(m), 5, 0, 0), "exactly the cap");
     }
 
+    /**
+     * The training nets (D104) have two different middle sprites ({@code _49}, {@code _50}; {@code _57}, {@code _58}):
+     * any mix of them between start and end is one run, each tile drawing its own sprite into the one shared cloth.
+     */
+    @Test
+    void aRunWithTwoMiddleSpritesIsOneClothWhateverTheirOrder() {
+        String t = "location_military_generic_01_";
+        String[][] rows = {
+                {t + 48, t + 49, t + 50, t + 51},
+                {t + 48, t + 50, t + 49, t + 50, t + 49, t + 51},
+                {t + 48, t + 51},
+                {t + 56, t + 57, t + 58, t + 59},
+                {t + 56, t + 58, t + 58, t + 57, t + 59}};
+        for (String[] row : rows) {
+            Runs.Grid g = strip(0, -1, row);
+            FlagDef first = null;
+            for (int k = 0; k < row.length; k++) {
+                FlagDef role = def(row[k]);
+                Runs.Place p = Runs.find(g, role, 0, -k, 0);
+                assertEquals(new Runs.Place(k, row.length), p, String.join(",", row) + " tile " + k);
+                Runs.Spec sp = Runs.spec(role.runId);
+                FlagDef piece = sp.piece(p.length(), p.index(), role);
+                assertEquals(row[k], piece.sprite, "each tile draws its own sprite");
+                assertEquals(-k, piece.groupDy);
+                assertEquals(role.runId + "#" + row.length, piece.groupId);
+                if (k == 0) first = piece;
+                assertSame(first, piece.clothDef, "one simulation, made from the start piece");
+                assertTrue(first.sameClothAs(piece));
+                assertSame(piece, sp.piece(p.length(), p.index(), role), "pieces are made once");
+            }
+        }
+        // the two nets do not mix, and a middle with no start is no run
+        assertNull(Runs.find(strip(0, -1, t + 48, t + 57, t + 51), def(t + 48), 0, 0, 0));
+        assertNull(Runs.find(strip(0, -1, t + 49, t + 50, t + 51), def(t + 51), 0, -2, 0));
+    }
+
+    /** The training nets' frames, posts and braces lie outside their cloth (measured on the 42.21 art, D104). */
+    @Test
+    void theTrainingNetsWoodStaysStill() {
+        String t = "location_military_generic_01_";
+        FlagDef a = Runs.spec("training_net_hanging").pieces(4)[0], b = Runs.spec("training_net_tall").pieces(4)[0];
+        assertEquals(PinLayout.TOP_SIDES, a.profile.pinLayout);
+        assertTrue(a.confine && a.freeHanging() && b.confine && b.freeHanging());
+        // _48: knee brace ends at x 76, 108 px down; beam bottom at y 131 - x/2 lies above the top edge
+        FlagDef s = def(t + 48);
+        assertTrue(s.clothX >= 76f && s.clothY > 108f);
+        for (String n : new String[] {"48", "49", "50", "51"}) {
+            FlagDef d = def(t + n);
+            assertEquals(152f, d.clothY + d.clothX / 2f, 0.01f, n + " top line");
+        }
+        // _50's bracket reaches y 90 at x 121, above its top edge; _51's post (x >= 72) is right of its cloth
+        FlagDef m = def(t + 50), e = def(t + 51);
+        assertTrue(m.clothY - (121f - m.clothX) / 2f > 90f);
+        assertTrue(e.clothX + e.clothW < 72f);
+        // _56: post and brace end at x 70; _59: post starts at x 75; the top stays inside the frame
+        assertTrue(def(t + 56).clothX >= 70f);
+        FlagDef n = def(t + 59);
+        assertTrue(n.clothX + n.clothW < 75f);
+        for (String k : new String[] {"57", "58"}) {
+            FlagDef d = def(t + k);
+            assertTrue(d.clothY - d.clothW / 2f >= 0f, k + " top inside the frame");
+        }
+    }
+
     @Test
     void runsThatDoNotLineUpAreRejectedAtLoad() {
         String ok = "\"kind\":\"wall\",\"facing\":\"S\",\"physics\":{\"pin\":\"top_sides\"}";

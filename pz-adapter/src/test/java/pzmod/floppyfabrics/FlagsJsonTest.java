@@ -42,8 +42,8 @@ class FlagsJsonTest {
         Path p = Path.of(System.getProperty("floppyfabrics.modDir", "../mod"), "42", "media", "floppyfabrics", "flags.json");
         FlagJson.Parsed parsed = FlagJson.parse(Files.readString(p, StandardCharsets.UTF_8), p.toString());
         assertEquals(List.of(), parsed.errors());
-        assertEquals(62, parsed.flags().size());
-        assertEquals(62, parsed.flags().stream().map(f -> f.sprite).distinct().count(), "one entry per sprite");
+        assertEquals(70, parsed.flags().size());
+        assertEquals(70, parsed.flags().stream().map(f -> f.sprite).distinct().count(), "one entry per sprite");
         FlagDef pole = parsed.flags().stream().filter(f -> f.kind == FlagDef.Kind.POLE).findFirst().orElseThrow();
         assertEquals("street_decoration_01_16", pole.sprite);
         assertEquals("media/floppyfabrics/pole_flag.png", pole.canvasTexture);

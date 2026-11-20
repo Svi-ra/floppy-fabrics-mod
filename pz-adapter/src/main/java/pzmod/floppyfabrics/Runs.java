@@ -15,10 +15,12 @@ import zombie.iso.IsoWorld;
 /**
  * Runs (D99): one cloth over a variable number of tiles in a line — a start tile, any number of repeated middle tiles,
  * an end tile. A map can repeat the middle sprite (a volleyball net is {@code _88}, {@code _89} × n, {@code _90}), so a
- * fixed group (D87) cannot describe it; the run is found at draw time instead.
+ * fixed group (D87) cannot describe it; the run is found at draw time instead. A run may have several middle sprites
+ * (the training net {@code location_military_generic_01_49}, {@code _50}; D104), in any order and number.
  * <ul>
- *   <li><b>Load:</b> the role definitions of each run id are checked once ({@link #rebuild}): one start, at most one
- *       middle, one end, the same facing/line/height, and seams that meet within a pixel. A run that fails is logged and
+ *   <li><b>Load:</b> the role definitions of each run id are checked once ({@link #rebuild}): one start, any number of
+ *       middles, one end, the same facing/line/height, and seams that meet within a pixel (every middle after the
+ *       start, after every middle and before the end). A run that fails is logged and
  *       its tiles draw as vanilla.</li>
  *   <li><b>Draw:</b> a tile walks its neighbours along the run (at most {@link #MAX_TILES}) to the start and the end
  *       ({@link #find}). Anything but exactly start, middle*, end — a missing end, a gap, an unloaded square — gives no
@@ -40,22 +42,51 @@ final class Runs {
     /** The checked roles of one run id. */
     static final class Spec {
         final String id;
-        final FlagDef start, middle, end;
+        final FlagDef start, end;
+        /** The middle tiles in file order (may be empty); any of them, in any order, may sit between start and end. */
+        final List<FlagDef> middles;
+        final FlagDef middle; // the first middle, or null
         private final FlagDef[][] pieces = new FlagDef[MAX_TILES + 1][];
+        /** Pieces of a middle other than the first, per (length, index, middle): made on first use. */
+        private final Map<Long, FlagDef> variants = new HashMap<>();
 
-        Spec(String id, FlagDef start, FlagDef middle, FlagDef end) {
-            this.id = id; this.start = start; this.middle = middle; this.end = end;
+        Spec(String id, FlagDef start, List<FlagDef> middles, FlagDef end) {
+            this.id = id; this.start = start; this.end = end;
+            this.middles = List.copyOf(middles);
+            this.middle = middles.isEmpty() ? null : middles.get(0);
         }
 
-        FlagDef role(FlagDef.RunRole r) {
-            return r == FlagDef.RunRole.START ? start : r == FlagDef.RunRole.MIDDLE ? middle : end;
+        /** Whether {@code d} is one of this run's current role definitions (not one replaced by a reload). */
+        boolean has(FlagDef d) {
+            if (d == start || d == end) return true;
+            for (int i = 0, n = middles.size(); i < n; i++) if (middles.get(i) == d) return true;
+            return false;
         }
 
-        /** The n pieces of a run of n tiles (2..MAX_TILES), made on first use. */
+        /** The n pieces of a run of n tiles (2..MAX_TILES), made on first use, every middle drawn as the first middle. */
         FlagDef[] pieces(int n) {
             FlagDef[] p = pieces[n];
             if (p == null) pieces[n] = p = synthesize(this, n);
             return p;
+        }
+
+        /** The piece tile {@code k} of an n-tile run draws when that tile is {@code role} (its own sprite and mesh). */
+        FlagDef piece(int n, int k, FlagDef role) {
+            FlagDef p = pieces(n)[k];
+            if (role.runRole != FlagDef.RunRole.MIDDLE || role == middle) return p;
+            int mi = middles.indexOf(role);
+            long key = ((long) n << 40) | ((long) k << 20) | mi;
+            FlagDef v = variants.get(key);
+            if (v == null) {
+                FlagDef.Builder b = FlagDef.copyOf(p);
+                b.sprite = role.sprite;
+                b.source = role.source;
+                b.meshCols = role.meshCols;
+                b.meshRows = role.meshRows;
+                b.clothDef = p.clothDef;
+                variants.put(key, v = b.build());
+            }
+            return v;
         }
     }
 
@@ -89,11 +120,12 @@ final class Runs {
     }
 
     private static String check(String id, List<FlagDef> roles) {
-        FlagDef s = null, m = null, en = null;
+        FlagDef s = null, en = null;
+        List<FlagDef> ms = new ArrayList<>();
         for (FlagDef d : roles) {
             switch (d.runRole) {
                 case START -> { if (s != null) return "two start tiles (" + s.sprite + ", " + d.sprite + ")"; s = d; }
-                case MIDDLE -> { if (m != null) return "two middle tiles (" + m.sprite + ", " + d.sprite + ")"; m = d; }
+                case MIDDLE -> ms.add(d);
                 case END -> { if (en != null) return "two end tiles (" + en.sprite + ", " + d.sprite + ")"; en = d; }
             }
         }
@@ -104,11 +136,15 @@ final class Runs {
             if (d.runNextX != s.runNextX || d.runNextY != s.runNextY) return d.sprite + " has a different \"next\" than " + s.sprite;
             if (Math.abs(d.clothH - s.clothH) > SEAM_H) return d.sprite + " has a different cloth height than " + s.sprite;
         }
-        String err = m != null ? seam(s, m) : seam(s, en);
-        if (err == null && m != null) err = seam(m, m);
-        if (err == null && m != null) err = seam(m, en);
+        // every middle may follow the start, any middle (itself included) and precede the end
+        String err = seam(s, en);
+        for (FlagDef m : ms) {
+            if (err == null) err = seam(s, m);
+            if (err == null) err = seam(m, en);
+            for (FlagDef m2 : ms) if (err == null) err = seam(m, m2);
+        }
         if (err != null) return err;
-        specs.put(id, new Spec(id, s, m, en));
+        specs.put(id, new Spec(id, s, ms, en));
         return null;
     }
 
@@ -180,14 +216,14 @@ final class Runs {
      */
     static Place find(Grid g, FlagDef role, int x, int y, int z) {
         Spec sp = specs.get(role.runId);
-        if (sp == null || sp.role(role.runRole) != role) return null; // dropped run, or a definition replaced by a reload
+        if (sp == null || !sp.has(role)) return null; // dropped run, or a definition replaced by a reload
         int nx = role.runNextX, ny = role.runNextY;
         int back = 0;
         if (role.runRole != FlagDef.RunRole.START) {
             while (true) {
                 if (back + 1 >= MAX_TILES) return null;
                 FlagDef d = g.roleAt(x - nx * (back + 1), y - ny * (back + 1), z, role.runId);
-                if (d == null || d != sp.role(d.runRole) || d.runRole == FlagDef.RunRole.END) return null;
+                if (d == null || !sp.has(d) || d.runRole == FlagDef.RunRole.END) return null;
                 back++;
                 if (d.runRole == FlagDef.RunRole.START) break;
             }
@@ -197,7 +233,7 @@ final class Runs {
             while (true) {
                 if (back + fwd + 2 > MAX_TILES) return null;
                 FlagDef d = g.roleAt(x + nx * (fwd + 1), y + ny * (fwd + 1), z, role.runId);
-                if (d == null || d != sp.role(d.runRole) || d.runRole == FlagDef.RunRole.START) return null;
+                if (d == null || !sp.has(d) || d.runRole == FlagDef.RunRole.START) return null;
                 fwd++;
                 if (d.runRole == FlagDef.RunRole.END) break;
             }
@@ -239,7 +275,7 @@ final class Runs {
         e.role = role;
         IsoGridSquare sq = obj.getSquare();
         Place p = sq != null ? find(WORLD, role, sq.getX(), sq.getY(), sq.getZ()) : null;
-        FlagDef piece = p != null ? specs.get(role.runId).pieces(p.length())[p.index()] : null;
+        FlagDef piece = p != null ? specs.get(role.runId).piece(p.length(), p.index(), role) : null;
         if (piece != e.piece) FloppyFabrics.stats.runChanges++;
         e.piece = piece;
         e.nextCheck = frame + (piece != null ? RECHECK_FRAMES + (System.identityHashCode(obj) & 31) : RETRY_FRAMES);
@@ -249,6 +285,6 @@ final class Runs {
     /** Drops the per-object cache and every synthesized piece (detail change, reload). */
     static void clearCaches() {
         cache.clear();
-        for (Spec s : specs.values()) java.util.Arrays.fill(s.pieces, null);
+        for (Spec s : specs.values()) { java.util.Arrays.fill(s.pieces, null); s.variants.clear(); }
     }
 }

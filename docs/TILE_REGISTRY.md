@@ -25,7 +25,7 @@ Previews (`registry/previews/<sprite>.png`, full 128x256 2x tile frames) are ext
 
 ## Summary
 
-352 sprites registered (350 configured entries, 2 reference/host tiles) plus pattern-based entries.
+360 sprites registered (358 configured entries, 2 reference/host tiles) plus pattern-based entries.
 
 | Category | Sprites |
 |---|---|
@@ -33,7 +33,7 @@ Previews (`registry/previews/<sprite>.png`, full 128x256 2x tile frames) are ext
 | canopy | 84 |
 | curtain | 20 |
 | drape | 4 |
-| net | 6 |
+| net | 14 |
 | pole flag | 1 |
 | string line | 28 |
 | tent | 172 |
@@ -294,6 +294,31 @@ Notes:
 Notes:
 - `location_community_church_small_01_40`: Altar cloth hanging down the altar face; only the cloth columns move (D82).
 
+## Net
+
+| Preview | Sprite | Name | Kind | Facing | Group | Config | Role |
+|---|---|---|---|---|---|---|---|
+| <img src="registry/previews/location_military_generic_01_48.png" width="48" alt="location_military_generic_01_48"> | `location_military_generic_01_48` | Training cargo net under a beam, run of tiles (south frame), east-facing (lies along the west wall) | wall | E | training_net_hanging | flags.json | primary |
+| <img src="registry/previews/location_military_generic_01_49.png" width="48" alt="location_military_generic_01_49"> | `location_military_generic_01_49` | Training cargo net under a beam, run of tiles (middle, repeats), east-facing (lies along the west wall) | wall | E | training_net_hanging | flags.json | primary |
+| <img src="registry/previews/location_military_generic_01_50.png" width="48" alt="location_military_generic_01_50"> | `location_military_generic_01_50` | Training cargo net under a beam, run of tiles (middle, repeats), east-facing (lies along the west wall) | wall | E | training_net_hanging | flags.json | primary |
+| <img src="registry/previews/location_military_generic_01_51.png" width="48" alt="location_military_generic_01_51"> | `location_military_generic_01_51` | Training cargo net under a beam, run of tiles (north post), east-facing (lies along the west wall) | wall | E | training_net_hanging | flags.json | primary |
+| <img src="registry/previews/location_military_generic_01_56.png" width="48" alt="location_military_generic_01_56"> | `location_military_generic_01_56` | Tall training net between posts, run of tiles (south post), east-facing (lies along the west wall) | wall | E | training_net_tall | flags.json | primary |
+| <img src="registry/previews/location_military_generic_01_57.png" width="48" alt="location_military_generic_01_57"> | `location_military_generic_01_57` | Tall training net between posts, run of tiles (middle, repeats), east-facing (lies along the west wall) | wall | E | training_net_tall | flags.json | primary |
+| <img src="registry/previews/location_military_generic_01_58.png" width="48" alt="location_military_generic_01_58"> | `location_military_generic_01_58` | Tall training net between posts, run of tiles (middle, repeats), east-facing (lies along the west wall) | wall | E | training_net_tall | flags.json | primary |
+| <img src="registry/previews/location_military_generic_01_59.png" width="48" alt="location_military_generic_01_59"> | `location_military_generic_01_59` | Tall training net between posts, run of tiles (north post), east-facing (lies along the west wall) | wall | E | training_net_tall | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_88.png" width="48" alt="recreational_sports_01_88"> | `recreational_sports_01_88` | Volleyball net, run of tiles (west pole), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_89.png" width="48" alt="recreational_sports_01_89"> | `recreational_sports_01_89` | Volleyball net, run of tiles (middle, repeats), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_90.png" width="48" alt="recreational_sports_01_90"> | `recreational_sports_01_90` | Volleyball net, run of tiles (east pole), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_91.png" width="48" alt="recreational_sports_01_91"> | `recreational_sports_01_91` | Volleyball net, run of tiles (south pole), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_92.png" width="48" alt="recreational_sports_01_92"> | `recreational_sports_01_92` | Volleyball net, run of tiles (middle, repeats), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
+| <img src="registry/previews/recreational_sports_01_93.png" width="48" alt="recreational_sports_01_93"> | `recreational_sports_01_93` | Volleyball net, run of tiles (north pole), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
+
+Notes:
+- `location_military_generic_01_48`: Training cargo net hung from a beam, running north: _48 (south frame), any number of _49/_50, _51 (north post). One cloth for the whole run (D99, several middles D104); top line y = 152 - x/2 (21 px under the beam, so the beam and the knee braces stay still), held at the top and both ends. _48's cloth starts after its knee brace (x 76) and _51 keeps only 2 px: its last rope stays tied to the post.
+- `location_military_generic_01_56`: Tall training net between two staked posts, running north: _56 (south post), any number of _57/_58, _59 (north post). Top line y = 66 - x/2 (lowered so it stays inside the frame; the knots above are still), held at the top and both ends; _56's cloth starts after its post and brace (x 72).
+- `recreational_sports_01_88`: Volleyball net running east: _88 (west pole), any number of _89, _90 (east pole), on the middle line of its squares. One cloth for the whole run, found at draw time (D99); held by its top cable and both poles; confine keeps the poles, cords and ground bar still (D98). Each role gives only its own tile's part of the net; mass is per tile.
+- `recreational_sports_01_91`: Volleyball net running north: _91 (south pole), any number of _92, _93 (north pole); the _88.._90 art mirrored (x' = 125 - x).
+
 ## Wall flag
 
 | Preview | Sprite | Name | Kind | Facing | Group | Config | Role |
@@ -458,21 +483,6 @@ Notes:
 - `walls_decoration_01_97`: Lit variant: walls_decoration_01_on_97 (derived).
 - `walls_decoration_01_98`: Lit variant: walls_decoration_01_on_98 (derived).
 - `walls_decoration_01_99`: E string over two tiles: this tile and the next south Lit variant: walls_decoration_01_on_99 (derived).
-
-## Net
-
-| Preview | Sprite | Name | Kind | Facing | Group | Config | Role |
-|---|---|---|---|---|---|---|---|
-| <img src="registry/previews/recreational_sports_01_88.png" width="48" alt="recreational_sports_01_88"> | `recreational_sports_01_88` | Volleyball net, run of tiles (west pole), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
-| <img src="registry/previews/recreational_sports_01_89.png" width="48" alt="recreational_sports_01_89"> | `recreational_sports_01_89` | Volleyball net, run of tiles (middle, repeats), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
-| <img src="registry/previews/recreational_sports_01_90.png" width="48" alt="recreational_sports_01_90"> | `recreational_sports_01_90` | Volleyball net, run of tiles (east pole), south-facing (lies along the north wall) | wall | S | volleyball_net_s | flags.json | primary |
-| <img src="registry/previews/recreational_sports_01_91.png" width="48" alt="recreational_sports_01_91"> | `recreational_sports_01_91` | Volleyball net, run of tiles (south pole), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
-| <img src="registry/previews/recreational_sports_01_92.png" width="48" alt="recreational_sports_01_92"> | `recreational_sports_01_92` | Volleyball net, run of tiles (middle, repeats), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
-| <img src="registry/previews/recreational_sports_01_93.png" width="48" alt="recreational_sports_01_93"> | `recreational_sports_01_93` | Volleyball net, run of tiles (north pole), east-facing (lies along the west wall) | wall | E | volleyball_net_e | flags.json | primary |
-
-Notes:
-- `recreational_sports_01_88`: Volleyball net running east: _88 (west pole), any number of _89, _90 (east pole), on the middle line of its squares. One cloth for the whole run, found at draw time (D99); held by its top cable and both poles; confine keeps the poles, cords and ground bar still (D98). Each role gives only its own tile's part of the net; mass is per tile.
-- `recreational_sports_01_91`: Volleyball net running north: _91 (south pole), any number of _92, _93 (north pole); the _88.._90 art mirrored (x' = 125 - x).
 
 ## Pole flag
 

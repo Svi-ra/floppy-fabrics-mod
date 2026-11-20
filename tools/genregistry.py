@@ -52,6 +52,12 @@ def describe(e, fname):
         elif ts == "recreational_sports_01":
             pos = {"start": "west pole", "middle": "middle, repeats", "end": "east pole"} if face == "S" else                 {"start": "south pole", "middle": "middle, repeats", "end": "north pole"}
             cat, name = "net", f"Volleyball net, run of tiles ({pos[run['role']]}), {FACE[face]}"
+        elif ts == "location_military_generic_01":
+            pos = {"start": "south end", "middle": "middle, repeats", "end": "north post"}
+            kind_ = "Training cargo net under a beam" if i <= 51 else "Tall training net between posts"
+            if i in (48, 56):
+                pos["start"] = "south frame" if i == 48 else "south post"
+            cat, name = "net", f"{kind_}, run of tiles ({pos[run['role']]}), {FACE[face]}"
         elif ts == "signs_one-off_09":
             if i <= 327:
                 cat, name = "banner", f"Riverside street banner segment {g['offset'] and (-g['offset'][1] if g['offset'][1] else g['offset'][0]) + 1}/16, {FACE[face]}"
