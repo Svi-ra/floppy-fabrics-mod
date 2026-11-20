@@ -5,7 +5,7 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 ## [Unreleased]
 
 Decisions D94–D102. Unit-tested (122 tests) and patch-verified offline. Verified in-game by the user: D94–D97
-(2026-11-19), the volleyball nets of D98–D99 and the car-wash covers of D100 (2026-11-20).
+(2026-11-19), the volleyball nets of D98–D99, the car-wash covers of D100 and the tents of D101–D102 (2026-11-20).
 Player-facing summary for the Workshop page: [docs/WORKSHOP_UPDATE_NOTES.md](docs/WORKSHOP_UPDATE_NOTES.md).
 
 ### Added
