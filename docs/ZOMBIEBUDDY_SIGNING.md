@@ -93,8 +93,11 @@ empty trust store.
 Fix: get #148 merged. ZombieBuddy downloads the registry from
 `raw.githubusercontent.com/zed-0xff/ZombieBuddy/refs/heads/master/authors.json` and caches it, so no ZombieBuddy release
 is needed. The key then resolves without steamcommunity. To confirm a player report, ask for their `console.txt` and
-look for `ZBS verification invalid ... detailedMessage=`: a network or HTTP error there means this issue. Shipping
-without a `.zbs` is no stopgap, because ZombieBuddy blocks unsigned jars when `allow_unsigned_mods=false`.
+look for `ZBS verification invalid ... detailedMessage=`: a network or HTTP error there means this issue.
+
+Stopgap: ship without the `.zbs`. ZombieBuddy 2.3.4 defaults to `allow_unsigned_mods=true` (`Loader.g_allowUnsignedMods`),
+so an unsigned jar gets the normal approval prompt, as 0.6.0 did. Only players who set `allow_unsigned_mods=false` on
+the command line are blocked.
 
 ## Checking a build
 
