@@ -20,7 +20,7 @@ in mod load order, files sorted by name; for the same sprite a later file wins. 
 | `profile` | `"wall"` / `"pole"` | = kind | Built-in physics profile (`ClothProfiles`) |
 | `physics` | object | — | Overrides: `grid` [cols, rows] (defaults wall 5×8, pole 8×5), `mass` kg, `drag` (Cd), `friction` (Cf), `damping`, `stiffness` [stretch, shear, bend], `iterations` (default 4), `pin` (`top`, `left`, `right`, `top_corners`, `left_corners`, `top_sides`, `top_and_bottom_corners`), `restore` (pose memory 1/s; pole default 5), `lodGrid` [cols, rows] for the far LOD (defaults wall 4×6, pole 6×4) |
 | `exposure` | number 0–4 | wall 0.35, pole 1 | Fraction of the climate wind the flag feels |
-| `timeScale` | number (0–4] | 1 | Simulation seconds per real second |
+| `timeScale` | number (0–4] | 1 | Simulation seconds per real second (canopies and strings: their gusts and eddies too, so 0.5 halves every frequency) |
 
 ## Wall flags (`"kind": "wall"`)
 The vanilla sprite stays the image; the cloth bends it. At zero wind it is pixel-identical to vanilla.

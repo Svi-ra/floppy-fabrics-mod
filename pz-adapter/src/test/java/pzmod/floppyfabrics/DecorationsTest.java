@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pzmod.floppyfabrics.cloth.Canopy;
 
 /** decorations.json (strings, canopies, drapes, tents) and the displacement fields that draw them (D80-D84, D101). */
 class DecorationsTest {
@@ -171,6 +172,29 @@ class DecorationsTest {
         assertEquals(0f, Math.abs(o[0]) + Math.abs(o[1]), 0.05f, "ridge held");
         f.sample(50f, CanopyInstance.columnAt(c, 50f, 3) + 3f, o);
         assertEquals(0f, Math.abs(o[0]) + Math.abs(o[1]), 0f, "the ground below the pegs stays still");
+    }
+
+    @Test
+    void aTentFlapsAtHalfTheAwningsPaceInAGale() throws Exception {
+        FlagDef d = def("camping_01_2");
+        assertEquals(0.5f, d.timeScale, 0f, "tents run at half speed (D102)");
+        // stepped as Decorations does (the step and the gust/eddy clock both scaled), the motion is the full-speed
+        // motion played at half speed: every frequency halves, amplitudes stay
+        CanopyInstance full = new CanopyInstance(d, 10, 20, 0), half = new CanopyInstance(d, 10, 20, 0);
+        full.canopy.setWind(0f, 16f, 0f);
+        half.canopy.setWind(0f, 16f, 0f);
+        float dt = 1f / 60f, ts = d.timeScale;
+        float maxAmp = 0f, maxDiff = 0f;
+        for (int i = 1; i <= 600; i++) {
+            full.canopy.step(dt, i * dt);
+            for (int k = 2 * i - 1; k <= 2 * i; k++) half.canopy.step(dt * ts, k * dt * ts);
+            for (int m = 0; m < Canopy.MODES; m++) {
+                maxAmp = Math.max(maxAmp, Math.abs(full.canopy.mode(m)));
+                maxDiff = Math.max(maxDiff, Math.abs(full.canopy.mode(m) - half.canopy.mode(m)));
+            }
+        }
+        assertTrue(maxAmp > 0.01f, "the gale moves the canvas: " + maxAmp);
+        assertTrue(maxDiff < 1e-3f * maxAmp + 1e-5f, "half speed = full speed slowed down: " + maxDiff + " of " + maxAmp);
     }
 
     @Test

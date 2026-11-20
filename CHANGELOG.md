@@ -4,14 +4,16 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
-Decisions D94–D101. Unit-tested (121 tests) and patch-verified offline. Verified in-game by the user: D94–D97
+Decisions D94–D102. Unit-tested (122 tests) and patch-verified offline. Verified in-game by the user: D94–D97
 (2026-11-19), the volleyball nets of D98–D99 and the car-wash covers of D100 (2026-11-20).
 Player-facing summary for the Workshop page: [docs/WORKSHOP_UPDATE_NOTES.md](docs/WORKSHOP_UPDATE_NOTES.md).
 
 ### Added
 - **Tents move** (D101): the tarp tent (`camping_01_0..3`), the tarp shelter, improvised tent and hide shelter
   (`camping_03_8..15, 24..27, 40..47`) and the four colours of camping tent (`camping_04`) breathe in the wind and flap
-  in a gale; poles, ridges, pegs, floors and bedding stay still. New canopy key `height`. Not yet verified in-game.
+  in a gale; poles, ridges, pegs, floors and bedding stay still. New canopy key `height`. Tested in-game: they moved
+  too quickly in strong wind, so tents now run at half speed (D102: `timeScale` 0.5, which for canopies and strings now
+  also slows the gusts and eddies).
 - **Car-wash entrance covers move** (D100): the strip covers `location_business_machinery_01_36` (S) and `_37` (E)
   hang free under their rail across the middle of the square; cars, people and zombies passing through push them
   aside, and they feel the wind outdoors. The rail and its mount stay still.

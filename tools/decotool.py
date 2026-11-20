@@ -270,6 +270,9 @@ TENT_TILT = {'tent': 60, 'leanto': 45}
 TENT_SIZE = {'tent': [1.0, 1.2], 'leanto': [1.0, 1.4]}
 TENT_HEIGHT = {'tent': 0.7, 'leanto': 1.0}
 TENT_EXPOSURE = 0.5
+# simulation seconds per real second: tent canvas moves at half the awning's pace (tested in-game: the awning's
+# flapping was too quick on a tent in a strong wind; D102)
+TENT_TIME_SCALE = 0.5
 
 
 def fabric_mask(img, fabric):
@@ -327,7 +330,7 @@ def tent_entry(sprite, img, fabric, family, slope):
     c = {'columns': cols, 'normal': normal, 'out': [ox, oy], 'spread': 0, 'size': TENT_SIZE[family],
          'flaps': 0, 'valance': 0, 'height': TENT_HEIGHT[family], 'type': 'awning'}
     return {'sprite': sprite, 'kind': 'canopy', 'facing': slope, 'family': family, 'fabric': fabric,
-            'exposure': TENT_EXPOSURE, 'canopy': c}
+            'exposure': TENT_EXPOSURE, 'timeScale': TENT_TIME_SCALE, 'canopy': c}
 
 
 # ---------------------------------------------------------------- drapes (measured by hand, DECISIONS D82)

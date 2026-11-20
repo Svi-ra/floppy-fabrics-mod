@@ -106,7 +106,7 @@ final class Decorations {
                 cBodies += BodyScan.bodies;
             }
             inst.line.setWind(WindProvider.x() * exposure + wx, WindProvider.y() * exposure + wy, 0f);
-            int steps = inst.line.step(dt * def.timeScale, clock);
+            int steps = inst.line.step(dt * def.timeScale, clock * def.timeScale); // the gusts and eddies slow down too (D102)
             if (steps > 0) cStepped++;
         }
         if (inst.line.isSleeping() && !FloppyFabrics.debugOverlay) return false; // exactly the vanilla picture
@@ -187,7 +187,7 @@ final class Decorations {
                 wx = BodyScan.washX; wy = BodyScan.washY;
             }
             inst.canopy.setWind(WindProvider.x() * exposure + wx, WindProvider.y() * exposure + wy, 0f);
-            int steps = inst.canopy.step(dt * def.timeScale, clock);
+            int steps = inst.canopy.step(dt * def.timeScale, clock * def.timeScale); // the gusts and eddies slow down too (D102)
             if (steps > 0) cStepped++;
         }
         if (inst.canopy.isSleeping() && !FloppyFabrics.debugOverlay) return false;
