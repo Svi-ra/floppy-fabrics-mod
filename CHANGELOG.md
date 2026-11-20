@@ -5,13 +5,14 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 ## [Unreleased]
 
 Decisions D94–D103. Unit-tested (123 tests) and patch-verified offline. Verified in-game by the user: D94–D97
-(2026-11-19), the volleyball nets of D98–D99, the car-wash covers of D100 and the tents of D101–D102 (2026-11-20).
+(2026-11-19), the volleyball nets of D98–D99, the car-wash covers of D100, the tents of D101–D102 and
+the military tent of D103 (2026-11-20).
 Player-facing summary for the Workshop page: [docs/WORKSHOP_UPDATE_NOTES.md](docs/WORKSHOP_UPDATE_NOTES.md).
 
 ### Added
 - **Military tent moves** (D103): the roof slopes and gables of `location_military_tent_01` (green and tan) breathe in
   the wind and flap in a gale, held at ridge, eaves and seams; the eave strips flap below the roof's edge between their
-  guy ropes. Walls stay vanilla (wall renderer with cutaways). Not yet verified in-game.
+  guy ropes. Walls stay vanilla (wall renderer with cutaways). Verified in-game by the user (2026-11-20).
 - **Tents move** (D101): the tarp tent (`camping_01_0..3`), the tarp shelter, improvised tent and hide shelter
   (`camping_03_8..15, 24..27, 40..47`) and the four colours of camping tent (`camping_04`) breathe in the wind and flap
   in a gale; poles, ridges, pegs, floors and bedding stay still. New canopy key `height`. Tested in-game: they moved
