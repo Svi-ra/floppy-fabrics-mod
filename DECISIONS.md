@@ -1212,3 +1212,69 @@ Checked: an independent Ed25519 check of the deployed Workshop-folder jar + `.zb
   signing or packaging one (`-PzbsSign=true` overrides it).
 - Undo when zed-0xff/ZombieBuddy#148 is merged: ZombieBuddy downloads `authors.json` from GitHub master and caches it,
   so no ZombieBuddy release is needed. Set `zbsSigningPaused = false` and ship the next version signed.
+
+## Compatibility with other Java mods that patch FBORenderCell (2026-11-21)
+
+Report: on Big Bear Lake no cloth moved (flags, curtains, awnings), but hovering a tile with Better Tile Picker's
+Tile layer info tool showed the simulation. Evidence: `console.txt` of 2026-11-21 has no "first flag seen" line;
+ZombieBuddy logged `FBORenderCell` "Transformed (new load)" twice, first with our `calculateObjectRenderLayer` advice,
+then with WindSway's four `FBORenderCell` patches. Across the saved logs, sessions with WindSway listed after
+FloppyFabrics never classified a flag; the one WindSway session that worked (2026-11-09 19:54) applied ours later as
+"retransformed" on top of WindSway's. Removing WindSway fixed it. The hover worked because highlighted objects are
+drawn per frame by `FBORenderObjectHighlight`, whatever their layer.
+
+**D107 · Cloth sprites reach the per-frame layer through their depth flag; the layer hook is watched and re-applied.**
+- Cause: when two ZombieBuddy mods patch the same class before it loads, both transformers fire on the first load and
+  the later one is built from the original bytes, so the earlier advice is lost. Mod order only picks the loser, and
+  PZ's `loadModAfter=` only drives the mod list's auto-sort button, so neither is a guarantee.
+- `LayerRoute` sets `IsoSprite.depthFlags` bit 2 (tile geometry "Translucent") on every non-curtain definition's sprite
+  and its "_on_" overlay. `calculateObjectRenderLayer` then returns `Translucent`/`TranslucentSE` for them with no
+  patch, which is where our hook put them. Bit 2 is read only there (bits 1 and 4 choose depth shaders), so drawing
+  cost and depth are unchanged. The bits do not persist: loading a game rebuilds every sprite
+  (`IsoSpriteManager.Dispose` clears `namedMap`) and `TileGeometryManager.initSpriteProperties` zeroes all bits. Marks
+  are kept by sprite name and checked against the live sprite: a witness lookup each drawn frame plus a full re-check
+  every 300 drawn frames, starting only once world sprites are drawn (the first build marked the loading world's
+  sprites and missed the second world's). Each re-mark re-bakes the loaded chunks once. Only bits we set are cleared
+  on disable/failure. The status line is logged once per world after 600 drawn frames, for reports.
+- The hook stays for what is decided per object: curtains (window state), door sheets, banners drawn as attached
+  sprites. `HookWatch`: if the world is drawn for 180 frames and the hook never ran, `LayerGuard` finds ZombieBuddy's
+  `Instrumentation` (static field, `g_instrumentation` in 2.3.4) and calls `retransformClasses(FBORenderCell)`, which
+  re-runs every installed transformer in a chain. If the hook is still silent 180 frames later it warns once.
+- `FloppyFabrics_status()` shows `layerRoute=<sprites> layerHook=ok|restored|missing`.
+Checked offline: 6 new unit tests; `verifyPatches` finds the Instrumentation and the retransform re-applies our advice.
+**Not yet verified in-game with WindSway.** Upstream: the clobbering is ZombieBuddy's to fix (not reported yet).
+
+**D108 · The ObjectRenderEffects overload of Texture.render is hooked too.**
+- Storm test with WindSway (2026-11-21): climate wind 103 km/h, layer route and hook fine, yet nothing moved. The
+  counters stopped: `drawsReplaced` stayed at 96 from frame 608 to 7337, while `sheetsAs2D` (a window sheet drawn as
+  a 2D sprite every frame) kept rising. `options.ini` has `doWindSpriteEffects=true`, and WindSway patches
+  `Core.getOptionDoWindSpriteEffects` and `ObjectRenderEffects.update`.
+- `IsoSprite.performRenderFrame` draws through `Texture.render(ObjectRenderEffects, x, y, w, h, r, g, b, a, modifier)`
+  whenever `IsoObject.getObjectRenderEffectsToApply()` is non-null: vanilla's wind skew on `moveWithWind` sprites
+  while that option is on, or a hit shake. That overload builds its own skewed quad and never calls the plain
+  overload, so our draw hook never ran and the cloth stayed vanilla.
+- `Patch_TextureRenderEffects` hooks it with the same `Hooks.onTextureRender` call. x and y are the same untrimmed
+  position as in the plain overload (both add the texture offset), so nothing else changes; vanilla's skew is dropped
+  because the cloth moves on its own. `verifyPatches`: each advice matches exactly one signature.
+**Not yet verified in-game.**
+
+**D109 · WindSway's object capture skips our cloth objects.**
+- Toggle test (2026-11-21): switching WindSway off in mod options mid-game made the cloths move at once; on again,
+  they were vanilla. `frameContexts` rose but `drawsReplaced` and the frame counters froze.
+- Disassembled WindSway 0.6.0 (JDK 25 `java.lang.classfile`): its `FBORenderCell.renderMinusFloor_NotDoorOrWall` /
+  `renderMinusFloor_DoorOrWall` patches call `GrassCapture.tryCaptureGrass` / `tryCaptureWall(IsoObject)` with
+  `skipOn`. While WindSway is enabled, "wind sprite effects" is on and its drawer is ready, `captureGrassInner`
+  takes almost every object in the per-frame pass (`renderTranslucentOnly`): it draws the plain tile in its own
+  batch and vanilla's draw, ours included, is skipped. It leaves alone trees, characters, fires and a few other
+  classes, classes with their own `render`, objects with a 3D model, highlighted objects (hence the tile picker's
+  hover), WallOverlay/window tiles, roofs with seams, bloody walls, `depthFlags` bit 4 and objects with animated
+  attachments. Not captured, it calls `BatchSequencer.onVanillaTranslucentDraw(object, wall)`.
+- A first attempt cleared `moveWithWind` on cloth sprites; it changed nothing (the capture does not depend on it) and
+  was reverted.
+- `Patch_WindSwayCapture` hooks both methods on entry with `skipOn`: for objects `Hooks.keepFromWindSway` accepts (a
+  cloth definition, an attached cloth, a door with a moving sheet) the method is skipped and returns false = "not
+  captured", so vanilla draws them and our mesh replaces that draw. `WindSwayCompat` then makes WindSway's own
+  `onVanillaTranslucentDraw` call (method handle, found once by reflection). Advice is inlined into WindSway's class,
+  so it only calls the public `Hooks.onWindSwayCapture`. Without WindSway the classes never load; `verifyPatches`
+  runs with and without its jar (`-PwindSwayJar=none`). `FloppyFabrics_status()` shows `windSwaySkips`.
+**Not yet verified in-game.**

@@ -48,7 +48,7 @@ public final class LuaApi {
                 + " decorations=" + FloppyFabrics.decorations
                 + String.format(java.util.Locale.ROOT, "{drawn=%d awake=%d stepped=%d bodies=%d}", Decorations.lastDrawn,
                         Decorations.lastAwake, Decorations.lastStepped, Decorations.lastBodies)
-                + " reclassified=" + FloppyFabrics.reclassifiedCount() + " instances=" + Instances.size()
+                + " reclassified=" + FloppyFabrics.reclassifiedCount() + " " + LayerGuard.state() + " windSwaySkips=" + WindSwayCompat.skipped + " instances=" + Instances.size()
                 + " probe=" + RenderStateProbe.available()
                 + String.format(java.util.Locale.ROOT, " wind=%.1fm/s@%.0f%s", WindProvider.speed(), WindProvider.angleDeg(),
                         WindProvider.forced ? "(forced)" : "")
@@ -210,8 +210,9 @@ public final class LuaApi {
         if (FloppyFabrics.enabled && !on) {
             FloppyFabrics.enabled = false;
             FloppyFabrics.invalidateReclassified(); // re-bake flags in their vanilla layer
+            LayerGuard.release();
         } else if (on) {
-            FloppyFabrics.enabled = true; // flags are picked up again as their chunks re-render
+            FloppyFabrics.enabled = true; // flags are picked up again as their chunks re-render (depth bits: next frame)
         }
         return status();
     }

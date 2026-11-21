@@ -28,6 +28,21 @@ public final class PatchProbe {
         // our hook classes must be resolvable from the system loader (advice is inlined into game classes)
         Class.forName("pzmod.floppyfabrics.Hooks", false, cl);
         System.out.println("[PatchProbe] hooks visible to system class loader");
+        // the lost-hook recovery (D107): find ZombieBuddy's Instrumentation and re-apply FBORenderCell; ZombieBuddy must
+        // apply our advice again on the retransform
+        java.lang.reflect.Method rt = Class.forName("pzmod.floppyfabrics.LayerGuard", false, cl)
+                .getDeclaredMethod("retransform", Class.class);
+        rt.setAccessible(true);
+        Object err = rt.invoke(null, Class.forName("zombie.iso.fboRenderChunk.FBORenderCell", false, cl));
+        System.out.println("[PatchProbe] retransform FBORenderCell: " + (err == null ? "ok" : err));
+        if (err != null) throw new IllegalStateException("retransform failed: " + err);
+        // WindSway compatibility (D109): load its GrassCapture (not initialised) if its jar is on the classpath
+        try {
+            Class.forName("pzmod.windsway.GrassCapture", false, cl);
+            System.out.println("[PatchProbe] loaded pzmod.windsway.GrassCapture");
+        } catch (ClassNotFoundException e) {
+            System.out.println("[PatchProbe] WindSway not on the classpath");
+        }
         System.out.println("[PatchProbe] done");
     }
 }

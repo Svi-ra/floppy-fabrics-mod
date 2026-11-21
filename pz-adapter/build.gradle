@@ -75,6 +75,10 @@ tasks.register('verifyPatches', JavaExec) {
     // the agent's patches_jar=<path>:<pkg> splits on the first ':' → use a path relative to the working dir
     workingDir = jarFile.parentFile
     classpath = files("${pzInstallDir}/projectzomboid.jar", jarFile, sourceSets.verify.output)
+    // WindSway's jar, when installed, so the compatibility patches on its GrassCapture are exercised too (D109);
+    // -PwindSwayJar=none runs without it (the patches must then stay inert)
+    def windSwayJar = file(project.findProperty('windSwayJar') ?: "${pzInstallDir}/../../workshop/content/108600/3782670683/mods/WindSway/42.20/media/java/client/windsway.jar")
+    if (windSwayJar.exists()) classpath += files(windSwayJar)
     jvmArgs = [
             "-javaagent:${zombieBuddyJar}=patches_jar=${jarFile.name}:pzmod.floppyfabrics,verbosity=2,policy=allow-all,frontend=console,config_dir=${probeDir.absolutePath.replace('\\', '/').replaceFirst(/^[A-Za-z]:/, '')}",
             '-Djava.awt.headless=true',

@@ -161,6 +161,19 @@ public final class FlagRegistry {
         }
     }
 
+    /**
+     * Names of every sprite that is always drawn in the per-frame layer (D107): every loaded definition and its "_on_"
+     * overlay. Curtains are not listed: they are generated per sprite and move to that layer only while their window is
+     * open, which needs the per-object decision of {@link Hooks#onCalculateLayer}.
+     */
+    static List<String> perFrameSpriteNames() {
+        ensureLoaded();
+        List<String> out = new ArrayList<>(byName.size() + onAliases.size());
+        for (FlagDef def : byName.values()) if (!def.curtain) out.add(def.sprite);
+        for (Map.Entry<String, FlagDef> e : onAliases.entrySet()) if (!e.getValue().curtain) out.add(e.getKey());
+        return out;
+    }
+
     /** True if {@code def} is still in use (not replaced by a later load); curtain definitions are generated, always current. */
     static boolean isCurrent(FlagDef def) {
         return def.curtain || byName.get(def.sprite) == def || onAliases.get(def.sprite) == def;
@@ -184,6 +197,11 @@ public final class FlagRegistry {
     static FlagDef byName(String sprite) {
         ensureLoaded();
         return byName.get(sprite);
+    }
+
+    /** A new game rebuilt every sprite (IsoSpriteManager.Dispose): drop the per-object cache of the old ones. */
+    static void forgetSprites() {
+        bySprite.clear();
     }
 
     /** Test hook: forget everything. */

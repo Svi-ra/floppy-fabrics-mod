@@ -46,6 +46,7 @@ public final class Hooks {
      */
     public static ObjectRenderLayer onCalculateLayer(IsoObject obj, ObjectRenderLayer layer) {
         renderThread = Thread.currentThread();
+        LayerGuard.hookSeen = true; // the patch is alive (D107)
         if (!FloppyFabrics.active() || obj == null) return layer;
         try {
             if (layer != ObjectRenderLayer.MinusFloor && layer != ObjectRenderLayer.MinusFloorSE) return layer;
@@ -137,6 +138,29 @@ public final class Hooks {
         return null;
     }
 
+    /**
+     * Enter of WindSway's {@code GrassCapture.tryCaptureGrass} / {@code tryCaptureWall} (D109), inlined into WindSway's
+     * class, hence public. @return true to skip its capture (the method then returns false = "not captured")
+     */
+    public static boolean onWindSwayCapture(IsoObject obj, boolean wall) {
+        return WindSwayCompat.keep(obj, wall);
+    }
+
+    /**
+     * True for objects we draw as cloth, so WindSway leaves them to vanilla's draw (which we replace) instead of drawing
+     * the plain tile in its own batch. One identity-map probe per object WindSway looks at.
+     */
+    static boolean keepFromWindSway(IsoObject obj) {
+        if (!FloppyFabrics.active() || obj == null) return false;
+        try {
+            if (obj instanceof IsoDoor door) return doorSheetAnimates(door);
+            return FlagRegistry.forSprite(obj.getSprite()) != null || attachedDef(obj) != null;
+        } catch (Throwable t) {
+            FloppyFabrics.fail("WindSway capture check", t);
+            return false;
+        }
+    }
+
     /** A tile attached to a wall (vanilla's attachedN/attachedW), drawn against that wall's depth like an overlay (D78). */
     private static boolean onWall(IsoSprite sprite) {
         var p = sprite.getProperties();
@@ -146,6 +170,7 @@ public final class Hooks {
     /** Enter of {@code IsoSprite.performRenderFrame}: remember which flag is about to be drawn. */
     public static void onFrameEnter(IsoSprite sprite, IsoObject obj) {
         renderThread = Thread.currentThread();
+        LayerGuard.worldDrawn = true;
         ctxDef = null;
         ctxObj = null;
         lastBiasedSprite = null; // the depth shader for this draw is already set up; next draw starts fresh
@@ -482,6 +507,13 @@ public final class Hooks {
 
     /** Exit of {@code UIManager.render()}: draws the stats overlay on top of the UI when enabled. */
     public static void onUiRender() {
+        if (!FloppyFabrics.failed) {
+            try {
+                LayerGuard.tick();
+            } catch (Throwable t) {
+                FloppyFabrics.fail("layer guard", t);
+            }
+        }
         if (CurtainLight.active() > 0) {
             try {
                 CurtainLight.sweep(IsoWorld.instance.getFrameNo());

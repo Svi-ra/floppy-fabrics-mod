@@ -10,7 +10,13 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
 
 ## Pending (next upload)
 
-_Nothing pending._
+**Fixed**
+    - **Wind Sway compatibility:** with Wind Sway also installed, nothing moved (flags, curtains, banners, awnings),
+      depending on mod order. Flags, banners and decorations now move with Wind Sway in any order. If curtains and
+      door sheets still stay still, the mod notices on its own, repairs itself a few seconds after the world loads, and
+      writes a note to the game log.
+    - **Wind sprite effects option:** with the game's wind sprite effects turned on (Wind Sway turns them on too), some
+      flags, curtains and window sheets stayed as still pictures. They now move.
 
 ## Published
 

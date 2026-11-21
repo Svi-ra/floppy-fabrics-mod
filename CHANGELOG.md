@@ -2,6 +2,22 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
 
+## [Unreleased]
+
+### Fixed
+- **Nothing moved alongside WindSway** (D107): two ZombieBuddy mods patching `FBORenderCell` as it first loads lose
+  the earlier patch, so our `calculateObjectRenderLayer` hook could vanish depending on mod order. Cloth sprites now
+  reach the per-frame layer through `IsoSprite.depthFlags` bit 2 (`LayerRoute`), with no patch. The remaining hook
+  (curtains, door sheets, attached banners) is watched; if it never runs it is re-applied through ZombieBuddy's
+  `Instrumentation` (`LayerGuard`, `HookWatch`). `FloppyFabrics_status()` reports both, and is logged once per world.
+- **Cloths with vanilla wind effects stayed vanilla** (D108): with "wind sprite effects" on, vanilla draws
+  `moveWithWind` sprites through `Texture.render(ObjectRenderEffects, ...)`, which we did not hook. Now hooked
+  (`Patch_TextureRenderEffects`).
+- **WindSway drew cloths itself** (D109): with WindSway and wind sprite effects on, its `GrassCapture` takes almost
+  every object in the per-frame pass, draws the plain tile in its own batch and skips vanilla's draw. Its
+  `tryCaptureGrass`/`tryCaptureWall` are now skipped for our cloth objects (`Patch_WindSwayCapture`), which are drawn
+  by us; everything else stays WindSway's.
+
 ## [0.7.1] - 2026-11-20
 
 Hotfix. Player-facing summary: [docs/WORKSHOP_UPDATE_NOTES.md](docs/WORKSHOP_UPDATE_NOTES.md).

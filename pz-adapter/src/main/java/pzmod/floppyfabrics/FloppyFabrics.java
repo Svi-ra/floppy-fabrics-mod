@@ -97,6 +97,11 @@ public final class FloppyFabrics {
         System.out.println(TAG + "ERROR in " + where + ": " + t + " — FloppyFabrics disabled for this session, flags fall back to vanilla.");
         for (StackTraceElement e : t.getStackTrace()) System.out.println(TAG + "    at " + e);
         invalidateReclassified();
+        try {
+            LayerGuard.release(); // cloth sprites back to vanilla's cached layer (D107)
+        } catch (Throwable ignored) {
+            // the world may be half torn down; the reclassified objects above are already handed back
+        }
     }
 
     static void noteReclassified(IsoObject obj) {
