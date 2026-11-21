@@ -2,6 +2,15 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
 
+## [Unreleased]
+
+### Fixed
+- **Curtains behind closed Functional Storm Shutters** (D113): a curtain on an open or broken window kept billowing,
+  letting curtain light in and rustling, while that mod's shutters were closed over it. `Curtains.openness` now treats
+  a window carrying a `stormshutters_*` / `fssmp_swing_*` attached sprite as sealed; new patches on
+  `IsoObject.addAttachedAnimSpriteInstance` (exit) and `RemoveAttachedAnim` (enter) re-classify the window's curtains
+  when the shutters close or open.
+
 ## [0.8.0] - 2026-11-21
 
 ### Added

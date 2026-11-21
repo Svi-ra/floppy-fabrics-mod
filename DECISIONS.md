@@ -1338,3 +1338,28 @@ it (it rewrites volume, pitch, 3D position/level, occlusion and reverb sends eve
 FMOD channel, and snaps are filtered before their first tick. 3D spread was planned too, but
 `FMOD_Channel_Set3DSpread` takes a SWIG pointer type, not a channel handle, so it is not usable. Status shows
 `height=`. Not yet heard in-game.
+
+## Compatibility — Functional Storm Shutters (2026-11-21)
+
+Request: check Functional Storm Shutters (Workshop 3796645371, id `FunctionalStormShutters`, v3.1.1, authors
+Pyronical, Cosmo) for conflicts. Evidence: its whole Lua (`FSS/Detect`, `State`, `Tools`, `ShutterAction`, `Visuals`,
+`Client`, `Server`). It draws a closed shutter as a sprite attached to the `IsoWindow` (`AttachExistingAnim` of
+`stormshutters_01_<style*2+north>`, swing frames `fssmp_swing_<n>_<0..12>` over 0.65 s, removed with
+`RemoveAttachedAnim`), hides the map's painted open shutters (`fixtures_windows_detailing_01_16..35`) by alpha 0, and
+blocks zombies with an invisible locked `IsoThumpable` on the window square. The window's own open/smashed state never
+changes. None of its sprites carry a curtain tile type or match our registry, and we never look at `IsoThumpable`, so
+there is no functional conflict.
+
+**D113 · Closed storm shutters seal a curtain's window.** `Curtains.openness` only knew the window and its barricades,
+so a curtain on an open or broken window kept billowing behind closed shutters, with curtain light (D73) and fabric
+sound. That is the usual case, not an edge: FSS only lets you close shutters from inside through an open or broken
+window. *Fix:* `Curtains.shuttered(window)`: any attached sprite whose name starts `stormshutters_` or `fssmp_swing_`
+(the swing counts as closed: at most 0.65 s) gives openness 0, the same as a metal sheet; the existing settle-then-rebake
+path (D66) takes the curtain back to the cached layer. Read from the attached sprites, not FSS's mod data or guard
+object: the sprite is exactly what is drawn, is present on every client in MP, and stays while an outside barricade
+suspends the shutter (no guard then). Re-classification when the shutters open: vanilla's window hooks never fire, so
+`Patch_AttachSprite` (exit of `IsoObject.addAttachedAnimSpriteInstance`, the sink of every attach path) and
+`Patch_RemoveAttachedSprite` (enter of `RemoveAttachedAnim(int)`, while the instance is still listed) call
+`Hooks.onAttachedSprite`, which invalidates the window's curtains only for a shutter sprite on an `IsoWindow` (one
+`instanceof` for every other attach). A sheet hung on the outdoor face (D97) is left as is: it hangs outside the
+shutter. Not yet verified in-game.

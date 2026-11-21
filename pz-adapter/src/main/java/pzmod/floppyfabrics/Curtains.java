@@ -15,6 +15,7 @@ import zombie.iso.objects.IsoCurtain;
 import zombie.iso.objects.IsoWindow;
 import zombie.iso.objects.IsoWindowFrame;
 import zombie.iso.sprite.IsoSprite;
+import zombie.iso.sprite.IsoSpriteInstance;
 
 /**
  * Window curtains as wall cloths (DECISIONS D63–D70). No data file: any sprite whose tile type is
@@ -160,6 +161,7 @@ final class Curtains {
         GridSquareEdge edge = edgeOf(facing);
         IsoWindow w = sq.getWindow(edge);
         if (w != null) {
+            if (shuttered(w)) return 0f; // closed storm shutters seal the hole like a metal sheet (D113)
             float o;
             if (w.isDestroyed()) o = 1f; // smashed, with or without glass shards left in the frame
             else if (w.IsOpen()) o = OPEN_SASH;
@@ -182,6 +184,31 @@ final class Curtains {
         if (def.cover) return false; // fence/doorway covers have their own rule (D94)
         IsoGridSquare sq = curtain.getSquare();
         return sq != null && sq.isOutside();
+    }
+
+    /** Tileset prefix of Functional Storm Shutters' closed-shutter overlay (Workshop 3796645371, id FunctionalStormShutters). */
+    static final String FSS_CLOSED_PREFIX = "stormshutters_";
+    /** Tileset prefix of its open/close swing frames. */
+    static final String FSS_SWING_PREFIX = "fssmp_swing_";
+
+    /**
+     * True if Functional Storm Shutters draws its shutters closed (or swinging) over this window (D113). That mod draws
+     * a closed shutter as a sprite attached to the IsoWindow, and only then; the window's own state does not change.
+     */
+    static boolean shuttered(IsoWindow w) {
+        java.util.ArrayList<IsoSpriteInstance> att = w.getAttachedAnimSprite();
+        if (att == null) return false;
+        for (int i = 0, n = att.size(); i < n; i++) {
+            IsoSpriteInstance si = att.get(i);
+            IsoSprite s = si != null ? si.getParentSprite() : null;
+            if (s != null && isShutterSprite(s.getName())) return true;
+        }
+        return false;
+    }
+
+    /** Pure (D113): a Functional Storm Shutters closed-overlay or swing-frame sprite name. */
+    static boolean isShutterSprite(String name) {
+        return name != null && (name.startsWith(FSS_CLOSED_PREFIX) || name.startsWith(FSS_SWING_PREFIX));
     }
 
     private static float barricadeFactor(IsoBarricade b) {

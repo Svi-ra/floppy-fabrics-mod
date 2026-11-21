@@ -524,6 +524,23 @@ public final class Hooks {
         }
     }
 
+    /**
+     * A sprite instance was attached to, or is about to be removed from, an object (D113). When it is one of Functional
+     * Storm Shutters' shutter sprites on a window, the shutters opened or closed: re-classify that window's curtains as
+     * for a window change. One instanceof per call for every other object.
+     */
+    public static void onAttachedSprite(IsoObject obj, zombie.iso.sprite.IsoSpriteInstance inst) {
+        if (!(obj instanceof IsoWindow window) || inst == null) return;
+        if (!FloppyFabrics.active() || !FloppyFabrics.curtains) return;
+        try {
+            zombie.iso.sprite.IsoSprite s = inst.getParentSprite();
+            if (s == null || !Curtains.isShutterSprite(s.getName())) return;
+            if (Curtains.invalidateCurtainsOf(window) > 0) FloppyFabrics.stats.windowEvents++;
+        } catch (Throwable t) {
+            FloppyFabrics.fail("window shutter change", t);
+        }
+    }
+
     /** Exit of {@code UIManager.render()}: draws the stats overlay on top of the UI when enabled. */
     public static void onUiRender() {
         if (!FloppyFabrics.failed) {

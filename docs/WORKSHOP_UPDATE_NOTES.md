@@ -12,6 +12,8 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
 
 - **Fixed:** with fabric sounds on, the console filled with endless "Set pitch for Instance" lines. The calm and
   strong layers of a sound also now keep their own pitch, as intended.
+- **Fixed (Functional Storm Shutters):** curtains behind closed storm shutters no longer blow about, let daylight
+  in or rustle when the window behind them is open or broken. Nothing changes without that mod.
 
 ## Published
 

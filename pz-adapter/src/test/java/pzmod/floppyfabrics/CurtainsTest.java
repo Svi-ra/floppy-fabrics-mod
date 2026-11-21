@@ -222,4 +222,16 @@ class CurtainsTest {
         for (int k = 0; k < n; k++) sum += (p[3 * k] - r[3 * k]) * nx + (p[3 * k + 1] - r[3 * k + 1]) * ny;
         return sum / n;
     }
+
+    @Test
+    void functionalStormShuttersSpritesSealTheWindow() {
+        // D113: closed overlay (stormshutters_01_<style*2+north>) and swing frames (fssmp_swing_<n>_<frame>)
+        assertTrue(Curtains.isShutterSprite("stormshutters_01_0"));
+        assertTrue(Curtains.isShutterSprite("stormshutters_01_9"));
+        assertTrue(Curtains.isShutterSprite("fssmp_swing_3_12"));
+        // the house's painted open shutters and the curtains themselves are not
+        assertFalse(Curtains.isShutterSprite("fixtures_windows_detailing_01_16"));
+        assertFalse(Curtains.isShutterSprite("fixtures_windows_curtains_01_0"));
+        assertFalse(Curtains.isShutterSprite(null));
+    }
 }
