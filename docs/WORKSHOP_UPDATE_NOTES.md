@@ -10,6 +10,12 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
 
 ## Pending (next upload)
 
+(nothing yet)
+
+## Published
+
+- 0.8.0 (2026-11-21, item 3842366760)
+
 **New**
     - **Fabric sounds:** flags flap, curtains rustle, tarps and awnings thump and bunting flutters. Each cloth sounds
       the way it moves: soft in a breeze, hard flapping with snaps in a gale, and a rustle when someone brushes past it
@@ -33,8 +39,6 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
       writes a note to the game log.
     - **Wind sprite effects option:** with the game's wind sprite effects turned on (Wind Sway turns them on too), some
       flags, curtains and window sheets stayed as still pictures. They now move.
-
-## Published
 
 - 0.7.1 (2026-11-20, item 3842366760)
 

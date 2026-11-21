@@ -2,7 +2,7 @@
 
 All notable changes to this project. Format: [Keep a Changelog](https://keepachangelog.com/), versioning: SemVer.
 
-## [Unreleased]
+## [0.8.0] - 2026-11-21
 
 ### Added
 - **Fabric sound** (D111): flags, curtains, tarps/canopies and bunting flap, rustle and snap, driven per cloth by the

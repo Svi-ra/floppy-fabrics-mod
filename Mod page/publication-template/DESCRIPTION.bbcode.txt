@@ -33,19 +33,20 @@ Each fabric has its own simulation tuned to how it behaves: a flag, a curtain, a
 [*]Players, zombies and vehicles push the cloth and drag it by friction. Walls and furniture stop it.
 [*]Curtains move only while their window is open, smashed or an empty frame. A closed curtain lifted by wind lets a little daylight flicker into the room.
 [*]With no wind, fabric is pixel-identical to vanilla.
+[*][b]Sound:[/b] cloth flaps, rustles and snaps as it moves, and fades as you zoom out. Zombies do not hear it.
 [*][b]Gameplay is untouched.[/b] Movement is drawing only. When curtains, sheets or tarps move in the wind, nothing about what zombies can see changes: a hung sheet blocks their line of sight exactly as it does in vanilla, open or closed, still or swaying. The mod does not touch vision, noise, collision or any game rule.
 [/list]
 
 [h1]Settings[/h1]
-[b]Options > Mods > Floppy Fabrics[/b]: simulation detail from 0.5x to 4x (default 1x). Lower it for more performance, raise it for smoother cloth. You can also turn off the curtain daylight flicker, and strings and canopies, on their own.
+[b]Options > Mods > Floppy Fabrics[/b]: an Enable switch; Wind (Vanilla, Calm, Breezy, Windy or Custom, felt only by fabric); Quality (Low to Ultra, or Custom); sound volume; switches for interactions, curtains, curtain light and decorations.
 
 [h1]Performance[/h1]
 [list]
 [*]Only cloth that is awake (wind or contact) is simulated. Cloth with no wind and nothing touching it is drawn exactly like vanilla and costs nothing extra.
-[*]Measured on the author's PC at default detail: the mod's CPU time stayed under 1 ms per frame with about 50 flags awake at once (simulation, geometry and drawing together). At low detail with 30 flags it was about 0.3 ms per frame.
-[*]Cost grows with how many cloths move at the same time. A storm outside a town full of flags, tents and awnings costs more than a quiet room.
-[*]Single frames can briefly reach about 2 ms. Only the average was measured; I have not tested low-end PCs, very large cities or dedicated servers.
-[*]If you see a frame-rate drop, set detail to 0.5x first. Please report it with your PC specs and where you were.
+[*]Measured on the author's PC at default quality: the mod's CPU time stayed under 1 ms per frame with about 50 flags awake at once. At low quality with 30 flags it was about 0.3 ms per frame.
+[*]Cost grows with how many cloths move at once: a storm over a town of flags costs more than a quiet room.
+[*]Single frames can briefly reach about 2 ms. Not yet tested on low-end PCs, very large cities or dedicated servers.
+[*]If you see a frame-rate drop, set Quality to Low first. Please report it with your PC specs and where you were.
 [/list]
 
 [h1]Compatible mods[/h1]
