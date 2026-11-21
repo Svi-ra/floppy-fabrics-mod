@@ -10,7 +10,8 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
 
 ## Pending (next upload)
 
-(nothing yet)
+- **Fixed:** with fabric sounds on, the console filled with endless "Set pitch for Instance" lines. The calm and
+  strong layers of a sound also now keep their own pitch, as intended.
 
 ## Published
 

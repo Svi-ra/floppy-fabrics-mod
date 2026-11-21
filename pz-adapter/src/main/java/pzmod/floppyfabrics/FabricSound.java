@@ -279,6 +279,60 @@ final class FabricSound {
         return t * t * (3f - 2f * t);
     }
 
+    // ---- pitch without vanilla's setPitch: FMODSoundEmitter.setPitch(handle, p) calls DebugLog.log("Set pitch for
+    // Instance"/"ToStart") on every call and writes p into EVERY sound on the emitter, not only the handle's one.
+    // We set the matching Sound's public `pitch` field instead; FileSound.tick hands it to FMOD_Channel_SetPitch.
+    private static java.lang.reflect.Field fInstances, fToStart, fPitch;
+    private static java.lang.reflect.Method mGetRef;
+    /** 0 = not looked up yet, 1 = ready, -1 = unavailable (not an FMOD emitter / changed build): pitch stays 1. */
+    private static int pitchAccess;
+
+    private static boolean pitchReady(BaseSoundEmitter e) {
+        if (pitchAccess == 0) {
+            try {
+                Class<?> em = Class.forName("fmod.fmod.FMODSoundEmitter");
+                Class<?> snd = Class.forName("fmod.fmod.FMODSoundEmitter$Sound");
+                fInstances = em.getDeclaredField("instances");
+                fToStart = em.getDeclaredField("toStart");
+                fPitch = snd.getDeclaredField("pitch");
+                mGetRef = snd.getDeclaredMethod("getRef");
+                fInstances.setAccessible(true);
+                fToStart.setAccessible(true);
+                fPitch.setAccessible(true);
+                mGetRef.setAccessible(true);
+                pitchAccess = 1;
+            } catch (Throwable t) {
+                pitchAccess = -1;
+                System.out.println("FloppyFabrics: fabric sound pitch unavailable (" + t + ")");
+            }
+        }
+        return pitchAccess == 1 && fInstances.getDeclaringClass().isInstance(e);
+    }
+
+    /** Sets one sound's pitch on our own emitter, quietly; no-op if the handle is not there. */
+    static void setPitch(BaseSoundEmitter e, long handle, float pitch) {
+        if (handle == 0L || !pitchReady(e)) return;
+        try {
+            if (!setPitchIn((java.util.List<?>) fInstances.get(e), handle, pitch)) {
+                setPitchIn((java.util.List<?>) fToStart.get(e), handle, pitch);
+            }
+        } catch (Throwable t) {
+            pitchAccess = -1;
+            System.out.println("FloppyFabrics: fabric sound pitch disabled (" + t + ")");
+        }
+    }
+
+    private static boolean setPitchIn(java.util.List<?> sounds, long handle, float pitch) throws Exception {
+        for (int i = 0, n = sounds.size(); i < n; i++) {
+            Object s = sounds.get(i);
+            if ((long) mGetRef.invoke(s) == handle) {
+                fPitch.setFloat(s, pitch);
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static float dist(float dx, float dy, float dz) {
         return (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
@@ -317,8 +371,8 @@ final class FabricSound {
                 IsoWorld.instance.returnOwnershipOfEmitter(e);
                 return null;
             }
-            // volume before the first tick (which starts the channels at the volume set by then); pitch only after it:
-            // vanilla's setPitch on a sound still waiting to start logs a line and repitches every waiting sound
+            // volume before the first tick (which starts the channels at the volume set by then); pitch goes through
+            // our own setPitch (vanilla's logs a line per call and repitches every sound on the emitter)
             e.setVolume(c, 0f);
             e.setVolume(s, 0f);
             e.tick();
@@ -373,8 +427,8 @@ final class FabricSound {
             strongPitch = 0.90f + 0.18f * fast + drift + 0.08f * gust;
             emitter.setVolume(calmId, calmVol);
             emitter.setVolume(strongId, strongVol);
-            emitter.setPitch(calmId, calmPitch);
-            emitter.setPitch(strongId, strongPitch);
+            setPitch(emitter, calmId, calmPitch);
+            setPitch(emitter, strongId, strongPitch);
             float lp = heightLowPass(height);
             if (Math.abs(lp - appliedLowPass) > 0.004f) {
                 highrise(calmId, lp);
@@ -393,8 +447,8 @@ final class FabricSound {
                         float snapHigh = 1f + (HIGH_SNAP - 1f) * height;
                         emitter.setVolume(h, master * snapHigh * (0.5f + 0.5f * d) * (0.8f + 0.2f * (float) rng.nextDouble()));
                         highrise(h, lp); // the FMOD channel exists (paused) from playSound on
-                        emitter.tick(); // started at that volume (see start)
-                        emitter.setPitch(h, (0.92f + 0.16f * (float) rng.nextDouble()) * (0.95f + 0.1f * d));
+                        setPitch(emitter, h, (0.92f + 0.16f * (float) rng.nextDouble()) * (0.95f + 0.1f * d));
+                        emitter.tick(); // started at that volume and pitch (see start)
                         snapsPlayed++;
                     }
                     cooldown = 0.18f + 0.32f * (float) rng.nextDouble();
