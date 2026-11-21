@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "커튼 사이로 드는 빛",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "바람이 커튼을 들어 올리면 햇빛이 방 안에서 일렁입니다.",
     "UI_FloppyFabrics_Decorations": "깃발 장식, 줄 조명, 차양",
-    "UI_FloppyFabrics_Decorations_Tooltip": "줄, 차양, 시장 천막이 움직입니다. 끄기: 바닐라처럼 그려집니다."
+    "UI_FloppyFabrics_Decorations_Tooltip": "줄, 차양, 시장 천막이 움직입니다. 끄기: 바닐라처럼 그려집니다.",
+    "UI_FloppyFabrics_SoundVolume": "천 소리 음량",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "바람에 천이 펄럭이고 바스락거리고 탁 튀는 소리로, 각 천의 움직임을 따라갑니다. 게임의 환경음 음량을 따릅니다. 0 = 끔."
 }

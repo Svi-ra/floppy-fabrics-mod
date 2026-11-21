@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Cahaya melewati tirai",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "Cahaya siang berkedip masuk ke ruangan saat angin mengangkat tirai.",
     "UI_FloppyFabrics_Decorations": "Bendera hias, lampu tali, dan kanopi",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Tali, kanopi, dan tenda pasar bergerak. Mati: digambar seperti di game dasar."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Tali, kanopi, dan tenda pasar bergerak. Mati: digambar seperti di game dasar.",
+    "UI_FloppyFabrics_SoundVolume": "Volume suara kain",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Kain yang berkibar, berdesir, dan menyentak tertiup angin, mengikuti gerakan masing-masing kain. Mengikuti volume suara lingkungan game. 0 = mati."
 }

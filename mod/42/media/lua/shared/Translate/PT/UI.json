@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Luz através das cortinas",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "A luz do dia tremeluz na divisão quando o vento levanta uma cortina.",
     "UI_FloppyFabrics_Decorations": "Bandeirolas, fios de luzes e toldos",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Fios, toldos e coberturas de mercado movem-se. Desligado: desenhados como no jogo base."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Fios, toldos e coberturas de mercado movem-se. Desligado: desenhados como no jogo base.",
+    "UI_FloppyFabrics_SoundVolume": "Volume dos tecidos",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Tecidos a esvoaçar, a roçar e a estalar ao vento, seguindo o movimento de cada tecido. Ajustado pelo volume ambiente do jogo. 0 = desligado."
 }

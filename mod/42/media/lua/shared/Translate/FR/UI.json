@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Lumière à travers les rideaux",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "La lumière du jour vacille dans la pièce quand le vent soulève un rideau.",
     "UI_FloppyFabrics_Decorations": "Fanions, guirlandes lumineuses et auvents",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Les fils, auvents et toiles de marché bougent. Désactivé : affichés comme dans le jeu de base."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Les fils, auvents et toiles de marché bougent. Désactivé : affichés comme dans le jeu de base.",
+    "UI_FloppyFabrics_SoundVolume": "Volume des tissus",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Claquements, froissements et coups secs des tissus au vent, selon le mouvement de chaque tissu. Suit le volume d'ambiance du jeu. 0 = désactivé."
 }

@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Valo verhojen ohi",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "Päivänvalo välkkyy huoneeseen, kun tuuli nostaa verhoa.",
     "UI_FloppyFabrics_Decorations": "Viirinauhat, valonauhat ja katokset",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Narut, markiisit ja torikatokset liikkuvat. Pois: piirretään kuten peruspelissä."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Narut, markiisit ja torikatokset liikkuvat. Pois: piirretään kuten peruspelissä.",
+    "UI_FloppyFabrics_SoundVolume": "Kankaiden äänenvoimakkuus",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Kankaiden lepatus, kahina ja läiskähdykset tuulessa kunkin kankaan oman liikkeen mukaan. Seuraa pelin ympäristöäänten voimakkuutta. 0 = pois."
 }

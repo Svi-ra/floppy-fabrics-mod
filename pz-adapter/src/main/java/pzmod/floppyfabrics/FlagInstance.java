@@ -34,6 +34,8 @@ final class FlagInstance {
     /** Set by the scheduler from the previous frame's distance ranking (cap). */
     boolean allowed = true;
     float lastWindSpeed;
+    /** How fast the cloth moves, for its sound (FabricSound, D111). */
+    final MotionProbe motion = new MotionProbe();
     /** Next instance on the same object (another cloth it draws, D90); see {@link Instances}. */
     FlagInstance next;
     /** Multi-tile cloth (D87): the anchor square the cloth's fields are relative to, fixed at creation. */

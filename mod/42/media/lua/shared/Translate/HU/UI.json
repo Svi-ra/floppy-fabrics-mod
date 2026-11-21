@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Fény a függönyök mellett",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "A napfény vibrál a szobában, amikor a szél felemel egy függönyt.",
     "UI_FloppyFabrics_Decorations": "Zászlófüzérek, fényfüzérek és ponyvatetők",
-    "UI_FloppyFabrics_Decorations_Tooltip": "A füzérek, napellenzők és piaci ponyvák mozognak. Ki: az alapjáték szerint jelennek meg."
+    "UI_FloppyFabrics_Decorations_Tooltip": "A füzérek, napellenzők és piaci ponyvák mozognak. Ki: az alapjáték szerint jelennek meg.",
+    "UI_FloppyFabrics_SoundVolume": "Szövetek hangereje",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "A szövetek csattogása, susogása és pattogása a szélben, az egyes szövetek mozgását követve. A játék környezeti hangerejével skálázódik. 0 = ki."
 }

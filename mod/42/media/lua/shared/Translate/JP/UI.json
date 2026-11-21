@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "カーテン越しの光",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "風がカーテンをめくると、日光が部屋の中でちらつきます。",
     "UI_FloppyFabrics_Decorations": "旗飾り、ストリングライト、天幕",
-    "UI_FloppyFabrics_Decorations_Tooltip": "紐、日よけ、市場の天幕が動きます。オフ：バニラと同じように描画されます。"
+    "UI_FloppyFabrics_Decorations_Tooltip": "紐、日よけ、市場の天幕が動きます。オフ：バニラと同じように描画されます。",
+    "UI_FloppyFabrics_SoundVolume": "布の音量",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "風で布がはためき、こすれ、はじける音。それぞれの布の動きに合わせて変化します。ゲームの環境音量に従います。0 = オフ。"
 }

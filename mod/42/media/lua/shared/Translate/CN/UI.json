@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "透过窗帘的光",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "风掀起窗帘时，日光在房间里闪动。",
     "UI_FloppyFabrics_Decorations": "彩旗、灯串和顶棚",
-    "UI_FloppyFabrics_Decorations_Tooltip": "彩旗绳、遮阳篷和集市顶棚会飘动。关闭：按原版绘制。"
+    "UI_FloppyFabrics_Decorations_Tooltip": "彩旗绳、遮阳篷和集市顶棚会飘动。关闭：按原版绘制。",
+    "UI_FloppyFabrics_SoundVolume": "布料音量",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "布料在风中的拍打、沙沙声与啪响，随每块布料自身的摆动而变化。受游戏环境音量影响。0 = 关闭。"
 }

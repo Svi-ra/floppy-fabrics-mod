@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Свет из-за штор",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "Дневной свет мерцает в комнате, когда ветер приподнимает штору.",
     "UI_FloppyFabrics_Decorations": "Флажки, гирлянды и навесы",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Гирлянды, маркизы и рыночные навесы двигаются. Выкл.: рисуются как в обычной игре."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Гирлянды, маркизы и рыночные навесы двигаются. Выкл.: рисуются как в обычной игре.",
+    "UI_FloppyFabrics_SoundVolume": "Громкость ткани",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Хлопанье, шелест и щелчки ткани на ветру по движению каждого полотна. Зависит от громкости окружения в игре. 0 = выкл."
 }

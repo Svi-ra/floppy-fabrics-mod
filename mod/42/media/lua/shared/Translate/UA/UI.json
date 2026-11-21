@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Світло з-за штор",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "Денне світло мерехтить у кімнаті, коли вітер піднімає штору.",
     "UI_FloppyFabrics_Decorations": "Прапорці, гірлянди та навіси",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Гірлянди, маркізи й ринкові навіси рухаються. Вимк.: малюються як у звичайній грі."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Гірлянди, маркізи й ринкові навіси рухаються. Вимк.: малюються як у звичайній грі.",
+    "UI_FloppyFabrics_SoundVolume": "Гучність тканини",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Ляскіт, шелест і клацання тканини на вітрі відповідно до руху кожного полотна. Залежить від гучності оточення в грі. 0 = вимк."
 }

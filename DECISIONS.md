@@ -1295,3 +1295,46 @@ curtain light, decorations, through their existing Lua globals. Combo indices ar
 only. Everything is applied on `OnGameStart` and from `options:apply()` (MainOptions calls it after every option has
 stored its value); only a detail change rebuilds simulations. New Lua globals: `FloppyFabrics_windBand(min, max)`,
 `FloppyFabrics_simDistance(tiles)`.
+
+**D111 · Procedural fabric sound, driven by the simulated cloth.** Three field recordings (`flag new.wav` — it replaced `Flag.wav`, which sounded thin and unnatural in-game —, `Curtains.wav`,
+`Tarp.wav`, kept outside the repo in `D:\Sounds source`) are turned into four materials by `tools/sound/fabricsfx.py`
+(librosa analysis, SoX cleaning and effects, ffmpeg decode/loudness/encode; config `tools/sound/materials.json`, doc
+`docs/SOUND_DESIGN.md`): **flag** (wall, pole, banner flags), **curtain** (curtains, door sheets, drapes), **tarp**
+(fence covers, `tarp` profile, every canopy), **bunting** (derived from the flag recording sped up ×1.3 and thinned;
+light strings make no sound). Each has a calm loop, a strong loop and six snaps, mono Ogg Vorbis 44.1 kHz in
+`media/sound/floppyfabrics/` (≈1.2 MB), defined in the generated `media/scripts/FloppyFabrics_sounds.txt`
+(`master = Ambient`, `is3D`, distance 2..22/26).
+*Automatic decisions in the pipeline:* the high-pass sits where low bands stop following the 1–6 kHz flutter envelope
+(correlation < 0.35: wind on the mic, not cloth), clamped per material; the low-pass at the recording's bandwidth;
+noise reduction only when the quietest 0.5 s is ≥ 12 dB under the median (Curtains/Tarp have no background, and a
+noise print of soft cloth carved holes into the loops); loops are concatenative (grains chosen to continue the
+previous one's level and brightness, penalised for dropouts and for the hardest transients in calm loops, equal-power
+crossfades) with a loop-point search over ±10 % length that matches level across the wrap; stateful effects
+(compand, room reverb for curtains) run on the loop tiled ×3 so the seam stays clean; loudness by EBU R128 to
+−26 LUFS calm / −20 strong, per-material offsets. QC in `build/sound/report.json` + `layers.png`; wind-sweep
+previews `build/sound/preview_*.ogg` render the runtime mapping below.
+*Runtime (`FabricSound`):* every simulated, drawn cloth reports position, wind at the cloth (after exposure and
+draught) and its particles' mean frame-to-frame speed (`MotionProbe`, 8 sampled particles; canopies: panel modes and
+flap swings). Full-scale speeds were measured in cloth-core at 16–20 m/s: wall/curtain 1.3 m/s, pole 2.4, canopy 4.0,
+bunting 1.8. drive = 0.6·smoothstep(1, 14 m/s, wind) + 0.4·min(1, speed/full); level = drive^0.8; equal-power
+crossfade calm→strong over drive 0.30..0.85; pitch rises with a fast follower of the drive (flutter rate) plus a slow
+per-voice drift; snaps above drive 0.4 at a rate rising with drive and with fast−slow drive (a gust filling the cloth).
+The cloth's own speed is why a zombie brushing a curtain rustles it in still air. Up to 3 voices per material and 10
+in all, the most audible (drive × distance fade over the last quarter of 24 tiles) win; a voice is an own emitter
+taken from the world pool (`takeOwnershipOfEmitter`, we tick it) and fades out when its cloth stops reporting
+(off-screen or not simulated). Vanilla quirks handled: a file sound starts at the volume set before its first tick
+(so volume is set, then tick, then pitch), and `setPitch` on a sound still waiting to start logs and repitches every
+waiting sound. Updated from the UI render hook; any exception there turns sound off for the session without
+touching the cloth. Option *Fabric sound volume* (0..1, default 0.8, 0 = off), Lua `FloppyFabrics_soundVolume(x)`;
+`FloppyFabrics_status()` shows the voices. Not yet heard in-game.
+
+**D112 · Highrise: the zoom lifts the ears.** The game's listener is the player, so zooming out changed nothing in the
+fabric sound. `FabricSound` now derives a camera height h from the zoom: 0 at zoom ≤ 1, 1 at `Core.getMaxZoom()`
+(smoothstep, smoothed over 0.3 s since scroll zoom is stepped). At height h every voice's level × (1 − 0.68·h), its
+FMOD channel low-pass gain 1 → 0.16 along h^0.7 (the crackle goes first, already on the first zoom steps), and snaps a
+further × (1 − 0.55·h): from above, cloth becomes a soft, dull part of the street instead of a sharp sound at your
+feet. `javafmod.FMOD_Channel_SetLowPassGain` is a real binding and vanilla's per-tick file-sound update never touches
+it (it rewrites volume, pitch, 3D position/level, occlusion and reverb sends every tick); a file sound's handle is its
+FMOD channel, and snaps are filtered before their first tick. 3D spread was planned too, but
+`FMOD_Channel_Set3DSpread` takes a SWIG pointer type, not a channel handle, so it is not usable. Status shows
+`height=`. Not yet heard in-game.

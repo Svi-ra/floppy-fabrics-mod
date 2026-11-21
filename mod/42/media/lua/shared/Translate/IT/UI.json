@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Luce oltre le tende",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "La luce del giorno tremola nella stanza quando il vento solleva una tenda.",
     "UI_FloppyFabrics_Decorations": "Festoni, fili di luci e tettoie",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Fili, tende da sole e tettoie del mercato si muovono. Disattivato: disegnati come nel gioco base."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Fili, tende da sole e tettoie del mercato si muovono. Disattivato: disegnati come nel gioco base.",
+    "UI_FloppyFabrics_SoundVolume": "Volume dei tessuti",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Sbattere, fruscio e schiocchi dei tessuti al vento, secondo il movimento di ciascun tessuto. Scalato dal volume ambientale del gioco. 0 = disattivato."
 }

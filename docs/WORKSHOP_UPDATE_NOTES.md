@@ -11,6 +11,10 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
 ## Pending (next upload)
 
 **New**
+    - **Fabric sounds:** flags flap, curtains rustle, tarps and awnings thump and bunting flutters. Each cloth sounds
+      the way it moves: soft in a breeze, hard flapping with snaps in a gale, and a rustle when someone brushes past it
+      even on a still day. Volume in Options > Mods > Floppy Fabrics (0 turns it off); it also follows the game's
+      ambient volume. Zoom the camera out and the sounds drift away and soften, as if heard from a rooftop.
     - **More settings** in Options > Mods > Floppy Fabrics:
       - **Enable** switch: turn the mod off and back on without leaving the game.
       - **Wind**: Vanilla, Calm (never stronger than a fresh breeze), Breezy or Windy (fabric keeps moving on still

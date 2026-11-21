@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Licht an Vorhängen vorbei",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "Tageslicht flackert in den Raum, wenn der Wind einen Vorhang anhebt.",
     "UI_FloppyFabrics_Decorations": "Wimpelketten, Lichterketten und Vordächer",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Schnüre, Markisen und Marktstanddächer bewegen sich. Aus: wie im Vanilla-Spiel gezeichnet."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Schnüre, Markisen und Marktstanddächer bewegen sich. Aus: wie im Vanilla-Spiel gezeichnet.",
+    "UI_FloppyFabrics_SoundVolume": "Lautstärke der Stoffe",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Flattern, Rascheln und Knallen von Stoff im Wind, passend zur Bewegung jedes einzelnen Stoffs. Skaliert mit der Umgebungslautstärke des Spiels. 0 = aus."
 }

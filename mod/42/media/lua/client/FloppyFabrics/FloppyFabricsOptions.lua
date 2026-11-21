@@ -6,7 +6,7 @@ Floppy Fabrics: mod options (Build 42 PZAPI.ModOptions, Options > Mods). DECISIO
   the minimum and capped at the maximum; direction stays the game's. Vanilla = no change. Custom = the two sliders.
 - Quality: one preset sets simulation detail, the number of cloths simulated at once, the coarse-LOD distance and the
   distance beyond which cloths are drawn still. Custom = the three sliders.
-- Feature switches: interactions, curtains, curtain light, decorations.
+- Feature switches: interactions, curtains, curtain light, decorations; fabric sound volume (D111, 0 = off).
 
 Combo indices are what ModOptions.ini stores: never reorder the items, append only.
 The Java side clamps every value. Vanilla reads ModOptions.ini only when the options screen opens
@@ -88,6 +88,7 @@ FloppyFabricsOptions.interactions = options:addTickBox("interactions", "UI_Flopp
 FloppyFabricsOptions.curtains = options:addTickBox("curtains", "UI_FloppyFabrics_Curtains", true, "UI_FloppyFabrics_Curtains_Tooltip")
 FloppyFabricsOptions.curtainLight = options:addTickBox("curtainLight", "UI_FloppyFabrics_CurtainLight", true, "UI_FloppyFabrics_CurtainLight_Tooltip")
 FloppyFabricsOptions.decorations = options:addTickBox("decorations", "UI_FloppyFabrics_Decorations", true, "UI_FloppyFabrics_Decorations_Tooltip")
+FloppyFabricsOptions.soundVolume = options:addSlider("soundVolume", "UI_FloppyFabrics_SoundVolume", 0, 1, 0.05, 0.8, "UI_FloppyFabrics_SoundVolume_Tooltip")
 
 function FloppyFabricsOptions.applyWind()
     local band = windPresets[FloppyFabricsOptions.wind:getValue()]
@@ -118,6 +119,7 @@ function FloppyFabricsOptions.applyAll()
     call("FloppyFabrics_curtains", FloppyFabricsOptions.curtains:getValue())
     call("FloppyFabrics_curtainLight", FloppyFabricsOptions.curtainLight:getValue())
     call("FloppyFabrics_decorations", FloppyFabricsOptions.decorations:getValue())
+    call("FloppyFabrics_soundVolume", FloppyFabricsOptions.soundVolume:getValue())
 end
 
 -- kept for callers of 0.7

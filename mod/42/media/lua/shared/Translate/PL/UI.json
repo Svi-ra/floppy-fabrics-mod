@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Światło zza zasłon",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "Światło dzienne migocze w pokoju, gdy wiatr unosi zasłonę.",
     "UI_FloppyFabrics_Decorations": "Proporczyki, girlandy świetlne i daszki",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Sznurki, markizy i zadaszenia straganów się poruszają. Wył.: rysowane jak w podstawowej grze."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Sznurki, markizy i zadaszenia straganów się poruszają. Wył.: rysowane jak w podstawowej grze.",
+    "UI_FloppyFabrics_SoundVolume": "Głośność tkanin",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Łopotanie, szelest i trzaskanie tkanin na wietrze, zgodnie z ruchem każdej tkaniny. Skalowane głośnością otoczenia w grze. 0 = wyłączone."
 }

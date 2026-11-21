@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Licht langs gordijnen",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "Daglicht flakkert de kamer in wanneer de wind een gordijn optilt.",
     "UI_FloppyFabrics_Decorations": "Vlaggetjes, lichtsnoeren en luifels",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Slingers, luifels en marktkramen bewegen. Uit: getekend zoals in het basisspel."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Slingers, luifels en marktkramen bewegen. Uit: getekend zoals in het basisspel.",
+    "UI_FloppyFabrics_SoundVolume": "Volume van stoffen",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Wapperen, ritselen en klappen van stof in de wind, volgens de beweging van elk stuk stof. Schaalt mee met het omgevingsvolume van het spel. 0 = uit."
 }

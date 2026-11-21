@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Lys forbi gardiner",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "Dagslys flakker inn i rommet når vinden løfter et gardin.",
     "UI_FloppyFabrics_Decorations": "Vimpler, lysslynger og baldakiner",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Snorer, markiser og markedsboder beveger seg. Av: tegnes som i grunnspillet."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Snorer, markiser og markedsboder beveger seg. Av: tegnes som i grunnspillet.",
+    "UI_FloppyFabrics_SoundVolume": "Lydstyrke for stoff",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Stoff som blafrer, rasler og smeller i vinden, etter hvert stoffs egen bevegelse. Skaleres med spillets omgivelseslydstyrke. 0 = av."
 }

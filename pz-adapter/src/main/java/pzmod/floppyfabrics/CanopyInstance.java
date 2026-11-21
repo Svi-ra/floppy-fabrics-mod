@@ -14,6 +14,8 @@ final class CanopyInstance {
     final float[] flapS;
     int lastFrame = Integer.MIN_VALUE;
     int lastDrawnFrame = Integer.MIN_VALUE;
+    /** How fast it moves, for its sound (FabricSound, D111). */
+    final MotionProbe motion = new MotionProbe();
     final float cx, cy, cz;
     /** Frame x range of the hem (columns with a valance band); flaps are spread over it. */
     final float hemX0, hemX1;

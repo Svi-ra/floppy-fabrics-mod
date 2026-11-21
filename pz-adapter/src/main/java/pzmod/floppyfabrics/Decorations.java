@@ -105,9 +105,18 @@ final class Decorations {
                 wx = BodyScan.washX; wy = BodyScan.washY;
                 cBodies += BodyScan.bodies;
             }
-            inst.line.setWind(WindProvider.x() * exposure + wx, WindProvider.y() * exposure + wy, 0f);
+            float lwx = WindProvider.x() * exposure + wx, lwy = WindProvider.y() * exposure + wy;
+            inst.line.setWind(lwx, lwy, 0f);
             int steps = inst.line.step(dt * def.timeScale, clock * def.timeScale); // the gusts and eddies slow down too (D102)
             if (steps > 0) cStepped++;
+            FabricSound.Material mat = FabricSound.volume > 0f ? FabricSound.materialOf(def) : null;
+            if (mat != null) { // D111
+                float speed = inst.motion.update(inst.line.positions(), inst.line.particleCount(), dt);
+                if (!inst.line.isSleeping()) {
+                    FabricSound.report(inst, mat, (inst.minX + inst.maxX) * 0.5f, (inst.minY + inst.maxY) * 0.5f,
+                            inst.az / Projection.LEVEL_M, (float) Math.sqrt(lwx * lwx + lwy * lwy), speed, FabricSound.MOTION_LINE);
+                }
+            }
         }
         if (inst.line.isSleeping() && !FloppyFabrics.debugOverlay) return false; // exactly the vanilla picture
         cAwake++;
@@ -166,6 +175,8 @@ final class Decorations {
     // ------------------------------------------------------------------ canopies
 
     private static final CanopyField canopyField = new CanopyField();
+    /** Scratch for a canopy's motion probe: panel modes then flap swings. */
+    private static final float[] canopyMotion = new float[3 * MotionProbe.SAMPLES];
 
     private static boolean drawCanopy(FlagDef def, IsoObject obj, IsoGridSquare sq, int frame, float dt, boolean simulate,
                                       float exposure, Texture tex, float x, float y, float w, float h, float r, float g,
@@ -186,9 +197,21 @@ final class Decorations {
                         0f, 0f, 0f, null, dt);
                 wx = BodyScan.washX; wy = BodyScan.washY;
             }
-            inst.canopy.setWind(WindProvider.x() * exposure + wx, WindProvider.y() * exposure + wy, 0f);
+            float cwx = WindProvider.x() * exposure + wx, cwy = WindProvider.y() * exposure + wy;
+            inst.canopy.setWind(cwx, cwy, 0f);
             int steps = inst.canopy.step(dt * def.timeScale, clock * def.timeScale); // the gusts and eddies slow down too (D102)
             if (steps > 0) cStepped++;
+            if (FabricSound.volume > 0f) { // D111: panel modes and flap swings (metres) are the canopy's motion
+                Canopy c = inst.canopy;
+                int m = Canopy.MODES, k = Math.min(c.flapCount(), canopyMotion.length - m);
+                for (int i = 0; i < m; i++) canopyMotion[i] = c.mode(i);
+                for (int i = 0; i < k; i++) canopyMotion[m + i] = c.flap(i) * c.flapLength();
+                float speed = inst.motion.updateScalars(canopyMotion, m + k, dt);
+                if (!c.isSleeping()) {
+                    FabricSound.report(inst, FabricSound.Material.TARP, inst.cx, inst.cy, inst.cz / Projection.LEVEL_M,
+                            (float) Math.sqrt(cwx * cwx + cwy * cwy), speed, FabricSound.MOTION_CANOPY);
+                }
+            }
         }
         if (inst.canopy.isSleeping() && !FloppyFabrics.debugOverlay) return false;
         cAwake++;

@@ -15,6 +15,8 @@ final class LineInstance {
     final Colliders colliders = new Colliders(Interactions.CAPACITY);
     int lastFrame = Integer.MIN_VALUE;
     int lastDrawnFrame = Integer.MIN_VALUE;
+    /** How fast it moves, for its sound (FabricSound, D111). */
+    final MotionProbe motion = new MotionProbe();
     float minX, minY, minZ, maxX, maxY, maxZ;
 
     // per frame: displacement of every particle in 2x frame pixels (same for every tile), and a shade per string node

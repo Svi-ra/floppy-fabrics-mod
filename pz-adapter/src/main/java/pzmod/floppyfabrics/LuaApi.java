@@ -33,6 +33,7 @@ import zombie.iso.weather.ClimateManager;
  *   FloppyFabrics_setDetail(x)        -> simulation detail 0.5..4 (x the shipped resolution; mod options set it too)
  *   FloppyFabrics_simDistance(tiles)  -> cloths farther than this are drawn still (default 45; mod options set it too)
  *   FloppyFabrics_windBand(min, max)  -> wind floor and ceiling, game wind power 0..1 (x120 km/h); 0, 1 = vanilla
+ *   FloppyFabrics_soundVolume(x)      -> fabric sound volume 0..1 (default 0.8; 0 = off; mod options set it too)
  * </pre>
  * Note: Lua needs the parentheses — {@code FloppyFabrics_status} alone is a syntax error in the console.
  */
@@ -53,7 +54,7 @@ public final class LuaApi {
                 + String.format(java.util.Locale.ROOT, "{drawn=%d awake=%d stepped=%d bodies=%d}", Decorations.lastDrawn,
                         Decorations.lastAwake, Decorations.lastStepped, Decorations.lastBodies)
                 + " reclassified=" + FloppyFabrics.reclassifiedCount() + " " + LayerGuard.state() + " windSwaySkips=" + WindSwayCompat.skipped + " instances=" + Instances.size()
-                + " probe=" + RenderStateProbe.available()
+                + " probe=" + RenderStateProbe.available() + " " + FabricSound.state()
                 + String.format(java.util.Locale.ROOT, " wind=%.1fm/s@%.0f%s", WindProvider.speed(), WindProvider.angleDeg(),
                         WindProvider.forced ? "(forced)" : "")
                 + String.format(java.util.Locale.ROOT,
@@ -88,6 +89,16 @@ public final class LuaApi {
         WindProvider.bandMin = (float) Math.max(0.0, Math.min(1.0, min));
         WindProvider.bandMax = (float) Math.max(0.0, Math.min(1.0, max));
         return status();
+    }
+
+    /**
+     * Fabric sound volume 0..1 (D111), on top of the game's ambient volume; 0 = off (every voice stops, no emitters).
+     * The voices pick the new level up at the next frame.
+     */
+    @LuaMethod(name = "FloppyFabrics_soundVolume", global = true)
+    public static String soundVolume(double volume) {
+        FabricSound.volume = Float.isFinite((float) volume) ? (float) Math.max(0.0, Math.min(1.0, volume)) : 0f;
+        return FabricSound.state();
     }
 
     /** Cloths farther than this many tiles from the camera character are drawn but not simulated; clamped to [5, 200]. */

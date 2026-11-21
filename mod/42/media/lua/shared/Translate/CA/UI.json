@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Llum a través de les cortines",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "La llum del dia parpelleja a l'habitació quan el vent aixeca una cortina.",
     "UI_FloppyFabrics_Decorations": "Banderoles, garlandes de llums i tendals",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Les cordes, els tendals i les lones de mercat es mouen. Desactivat: es dibuixen com al joc base."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Les cordes, els tendals i les lones de mercat es mouen. Desactivat: es dibuixen com al joc base.",
+    "UI_FloppyFabrics_SoundVolume": "Volum del so de les teles",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Teles que onegen, fan fru-fru i petarden amb el vent, seguint el moviment de cada tela. Escalat pel volum ambiental del joc. 0 = desactivat."
 }

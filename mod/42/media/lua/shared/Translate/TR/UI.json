@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Perdelerden sızan ışık",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "Rüzgâr bir perdeyi kaldırdığında gün ışığı odada titreşir.",
     "UI_FloppyFabrics_Decorations": "Flamalar, ipli ışıklar ve tenteler",
-    "UI_FloppyFabrics_Decorations_Tooltip": "İpler, tenteler ve pazar tenteleri hareket eder. Kapalı: vanilla oyundaki gibi çizilir."
+    "UI_FloppyFabrics_Decorations_Tooltip": "İpler, tenteler ve pazar tenteleri hareket eder. Kapalı: vanilla oyundaki gibi çizilir.",
+    "UI_FloppyFabrics_SoundVolume": "Kumaş ses düzeyi",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Kumaşların rüzgârda dalgalanma, hışırtı ve şaklama sesleri; her kumaşın kendi hareketini izler. Oyunun ortam ses düzeyine göre ölçeklenir. 0 = kapalı."
 }

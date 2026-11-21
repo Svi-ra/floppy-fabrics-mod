@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Light past curtains",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "Daylight flickers into the room when the wind lifts a curtain.",
     "UI_FloppyFabrics_Decorations": "Bunting, string lights and canopies",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Strings, awnings and market canopies move. Off: drawn as in vanilla."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Strings, awnings and market canopies move. Off: drawn as in vanilla.",
+    "UI_FloppyFabrics_SoundVolume": "Fabric sound volume",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Cloth flapping, rustling and snapping in the wind, following each cloth's own motion. Scaled by the game's ambient volume. 0 = off."
 }

@@ -348,6 +348,7 @@ public final class Hooks {
             }
             inst.update(frame, dt, exposure);
             if (inst.cloth.lastContacts() > 0) Scheduler.noteContact();
+            if (!ghost && obj != null && FabricSound.volume > 0f) reportSound(inst, def, obj, dt);
         } else {
             Scheduler.noteFrozen();
         }
@@ -363,6 +364,24 @@ public final class Hooks {
         // the tile's own definition: a piece of a multi-tile cloth is drawn through its own offset into the shared
         // simulation (inst.def is the cloth's, D87/D99)
         return SpriteMesh.draw(def, inst, tex, x, y, w, h, r, g, b, a, modifier);
+    }
+
+    /** The cloth's sound (D111): where it is, the wind at it and how fast it really moves. */
+    private static void reportSound(FlagInstance inst, FlagDef def, IsoObject obj, float dt) {
+        float speed = inst.motion.update(inst.cloth.positions(), inst.cloth.particleCount(), dt);
+        if (inst.cloth.isSleeping() && inst.lastWindSpeed < 0.5f) return;
+        float x, y, z;
+        if (inst.placed) {
+            x = inst.ox; y = inst.oy; z = inst.oz / Projection.LEVEL_M;
+        } else {
+            IsoGridSquare sq = obj.getSquare();
+            if (sq == null) return;
+            x = (inst.anchored ? inst.anchorX : sq.getX()) + 0.5f;
+            y = (inst.anchored ? inst.anchorY : sq.getY()) + 0.5f;
+            z = (inst.anchored ? inst.anchorZ : sq.getZ()) + 0.5f;
+        }
+        FabricSound.report(inst, FabricSound.materialOf(def), x, y, z, inst.lastWindSpeed, speed,
+                def.kind == FlagDef.Kind.POLE ? FabricSound.MOTION_POLE : FabricSound.MOTION_WALL);
     }
 
     /** Planar distance from the camera character in tiles, plus 2 tiles per level of height difference. */
@@ -513,6 +532,14 @@ public final class Hooks {
             } catch (Throwable t) {
                 FloppyFabrics.fail("layer guard", t);
             }
+        }
+        try {
+            FabricSound.update(); // after every cloth of this frame has reported (D111); stops all when inactive
+        } catch (Throwable t) {
+            // sound is never worth the cloth: drop it for the session, keep the simulation
+            FabricSound.volume = 0f;
+            try { FabricSound.stopAll(); } catch (Throwable ignored) { /* emitters may be half torn down */ }
+            FloppyFabrics.warn("fabric sound disabled after error: " + t);
         }
         if (CurtainLight.active() > 0) {
             try {

@@ -1,0 +1,74 @@
+{
+  "_comment": "Sound pipeline config (tools/sound/fabricsfx.py). One entry per material category the runtime knows (FabricSound.Material). 'source' is a file in the source folder; 'derive' builds a material from another one's cleaned audio with SoX effects. Every number here is a starting point the analysis may override where marked 'auto'.",
+  "sampleRate": 48000,
+  "exportRate": 44100,
+  "vorbisQuality": 5,
+  "loopSeconds": 12.0,
+  "snapCount": 6,
+  "seed": 1337,
+  "loudness": {
+    "_comment": "Integrated loudness targets (LUFS) per layer. The runtime only scales these down, so they set the mix between layers and materials.",
+    "calm": -26.0,
+    "strong": -20.0,
+    "snapPeak": -3.0
+  },
+  "materials": {
+    "flag": {
+      "source": "flag new.wav",
+      "_source": "60 s of a heavy flag in steady wind (replaced Flag.wav, which sounded thin and unnatural in-game). Long grains and a long loop keep its flapping rhythm intact; few extra snaps, it has its own.",
+      "highpass": "auto",
+      "highpassRange": [40, 150],
+      "lowpass": "auto",
+      "noiseReduction": 0.10,
+      "grain": [1.50, 3.50],
+      "crossfade": 0.12,
+      "loopSeconds": 20.0,
+      "snapLayer": 0.25,
+      "snapRate": 1.1,
+      "snapMinGap": 0.30,
+      "snapMaxLength": 0.45,
+      "loudnessOffset": 0.0
+    },
+    "curtain": {
+      "source": "Curtains.wav",
+      "highpass": "auto",
+      "highpassRange": [120, 260],
+      "lowpass": "auto",
+      "noiseReduction": 0.14,
+      "grain": [0.40, 1.00],
+      "crossfade": 0.10,
+      "snapRate": 0.5,
+      "snapMinGap": 0.30,
+      "snapMaxLength": 0.40,
+      "room": { "reverberance": 22, "hfDamping": 60, "roomScale": 18, "wetGain": -9 },
+      "loudnessOffset": -4.0
+    },
+    "tarp": {
+      "source": "Tarp.wav",
+      "highpass": "auto",
+      "highpassRange": [55, 110],
+      "lowpass": "auto",
+      "noiseReduction": 0.08,
+      "grain": [0.50, 1.40],
+      "crossfade": 0.08,
+      "snapRate": 0.9,
+      "snapMinGap": 0.40,
+      "snapMaxLength": 0.60,
+      "loudnessOffset": 1.0
+    },
+    "bunting": {
+      "derive": "flag",
+      "_comment": "Small pennants on a string: the flag recording sped up (shorter cloth flutters faster and higher), thinned, with less body.",
+      "effects": ["speed", "1.30", "highpass", "-2", "420", "equalizer", "3500", "1.2q", "+2", "lowpass", "-2", "11000"],
+      "highpass": "skip",
+      "lowpass": "skip",
+      "noiseReduction": 0.0,
+      "grain": [0.35, 0.90],
+      "crossfade": 0.07,
+      "snapRate": 1.4,
+      "snapMinGap": 0.22,
+      "snapMaxLength": 0.30,
+      "loudnessOffset": -5.0
+    }
+  }
+}

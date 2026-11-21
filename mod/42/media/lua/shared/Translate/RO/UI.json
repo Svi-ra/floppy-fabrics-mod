@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Lumină pe lângă perdele",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "Lumina zilei pâlpâie în cameră când vântul ridică o perdea.",
     "UI_FloppyFabrics_Decorations": "Ghirlande cu stegulețe, instalații de lumini și copertine",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Șnururile, copertinele și prelatele de piață se mișcă. Oprit: desenate ca în jocul de bază."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Șnururile, copertinele și prelatele de piață se mișcă. Oprit: desenate ca în jocul de bază.",
+    "UI_FloppyFabrics_SoundVolume": "Volumul țesăturilor",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Fluturatul, foșnetul și pocnetul țesăturilor în vânt, după mișcarea fiecărei țesături. Scalat de volumul ambiental al jocului. 0 = oprit."
 }

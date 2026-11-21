@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "Světlo kolem záclon",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "Denní světlo se mihotá v místnosti, když vítr nadzvedne záclonu.",
     "UI_FloppyFabrics_Decorations": "Praporky, světelné řetězy a stříšky",
-    "UI_FloppyFabrics_Decorations_Tooltip": "Šňůry, markýzy a stříšky stánků se hýbou. Vyp.: vykreslují se jako v základní hře."
+    "UI_FloppyFabrics_Decorations_Tooltip": "Šňůry, markýzy a stříšky stánků se hýbou. Vyp.: vykreslují se jako v základní hře.",
+    "UI_FloppyFabrics_SoundVolume": "Hlasitost látek",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "Plácání, šustění a práskání látek ve větru podle pohybu každé látky. Řídí se hlasitostí okolních zvuků hry. 0 = vypnuto."
 }

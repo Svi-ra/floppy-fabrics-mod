@@ -5,6 +5,13 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 ## [Unreleased]
 
 ### Added
+- **Fabric sound** (D111): flags, curtains, tarps/canopies and bunting flap, rustle and snap, driven per cloth by the
+  wind at it and the simulated cloth's own motion (`FabricSound`, `MotionProbe`). Four materials × (calm loop,
+  strong loop, 6 snaps) built from field recordings by the new pipeline `tools/sound/fabricsfx.py` (librosa, SoX,
+  ffmpeg; `docs/SOUND_DESIGN.md`). Option *Fabric sound volume* in all 28 languages; Lua
+  `FloppyFabrics_soundVolume(x)`.
+- **Highrise effect** (D112): zooming out lowers and low-passes every fabric sound (FMOD channel low-pass gain)
+  and softens snaps further, from the camera height derived from the zoom.
 - **More mod options** (D110), modelled on WindSway's: a master *Enable* switch; a *Wind* band (Vanilla / Calm /
   Breezy / Windy / Custom with minimum and maximum sliders, game wind power 0..1) applied to the climate wind in
   `WindProvider`; *Quality* presets (Low / Medium / High / Ultra / Custom) setting simulation detail, cloths simulated

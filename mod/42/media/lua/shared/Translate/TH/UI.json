@@ -41,5 +41,7 @@
     "UI_FloppyFabrics_CurtainLight": "แสงลอดผ้าม่าน",
     "UI_FloppyFabrics_CurtainLight_Tooltip": "แสงแดดจะวูบวาบเข้ามาในห้องเมื่อลมพัดผ้าม่านขึ้น",
     "UI_FloppyFabrics_Decorations": "ธงราว ไฟประดับ และหลังคาผ้าใบ",
-    "UI_FloppyFabrics_Decorations_Tooltip": "เชือก กันสาด และหลังคาผ้าใบตลาดจะเคลื่อนไหว ปิด: แสดงแบบเกมดั้งเดิม"
+    "UI_FloppyFabrics_Decorations_Tooltip": "เชือก กันสาด และหลังคาผ้าใบตลาดจะเคลื่อนไหว ปิด: แสดงแบบเกมดั้งเดิม",
+    "UI_FloppyFabrics_SoundVolume": "ระดับเสียงผ้า",
+    "UI_FloppyFabrics_SoundVolume_Tooltip": "เสียงผ้าสะบัด เสียดสี และดีดตัวในลม ตามการเคลื่อนไหวของผ้าแต่ละผืน ปรับตามระดับเสียงบรรยากาศของเกม 0 = ปิด"
 }
