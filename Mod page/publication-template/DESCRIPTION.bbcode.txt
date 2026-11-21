@@ -25,7 +25,6 @@ The mod is visual only and does not touch your saves, but approve Java code only
 [*][b]Fence and doorway covers:[/b] sheets and tarps from [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3785740658]Fence Sheets[/url] (see Compatible mods).
 [/list]
 Every supported tile, with a preview picture, is listed in the [url=https://github.com/Svi-ra/floppy-fabrics-mod/blob/main/docs/TILE_REGISTRY.md]tile registry[/url].
-Each fabric has its own simulation tuned to how it behaves: a flag, a curtain, an awning, a string of bunting and an altar cloth do not move alike.
 
 [h1]How it behaves[/h1]
 [list]
@@ -46,18 +45,16 @@ Each fabric has its own simulation tuned to how it behaves: a flag, a curtain, a
 [*]Measured on the author's PC at default quality: the mod's CPU time stayed under 1 ms per frame with about 50 flags awake at once. At low quality with 30 flags it was about 0.3 ms per frame.
 [*]Cost grows with how many cloths move at once: a storm over a town of flags costs more than a quiet room.
 [*]Single frames can briefly reach about 2 ms. Not yet tested on low-end PCs, very large cities or dedicated servers.
-[*]If you see a frame-rate drop, set Quality to Low first. Please report it with your PC specs and where you were.
+[*]If you see a frame-rate drop, set Quality to Low first. Report it with your PC specs.
 [/list]
 
 [h1]Compatible mods[/h1]
-These mods add or use fabric, and Floppy Fabrics animates it. You do not need any of them, and nothing changes if you do not use them.
+[b]Wind sway support:[/b] Floppy Fabrics animates the fabric these mods add, so their sheets and tarps sway in the wind with no extra setup. You do not need any of them, and nothing changes if you do not use them.
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3785740658][img]https://images.steamusercontent.com/ugc/11810053326347896396/BAC2DE2B8B6F5579A4F5F0C02DC1D365FFE78DA5/?imw=128&imh=128[/img][/url]
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3785740658][b]Fence Sheets[/b][/url]: sheets and tarps hung on fences and empty door frames billow in the wind and get pushed aside when something walks through. Tarps stay tied at the top and sides, so a run of tarp tiles moves as one sheet.
 
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3794207681][img]https://images.steamusercontent.com/ugc/11949640646152024147/951BB1502A99B420FCCDB378A7B50001792AD437/?imw=128&imh=128[/img][/url]
 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3794207681][b]Fitted Sheets[/b][/url]: made-to-measure sheets on windows move like the vanilla ones, including on the outside of a window.
-
-Other mods that add fabric can be supported with a small data file, see For modders.
 
 [h1]Safe to add and remove[/h1]
 Visual only and client-side. It adds no new objects, no mod data and nothing to your save. Disable the mod and everything returns to vanilla.
@@ -66,8 +63,7 @@ Visual only and client-side. It adds no new objects, no mod data and nothing to 
 [h1]Known issues[/h1]
 [list]
 [*]Much of version 0.6.0 (flutter, multi-tile cloths, street and pole banners, strings, canopies, altar cloths) has not yet been played through in the game. Expect rough edges and please report them.
-[*]Multiplayer is not tested.
-[*]No Viewpoint support.
+[*][*]No Viewpoint support.
 [*]Curtains on player-built (thumpable) windows never move.
 [*]A player-hung sheet changes look when its window opens (it switches from its 3D model to its 2D sprite).
 [*]Where the vanilla art of two neighbouring tiles does not line up (the Knox flag differs by about 5 px), a small step stays visible.
@@ -85,5 +81,4 @@ Report it on the [url=https://github.com/Svi-ra/floppy-fabrics-mod/issues]GitHub
 
 [hr][/hr]
 Released under the MIT licence.
-Workshop ID: 3842366760
 Mod ID: FloppyFabrics
