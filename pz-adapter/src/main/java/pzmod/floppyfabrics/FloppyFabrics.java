@@ -14,7 +14,8 @@ import zombie.iso.IsoObject;
  * invalidated so the chunk re-bakes it in its vanilla layer. While disabled every hook returns "do vanilla" at once.
  */
 public final class FloppyFabrics {
-    public static final String VERSION = "0.6.0";
+    /** Must equal {@code modversion} in mod/42/mod.info (VersionTest). */
+    public static final String VERSION = "0.8.0";
     static final String TAG = "[FloppyFabrics] ";
 
     /** User toggle (Lua: FloppyFabrics_setEnabled). */
