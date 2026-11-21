@@ -19,6 +19,8 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
         once and how far away they move. If you had raised *Simulation detail* before, choose Custom to keep it.
       - Switches for people and vehicles pushing fabric, window curtains, light past curtains, and bunting, string
         lights and canopies.
+    - **Translations:** the options and the mod description are now in all 28 languages the game supports. They
+      follow the game's language setting.
 
 **Fixed**
     - **Wind Sway compatibility:** with Wind Sway also installed, nothing moved (flags, curtains, banners, awnings),

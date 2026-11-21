@@ -1,0 +1,3 @@
+{
+    "description": "Floppy Fabrics dává látkám ve světě skutečnou dynamickou fyziku. Vlajky, okenní záclony, nemocniční a divadelní závěsy, kostelní prapory, praporky, světelné řetězy, markýzy, stříšky stánků, oltářní plátna a pouliční transparenty už nejsou statické obrázky: vzdouvají se ve větru, houpou a třepetají, reagují na hráče, zombie a projíždějící vozidla, překládají se přes nábytek a zastavují se o zdi. Každý druh látky má vlastní vyladěnou simulaci a látky přes více polí se hýbou jako celek. Plánují se další látky (oblečení na stojanech). Vítr, kvalitu a každou funkci lze nastavit v Možnosti > Mody. Čistě vizuální a pouze na straně klienta: žádné nové objekty, žádná data v uložené hře, odebrání modu vrátí základní hru. Vyžaduje ZombieBuddy (Java mody)."
+}

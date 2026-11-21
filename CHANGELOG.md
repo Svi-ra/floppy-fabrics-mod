@@ -10,6 +10,9 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
   `WindProvider`; *Quality* presets (Low / Medium / High / Ultra / Custom) setting simulation detail, cloths simulated
   at once, LOD distance and simulation distance together; switches for interactions, curtains, curtain light and
   decorations. New Lua globals `FloppyFabrics_windBand(min, max)` and `FloppyFabrics_simDistance(tiles)`.
+- **Translations** for every language the game ships (27 besides EN): `Translate/<LANG>/UI.json` for the mod
+  options and `Mod.json` (`description`) for the mod-manager entry; the name stays "Floppy Fabrics". AR, ES_CL and
+  ES_MX are Spain Spanish (AR with *vos*). The joke language STREW is skipped and falls back to EN.
 
 ### Fixed
 - **Nothing moved alongside WindSway** (D107): two ZombieBuddy mods patching `FBORenderCell` as it first loads lose
