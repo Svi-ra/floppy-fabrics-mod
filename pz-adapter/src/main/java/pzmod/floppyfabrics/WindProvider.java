@@ -18,6 +18,15 @@ final class WindProvider {
     static volatile boolean forced;
     static volatile float forcedSpeed, forcedAngleDeg;
 
+    /**
+     * Wind band from the mod options (D110), in the game's wind power units (0..1, ×120 km/h like
+     * {@code getWindspeedKph}): the climate wind is raised to at least {@code bandMin} and capped at {@code bandMax}.
+     * Direction stays the climate's. {@code bandMax <= bandMin} = a steady wind at {@code bandMin}; 0 / 1 = vanilla.
+     * Not applied to the dev override.
+     */
+    static volatile float bandMin = 0f, bandMax = 1f;
+    static final float KPH_PER_POWER = 120f;
+
     private WindProvider() {}
 
     static void update(int frameNo) {
@@ -28,13 +37,23 @@ final class WindProvider {
             angleDeg = forcedAngleDeg;
         } else {
             ClimateManager cm = ClimateManager.getInstance();
-            speed = cm.getWindspeedKph() / 3.6f;
+            speed = band(cm.getWindspeedKph()) / 3.6f;
             angleDeg = cm.getWindAngleDegrees();
         }
         if (!Float.isFinite(speed) || speed < 0f) speed = 0f;
         Projection.windToward(angleDeg, tmp);
         wx = tmp[0] * speed;
         wy = tmp[1] * speed;
+    }
+
+    /** Applies the wind band to a climate speed in km/h. */
+    static float band(float kph) {
+        if (!Float.isFinite(kph) || kph < 0f) kph = 0f;
+        float lo = bandMin * KPH_PER_POWER, hi = bandMax * KPH_PER_POWER;
+        if (hi <= lo) return lo;
+        if (kph < lo) return lo;
+        if (bandMax < 1f && kph > hi) return hi;
+        return kph;
     }
 
     static float x() { return wx; }

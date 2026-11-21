@@ -10,6 +10,16 @@ lives in `CHANGELOG.md` and `DECISIONS.md`.
 
 ## Pending (next upload)
 
+**New**
+    - **More settings** in Options > Mods > Floppy Fabrics:
+      - **Enable** switch: turn the mod off and back on without leaving the game.
+      - **Wind**: Vanilla, Calm (never stronger than a fresh breeze), Breezy or Windy (fabric keeps moving on still
+        days), or Custom with your own minimum and maximum wind. Only the fabric feels it; the weather is unchanged.
+      - **Quality**: Low, Medium, High (as before) or Ultra, or Custom with simulation detail, how many cloths move at
+        once and how far away they move. If you had raised *Simulation detail* before, choose Custom to keep it.
+      - Switches for people and vehicles pushing fabric, window curtains, light past curtains, and bunting, string
+        lights and canopies.
+
 **Fixed**
     - **Wind Sway compatibility:** with Wind Sway also installed, nothing moved (flags, curtains, banners, awnings),
       depending on mod order. Flags, banners and decorations now move with Wind Sway in any order. If curtains and

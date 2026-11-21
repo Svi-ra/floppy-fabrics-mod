@@ -31,6 +31,8 @@ import zombie.iso.weather.ClimateManager;
  *   FloppyFabrics_curtainLightGain(x) -> strength of that light at a fully lifted curtain (default 0.12)
  *   FloppyFabrics_decorations(bool)   -> bunting, string lights and canopies move (default on)
  *   FloppyFabrics_setDetail(x)        -> simulation detail 0.5..4 (x the shipped resolution; mod options set it too)
+ *   FloppyFabrics_simDistance(tiles)  -> cloths farther than this are drawn still (default 45; mod options set it too)
+ *   FloppyFabrics_windBand(min, max)  -> wind floor and ceiling, game wind power 0..1 (x120 km/h); 0, 1 = vanilla
  * </pre>
  * Note: Lua needs the parentheses — {@code FloppyFabrics_status} alone is a syntax error in the console.
  */
@@ -46,6 +48,8 @@ public final class LuaApi {
                 + " curtainLight=" + FloppyFabrics.curtainLight + "@" + FloppyFabrics.curtainLightGain
                 + " detail=" + Detail.factor() + "x"
                 + " decorations=" + FloppyFabrics.decorations
+                + String.format(java.util.Locale.ROOT, " windBand=%.2f..%.2f simDist=%.0f", WindProvider.bandMin,
+                        WindProvider.bandMax, FloppyFabrics.simDistance)
                 + String.format(java.util.Locale.ROOT, "{drawn=%d awake=%d stepped=%d bodies=%d}", Decorations.lastDrawn,
                         Decorations.lastAwake, Decorations.lastStepped, Decorations.lastBodies)
                 + " reclassified=" + FloppyFabrics.reclassifiedCount() + " " + LayerGuard.state() + " windSwaySkips=" + WindSwayCompat.skipped + " instances=" + Instances.size()
@@ -73,6 +77,24 @@ public final class LuaApi {
     public static String setDetail(double factor) {
         Detail.request((float) factor);
         return "FloppyFabrics detail " + Math.max(Detail.MIN, Math.min(Detail.MAX, factor)) + "x requested";
+    }
+
+    /**
+     * Wind band (D110): the climate wind is raised to at least {@code min} and capped at {@code max}, both in the game's
+     * wind power units (0..1, ×120 km/h). {@code max <= min} = a steady wind at {@code min}. 0, 1 = vanilla wind.
+     */
+    @LuaMethod(name = "FloppyFabrics_windBand", global = true)
+    public static String windBand(double min, double max) {
+        WindProvider.bandMin = (float) Math.max(0.0, Math.min(1.0, min));
+        WindProvider.bandMax = (float) Math.max(0.0, Math.min(1.0, max));
+        return status();
+    }
+
+    /** Cloths farther than this many tiles from the camera character are drawn but not simulated; clamped to [5, 200]. */
+    @LuaMethod(name = "FloppyFabrics_simDistance", global = true)
+    public static String simDistance(double tiles) {
+        FloppyFabrics.simDistance = (float) Math.max(5.0, Math.min(200.0, tiles));
+        return status();
     }
 
     /** Strings (bunting, string lights) and canopies move (default on). Off: drawn as vanilla. */

@@ -4,6 +4,13 @@ All notable changes to this project. Format: [Keep a Changelog](https://keepacha
 
 ## [Unreleased]
 
+### Added
+- **More mod options** (D110), modelled on WindSway's: a master *Enable* switch; a *Wind* band (Vanilla / Calm /
+  Breezy / Windy / Custom with minimum and maximum sliders, game wind power 0..1) applied to the climate wind in
+  `WindProvider`; *Quality* presets (Low / Medium / High / Ultra / Custom) setting simulation detail, cloths simulated
+  at once, LOD distance and simulation distance together; switches for interactions, curtains, curtain light and
+  decorations. New Lua globals `FloppyFabrics_windBand(min, max)` and `FloppyFabrics_simDistance(tiles)`.
+
 ### Fixed
 - **Nothing moved alongside WindSway** (D107): two ZombieBuddy mods patching `FBORenderCell` as it first loads lose
   the earlier patch, so our `calculateObjectRenderLayer` hook could vanish depending on mod order. Cloth sprites now

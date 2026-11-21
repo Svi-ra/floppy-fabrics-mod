@@ -1280,3 +1280,18 @@ fix (not reported yet).
   runs with and without its jar (`-PwindSwayJar=none`). `FloppyFabrics_status()` shows `windSwaySkips`.
 Verified in-game 2026-11-21 with WindSway on: cloths move, `windSwaySkips` 13412 and `drawsReplaced` 13081 by
 frame 615, 12 cloths at 4.8 ms per frame (detail 4.0x).
+
+**D110 · Mod options: master switch, wind band, quality presets, feature switches.** Modelled on WindSway's options.
+*Enable* calls `FloppyFabrics_setEnabled`. *Wind* is a band on the climate wind in the game's wind power units
+(0..1, ×120 km/h, WindSway's scale): `WindProvider.band` raises the climate speed to the minimum and caps it at the
+maximum (max ≤ min = steady at min; 1 = no cap); direction stays the climate's and the dev `forceWind` bypasses it.
+Presets Vanilla (0, 1, default), Calm (0, 0.25), Breezy (0.1, 1), Windy (0.25, 1), Custom (two sliders). A floor
+keeps every outdoor cloth awake, so it costs CPU on still days; that is the point of the setting. *Quality* sets
+detail (D89), `maxActive`, `lodDistance` and `simDistance` together: Low 0.5×/16/6/25, Medium 0.75×/32/9/35,
+High 1×/64/12/45 (shipped defaults), Ultra 2×/128/20/60, Custom (detail, cloths at once, movement distance; LOD at
+12/45 of the movement distance). The Custom detail slider keeps the id `detail`, so a value saved by 0.6/0.7 survives,
+but the preset defaults to High: players who raised detail must pick Custom. *Features*: interactions, curtains,
+curtain light, decorations, through their existing Lua globals. Combo indices are stored in ModOptions.ini: append
+only. Everything is applied on `OnGameStart` and from `options:apply()` (MainOptions calls it after every option has
+stored its value); only a detail change rebuilds simulations. New Lua globals: `FloppyFabrics_windBand(min, max)`,
+`FloppyFabrics_simDistance(tiles)`.
