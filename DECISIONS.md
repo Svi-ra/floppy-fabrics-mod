@@ -1242,7 +1242,8 @@ drawn per frame by `FBORenderObjectHighlight`, whatever their layer.
   re-runs every installed transformer in a chain. If the hook is still silent 180 frames later it warns once.
 - `FloppyFabrics_status()` shows `layerRoute=<sprites> layerHook=ok|restored|missing`.
 Checked offline: 6 new unit tests; `verifyPatches` finds the Instrumentation and the retransform re-applies our advice.
-**Not yet verified in-game with WindSway.** Upstream: the clobbering is ZombieBuddy's to fix (not reported yet).
+Verified in-game 2026-11-21 (`layerRoute=194`, status logged per world). Upstream: the clobbering is ZombieBuddy's to
+fix (not reported yet).
 
 **D108 · The ObjectRenderEffects overload of Texture.render is hooked too.**
 - Storm test with WindSway (2026-11-21): climate wind 103 km/h, layer route and hook fine, yet nothing moved. The
@@ -1277,4 +1278,5 @@ Checked offline: 6 new unit tests; `verifyPatches` finds the Instrumentation and
   `onVanillaTranslucentDraw` call (method handle, found once by reflection). Advice is inlined into WindSway's class,
   so it only calls the public `Hooks.onWindSwayCapture`. Without WindSway the classes never load; `verifyPatches`
   runs with and without its jar (`-PwindSwayJar=none`). `FloppyFabrics_status()` shows `windSwaySkips`.
-**Not yet verified in-game.**
+Verified in-game 2026-11-21 with WindSway on: cloths move, `windSwaySkips` 13412 and `drawsReplaced` 13081 by
+frame 615, 12 cloths at 4.8 ms per frame (detail 4.0x).
