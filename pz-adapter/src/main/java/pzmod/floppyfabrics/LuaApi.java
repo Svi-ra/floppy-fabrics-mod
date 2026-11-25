@@ -263,4 +263,55 @@ public final class LuaApi {
         FloppyFabrics.log(s);
         return s;
     }
+
+    // ---- worn-cloth Stage 0 probe (docs/WORN_CLOTH_STAGE0_TEST.md); everything off by default ----
+
+    /** Turns the garment palette probe on/off. On: logs each garment model's bones once, applies tilt and FF_ modes. */
+    @LuaMethod(name = "FloppyFabrics_garmentProbe", global = true)
+    public static String garmentProbe(boolean on) {
+        GarmentProbe.enabled = on;
+        return garmentStatus();
+    }
+
+    /** Rotates the front hem chain by {@code deg} about the DressFront bone's local axis 0/1/2; 0 = off. */
+    @LuaMethod(name = "FloppyFabrics_garmentTilt", global = true)
+    public static String garmentTilt(double deg, double axis) {
+        GarmentProbe.tiltDeg = Float.isFinite((float) deg) ? (float) deg : 0f;
+        GarmentProbe.tiltAxis = Math.max(0, Math.min(2, (int) axis));
+        return garmentStatus();
+    }
+
+    /** Bones only in the garment file (FF_*): 0 = leave (identity), 1 = follow parent, 2 = mirror Bip01_Dress* (default). */
+    @LuaMethod(name = "FloppyFabrics_garmentFF", global = true)
+    public static String garmentFF(double mode) {
+        GarmentProbe.ffMode = Math.max(0, Math.min(2, (int) mode));
+        return garmentStatus();
+    }
+
+    /**
+     * Draws clothing item {@code item} (e.g. "LongCoat_Bathrobe") with model {@code model}, or "male|female" models;
+     * "" = undo. Re-dresses the player.
+     */
+    @LuaMethod(name = "FloppyFabrics_garmentSwap", global = true)
+    public static String garmentSwap(String item, String model) {
+        if (item == null || item.isEmpty()) return garmentStatus();
+        String key = item.toLowerCase(Locale.ROOT);
+        if (model == null || model.isEmpty()) GarmentProbe.swap.remove(key);
+        else GarmentProbe.swap.put(key, model);
+        GarmentProbe.redress();
+        return garmentStatus();
+    }
+
+    /** Logs the player's body and garment models: bone counts, extra bones, key bone transforms. */
+    @LuaMethod(name = "FloppyFabrics_garmentDump", global = true)
+    public static String garmentDump() {
+        return GarmentProbe.dump();
+    }
+
+    @LuaMethod(name = "FloppyFabrics_garmentStatus", global = true)
+    public static String garmentStatus() {
+        String s = GarmentProbe.status();
+        FloppyFabrics.log(s);
+        return s;
+    }
 }
